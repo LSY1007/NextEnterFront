@@ -6,6 +6,7 @@ interface NavigationProps {
 const navItems = [
   { id: 'job', label: '채용정보' },
   { id: 'resume', label: '이력서' },
+  { id: 'ai-recommend', label: 'AI 추천 공고' },
   { id: 'matching', label: '매칭분석' },
   { id: 'interview', label: '면접준비' },
   { id: 'mypage', label: '마이페이지' },
@@ -26,7 +27,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`py-4 px-2 font-medium transition ${
+              className={`py-4 px-2 font-medium transition whitespace-nowrap ${
                 activeTab === item.id
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-700 hover:text-blue-600'

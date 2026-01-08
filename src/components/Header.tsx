@@ -23,12 +23,16 @@ export default function Header({ onLogoClick }: HeaderProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <h1 
+            <div 
               onClick={onLogoClick}
-              className="text-3xl font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition"
+              className="cursor-pointer hover:opacity-80 transition"
             >
-              NextEnter
-            </h1>
+              <svg width="160" height="48" viewBox="0 0 160 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <text x="0" y="35" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" fill="#2563eb">
+                  NextEnter
+                </text>
+              </svg>
+            </div>
           </div>
 
           {/* 검색바 */}

@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
-import HomePage from './pages/HomePage';
-import MyPage from './pages/MyPage';
-import CreditPage from './pages/CreditPage';
+import HomePage from './features/home/HomePage';
+import MyPage from './features/mypage/MyPage';
+import CreditPage from './features/credit/CreditPage';
+import InterviewPage from './features/interview/InterviewPage';
+import ResumePage from './features/resume/ResumePage';
+import AIRecommendationPage from './features/ai-recommendation/AIRecommendationPage';
+import MatchingPage from './features/matching/MatchingPage';
 
 function App() {
   const [activeTab, setActiveTab] = useState('job');
@@ -18,16 +22,21 @@ function App() {
     console.log('로고 클릭 - 홈으로 이동');
   };
 
-  // 크레딧 페이지는 독립적인 레이아웃을 사용
-  if (activeTab === 'credit') {
-    return <CreditPage onLogoClick={handleLogoClick} />;
-  }
-
   // 현재 활성 탭에 따라 페이지 렌더링
   const renderPage = () => {
     switch (activeTab) {
       case 'mypage':
         return <MyPage />;
+      case 'interview':
+        return <InterviewPage />;
+      case 'credit':
+        return <CreditPage />;
+      case 'resume':
+        return <ResumePage />;
+      case 'ai-recommend':
+        return <AIRecommendationPage />;
+      case 'matching':
+        return <MatchingPage />;
       default:
         return <HomePage />;
     }
