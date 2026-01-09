@@ -4,12 +4,14 @@ interface HeaderProps {
   onLogoClick?: () => void;
   onLoginClick?: () => void;
   onSignupClick?: () => void;
+  onBusinessServiceClick?: () => void;
 }
 
 export default function Header({
   onLogoClick,
   onLoginClick,
   onSignupClick,
+  onBusinessServiceClick,
 }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -91,7 +93,10 @@ export default function Header({
             >
               회원가입
             </button>
-            <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <button
+              onClick={onBusinessServiceClick}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            >
               기업 서비스
             </button>
           </div>

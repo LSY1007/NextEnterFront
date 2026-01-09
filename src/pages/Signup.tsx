@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Footer from "../components/Footer";
 
 interface SignupPageProps {
   onLogoClick?: () => void;
@@ -393,6 +394,7 @@ export default function SignupPage({
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

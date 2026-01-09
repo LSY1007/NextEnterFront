@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Footer from "../components/Footer";
 
 interface LoginPageProps {
   onLogoClick?: () => void;
@@ -199,6 +200,7 @@ export default function LoginPage({
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
