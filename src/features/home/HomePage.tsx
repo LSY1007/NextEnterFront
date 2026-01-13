@@ -1,24 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 type JobCategory = {
   id: number;
-  icon: string; // 이미지 경로
+  icon: string;
   label: string;
-  color: string; // 지금은 안 쓰지만 유지
+  color: string;
 };
 
-export default function HomePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+interface HomePageProps {
+  onLoginClick?: () => void;
+}
+
+export default function HomePage({ onLoginClick }: HomePageProps) {
+  const { isAuthenticated } = useAuth();
   const [selectedLocation, setSelectedLocation] = useState("서울 전체");
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
 
   const handleJobClick = (id: number) => {
     console.log(`공고 ${id} 클릭됨`);
-  };
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    console.log("로그인 완료");
   };
 
   const handleShiftToggle = (shift: string) => {
@@ -101,7 +101,6 @@ export default function HomePage() {
     },
   ];
 
-  // 아이콘 크기 통일용 "프레임" 클래스
   const ICON_FRAME_CLASS = "w-16 h-16 flex items-center justify-center";
   const ICON_IMG_CLASS = "w-full h-full object-contain";
 
@@ -169,7 +168,6 @@ export default function HomePage() {
                     onClick={() => handleJobClick(category.id)}
                     className="flex flex-col items-center p-6 space-y-3 transition bg-white border-2 border-blue-500 rounded-xl hover:shadow-lg"
                   >
-                    {/* ✅ 모든 아이콘을 같은 프레임에 넣어서 크기 통일 */}
                     <div className={ICON_FRAME_CLASS}>
                       <img
                         src={category.icon}
@@ -189,7 +187,7 @@ export default function HomePage() {
           </section>
 
           {/* 추천 공고 (로그인 시에만 표시) */}
-          {isLoggedIn && (
+          {isAuthenticated && (
             <section>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
@@ -226,7 +224,7 @@ export default function HomePage() {
           )}
 
           {/* 로그인 안내 (로그아웃 상태) */}
-          {!isLoggedIn && (
+          {!isAuthenticated && (
             <section>
               <div className="p-12 text-center text-white shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl">
                 <h3 className="mb-4 text-3xl font-bold">
@@ -236,7 +234,7 @@ export default function HomePage() {
                   회원님께 딱 맞는 일자리를 추천해드립니다
                 </p>
                 <button
-                  onClick={handleLogin}
+                  onClick={onLoginClick}
                   className="px-8 py-4 text-lg font-bold text-blue-600 transition bg-white rounded-lg hover:bg-gray-100"
                 >
                   로그인하기
@@ -249,13 +247,13 @@ export default function HomePage() {
         {/* 오른쪽: 광고 */}
         <aside className="space-y-6 w-80">
           {/* 아이디/비밀번호 찾기 + 회원가입 */}
-          {!isLoggedIn && (
+          {!isAuthenticated && (
             <div className="p-6 text-center bg-white border-2 border-gray-200 shadow-lg rounded-2xl">
               <p className="mb-4 text-gray-600">
                 아이디 · 비밀번호 찾기 | 회원가입
               </p>
               <button
-                onClick={handleLogin}
+                onClick={onLoginClick}
                 className="w-full px-6 py-3 font-bold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
               >
                 로그인

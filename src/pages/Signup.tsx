@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Footer from "../components/Footer";
+import { signup } from "../api/auth";
 
 interface SignupPageProps {
   onLogoClick?: () => void;
@@ -32,6 +33,10 @@ export default function SignupPage({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
+  // ✅ 로딩 및 API 에러 상태 추가
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
   const passwordsMatch =
     password && passwordConfirm && password === passwordConfirm;
   const showPasswordMismatch = passwordConfirm && password !== passwordConfirm;
@@ -41,9 +46,13 @@ export default function SignupPage({
     switch (fieldName) {
       case "email":
         if (!value.trim()) error = "이메일을 입력해주세요";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          error = "올바른 이메일 형식이 아닙니다";
         break;
       case "password":
         if (!value.trim()) error = "비밀번호를 입력해주세요";
+        else if (value.length < 4)
+          error = "비밀번호는 최소 4자 이상이어야 합니다";
         break;
       case "passwordConfirm":
         if (!value.trim()) error = "비밀번호를 다시 입력해주세요";
@@ -79,49 +88,105 @@ export default function SignupPage({
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!email.trim()) newErrors.email = "이메일을 입력해주세요";
-    if (!password.trim()) newErrors.password = "비밀번호를 입력해주세요";
-    if (!passwordConfirm.trim())
+
+    if (!email.trim()) {
+      newErrors.email = "이메일을 입력해주세요";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "올바른 이메일 형식이 아닙니다";
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "비밀번호를 입력해주세요";
+    } else if (password.length < 4) {
+      newErrors.password = "비밀번호는 최소 4자 이상이어야 합니다";
+    }
+
+    if (!passwordConfirm.trim()) {
       newErrors.passwordConfirm = "비밀번호를 다시 입력해주세요";
-    if (password !== passwordConfirm)
+    } else if (password !== passwordConfirm) {
       newErrors.passwordConfirm = "비밀번호가 일치하지 않습니다";
+    }
+
     if (!name.trim()) newErrors.name = "이름을 입력해주세요";
     if (!phone.trim()) newErrors.phone = "전화번호를 입력해주세요";
+
     if (accountType === "business") {
       if (!businessNumber.trim())
         newErrors.businessNumber = "사업자등록번호를 입력해주세요";
       if (!companyName.trim()) newErrors.companyName = "기업명을 입력해주세요";
       if (!industry.trim()) newErrors.industry = "업종을 입력해주세요";
     }
+
     setErrors(newErrors);
+    setTouched({
+      email: true,
+      password: true,
+      passwordConfirm: true,
+      name: true,
+      phone: true,
+      ...(accountType === "business" && {
+        businessNumber: true,
+        companyName: true,
+        industry: true,
+      }),
+    });
+
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  // ✅ 회원가입 API 호출
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validateForm()) return;
-    if (accountType === "personal") {
-      console.log("개인회원 가입:", {
-        email,
-        password,
-        name,
-        phone,
-        age,
-        gender,
-      });
-    } else {
-      console.log("기업회원 가입:", {
-        email,
-        password,
-        name,
-        phone,
-        businessNumber,
-        companyName,
-        industry,
-        employeeCount,
-        companyUrl,
-        companyDescription,
-      });
+
+    // 기업회원은 아직 미구현
+    if (accountType === "business") {
+      setApiError("기업회원 가입은 준비 중입니다.");
+      return;
+    }
+
+    setIsLoading(true);
+    setApiError("");
+
+    try {
+      // ✅ 성별 값 변환 (male -> MALE)
+      const genderValue = gender ? gender.toUpperCase() : undefined;
+
+      const signupData = {
+        email: email.trim(),
+        password: password,
+        name: name.trim(),
+        phone: phone.trim(),
+        age: age ? parseInt(age) : undefined,
+        gender: genderValue,
+      };
+
+      const response = await signup(signupData);
+
+      if (response.success) {
+        // 회원가입 성공
+        alert("회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.");
+
+        // ✅ 로그인 페이지로 이동 (props 사용)
+        if (onLoginClick) {
+          onLoginClick();
+        }
+      } else {
+        setApiError(response.message || "회원가입에 실패했습니다.");
+      }
+    } catch (err: any) {
+      console.error("회원가입 오류:", err);
+
+      if (err.response?.data?.message) {
+        setApiError(err.response.data.message);
+      } else if (err.message) {
+        setApiError(err.message);
+      } else {
+        setApiError("회원가입 중 오류가 발생했습니다.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -145,6 +210,7 @@ export default function SignupPage({
               onClick={() => {
                 setAccountType("personal");
                 setErrors({});
+                setApiError("");
               }}
               className={`flex-1 py-4 text-center font-bold transition-all ${
                 accountType === "personal"
@@ -158,6 +224,7 @@ export default function SignupPage({
               onClick={() => {
                 setAccountType("business");
                 setErrors({});
+                setApiError("");
               }}
               className={`flex-1 py-4 text-center font-bold transition-all ${
                 accountType === "business"
@@ -168,6 +235,14 @@ export default function SignupPage({
               기업회원
             </button>
           </div>
+
+          {/* ✅ API 에러 메시지 표시 */}
+          {apiError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded">
+              <p className="text-red-600 text-sm">{apiError}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
               <input
@@ -176,7 +251,8 @@ export default function SignupPage({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={(e) => handleBlur("email", e.target.value)}
-                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                disabled={isLoading}
+                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
               />
@@ -191,7 +267,8 @@ export default function SignupPage({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onBlur={(e) => handleBlur("password", e.target.value)}
-                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                disabled={isLoading}
+                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 }`}
               />
@@ -206,7 +283,8 @@ export default function SignupPage({
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
                 onBlur={(e) => handleBlur("passwordConfirm", e.target.value)}
-                className={`w-full px-4 py-3 border rounded focus:outline-none text-sm ${
+                disabled={isLoading}
+                className={`w-full px-4 py-3 border rounded focus:outline-none text-sm disabled:bg-gray-100 ${
                   showPasswordMismatch
                     ? "border-red-500"
                     : passwordsMatch
@@ -239,7 +317,8 @@ export default function SignupPage({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={(e) => handleBlur("name", e.target.value)}
-                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                disabled={isLoading}
+                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                   errors.name ? "border-red-500" : "border-gray-300"
                 }`}
               />
@@ -254,7 +333,8 @@ export default function SignupPage({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={(e) => handleBlur("phone", e.target.value)}
-                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                disabled={isLoading}
+                className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                   errors.phone ? "border-red-500" : "border-gray-300"
                 }`}
               />
@@ -270,14 +350,16 @@ export default function SignupPage({
                     placeholder="나이 (선택사항)"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm"
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100"
                   />
                 </div>
                 <div>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm text-gray-700"
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm text-gray-700 disabled:bg-gray-100"
                   >
                     <option value="">성별 선택 (선택사항)</option>
                     <option value="male">남성</option>
@@ -296,7 +378,8 @@ export default function SignupPage({
                     value={businessNumber}
                     onChange={(e) => setBusinessNumber(e.target.value)}
                     onBlur={(e) => handleBlur("businessNumber", e.target.value)}
-                    className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                    disabled={isLoading}
+                    className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                       errors.businessNumber
                         ? "border-red-500"
                         : "border-gray-300"
@@ -315,7 +398,8 @@ export default function SignupPage({
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     onBlur={(e) => handleBlur("companyName", e.target.value)}
-                    className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                    disabled={isLoading}
+                    className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                       errors.companyName ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -332,7 +416,8 @@ export default function SignupPage({
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
                     onBlur={(e) => handleBlur("industry", e.target.value)}
-                    className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm ${
+                    disabled={isLoading}
+                    className={`w-full px-4 py-3 border rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100 ${
                       errors.industry ? "border-red-500" : "border-gray-300"
                     }`}
                   />
@@ -346,7 +431,8 @@ export default function SignupPage({
                   <select
                     value={employeeCount}
                     onChange={(e) => setEmployeeCount(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm text-gray-700"
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm text-gray-700 disabled:bg-gray-100"
                   >
                     <option value="">직원수 선택 (선택사항)</option>
                     <option value="1-10">1-10명</option>
@@ -362,7 +448,8 @@ export default function SignupPage({
                     placeholder="회사 홈페이지 URL (선택사항)"
                     value={companyUrl}
                     onChange={(e) => setCompanyUrl(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm"
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -370,17 +457,19 @@ export default function SignupPage({
                     placeholder="회사소개 (선택사항)"
                     value={companyDescription}
                     onChange={(e) => setCompanyDescription(e.target.value)}
+                    disabled={isLoading}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm resize-none disabled:bg-gray-100"
                   />
                 </div>
               </>
             )}
             <button
               type="submit"
-              className="w-full py-4 bg-blue-600 text-white text-base font-bold rounded hover:bg-blue-700 transition-colors mt-6"
+              disabled={isLoading}
+              className="w-full py-4 bg-blue-600 text-white text-base font-bold rounded hover:bg-blue-700 transition-colors mt-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              가입하기
+              {isLoading ? "가입 중..." : "가입하기"}
             </button>
           </form>
           <div className="text-center mt-6 text-sm text-gray-600">

@@ -1,35 +1,73 @@
 import { useState } from "react";
 import Footer from "../components/Footer";
+import { login as loginApi } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 
 interface LoginPageProps {
   onLogoClick?: () => void;
   onSignupClick?: () => void;
   onAccountTypeChange?: (type: "personal" | "business") => void;
+  onLoginSuccess?: () => void;
 }
 
 export default function LoginPage({
   onSignupClick,
   onAccountTypeChange,
+  onLoginSuccess,
 }: LoginPageProps) {
+  const { login: authLogin } = useAuth();
+
   // 개인회원/기업회원 탭 상태 관리
   const [accountType, setAccountType] = useState<"personal" | "business">(
     "personal"
   );
 
   // 입력 필드 상태 관리
-  const [loginId, setLoginId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessNumber, setBusinessNumber] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // 로그인 처리
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("로그인 시도:", {
-      accountType,
-      loginId,
-      password,
-      businessNumber,
-    });
+    setError("");
+
+    // 개인회원 로그인만 처리
+    if (accountType === "business") {
+      setError("기업회원 로그인은 준비 중입니다.");
+      return;
+    }
+
+    // 유효성 검사
+    if (!email || !password) {
+      setError("이메일과 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await loginApi({ email, password });
+
+      if (response.success && response.data) {
+        // 로그인 성공
+        const { userId, token, email: userEmail, name } = response.data;
+
+        authLogin({ userId, email: userEmail, name }, token);
+
+        // 메인 페이지로 이동
+        onLoginSuccess?.();
+      } else {
+        setError(response.message || "로그인에 실패했습니다.");
+      }
+    } catch (err: any) {
+      console.error("로그인 오류:", err);
+      setError(err.response?.data?.message || "로그인 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -65,6 +103,7 @@ export default function LoginPage({
                 onClick={() => {
                   setAccountType("personal");
                   onAccountTypeChange?.("personal");
+                  setError("");
                 }}
                 className={`flex-1 py-3 text-center font-medium transition-all ${
                   accountType === "personal"
@@ -78,6 +117,7 @@ export default function LoginPage({
                 onClick={() => {
                   setAccountType("business");
                   onAccountTypeChange?.("business");
+                  setError("");
                 }}
                 className={`flex-1 py-3 text-center font-medium transition-all ${
                   accountType === "business"
@@ -89,9 +129,16 @@ export default function LoginPage({
               </button>
             </div>
 
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             {/* 로그인 폼 */}
             <form onSubmit={handleLogin} className="space-y-3">
-              {/* 아이디 입력 */}
+              {/* 이메일 입력 */}
               <div className="relative">
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                   <svg
@@ -109,11 +156,12 @@ export default function LoginPage({
                   </svg>
                 </div>
                 <input
-                  type="text"
-                  placeholder="아이디"
-                  value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
-                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                  type="email"
+                  placeholder="이메일"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm disabled:bg-gray-100"
                 />
               </div>
 
@@ -139,7 +187,8 @@ export default function LoginPage({
                   placeholder="비밀번호"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                  disabled={isLoading}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm disabled:bg-gray-100"
                 />
               </div>
 
@@ -166,7 +215,8 @@ export default function LoginPage({
                     placeholder="사업자번호"
                     value={businessNumber}
                     onChange={(e) => setBusinessNumber(e.target.value)}
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                    disabled={isLoading}
+                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm disabled:bg-gray-100"
                   />
                 </div>
               )}
@@ -174,9 +224,10 @@ export default function LoginPage({
               {/* 로그인 버튼 */}
               <button
                 type="submit"
-                className="w-full py-3 bg-blue-600 text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isLoading}
+                className="w-full py-3 bg-blue-600 text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                로그인
+                {isLoading ? "로그인 중..." : "로그인"}
               </button>
             </form>
 
