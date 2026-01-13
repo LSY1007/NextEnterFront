@@ -19,10 +19,13 @@ import ApplicantDetailPage from "./pages/ApplicantDetailPage";
 import CreditManagementPage from "./pages/CreditManagementPage";
 import TalentSearchPage from "./pages/TalentSearchPage";
 import BusinessCreditPage from "./pages/BusinessCreditPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   const [activeTab, setActiveTab] = useState("job");
-  const [accountType, setAccountType] = useState<"personal" | "business">("personal");
+  const [accountType, setAccountType] = useState<"personal" | "business">(
+    "personal"
+  );
   const [selectedApplicantId, setSelectedApplicantId] = useState<number>(1);
   const [targetMenu, setTargetMenu] = useState<string | undefined>(undefined);
 
@@ -88,6 +91,7 @@ function App() {
         onLogoClick={handleLogoClick}
         onSignupClick={handleSignupClick}
         onAccountTypeChange={setAccountType}
+        onLoginSuccess={() => handleTabChange("job")}
       />
     );
   }
@@ -104,8 +108,8 @@ function App() {
 
   if (activeTab === "businessService") {
     return (
-      <BusinessServicePage 
-        onJobManagementClick={handleJobManagementClick} 
+      <BusinessServicePage
+        onJobManagementClick={handleJobManagementClick}
         onLogoClick={handleBusinessServiceClick}
         onApplicantManagementClick={handleTalentSearchClick}
         onCreditManagementClick={handleBusinessCreditClick}
@@ -114,11 +118,21 @@ function App() {
   }
 
   if (activeTab === "jobManagement") {
-    return <JobManagementPage onNewJobClick={handleJobPostingCreateClick} onLogoClick={handleBusinessServiceClick} />;
+    return (
+      <JobManagementPage
+        onNewJobClick={handleJobPostingCreateClick}
+        onLogoClick={handleBusinessServiceClick}
+      />
+    );
   }
 
   if (activeTab === "jobPostingCreate") {
-    return <JobPostingCreatePage onBackClick={handleJobManagementClick} onLogoClick={handleBusinessServiceClick} />;
+    return (
+      <JobPostingCreatePage
+        onBackClick={handleJobManagementClick}
+        onLogoClick={handleBusinessServiceClick}
+      />
+    );
   }
 
   if (activeTab === "talentSearch") {
@@ -129,9 +143,13 @@ function App() {
     return <BusinessCreditPage onLogoClick={handleBusinessServiceClick} />;
   }
 
+  if (activeTab === "profile") {
+    return <ProfilePage onBack={() => handleTabChange("job")} />;
+  }
+
   if (activeTab === "applicantManagement") {
     return (
-      <ApplicantManagementPage 
+      <ApplicantManagementPage
         onLogoClick={handleBusinessServiceClick}
         onApplicantClick={handleApplicantDetailClick}
       />
@@ -140,7 +158,7 @@ function App() {
 
   if (activeTab === "applicantDetail") {
     return (
-      <ApplicantDetailPage 
+      <ApplicantDetailPage
         applicantId={selectedApplicantId}
         onBackClick={handleApplicantManagementClick}
         onLogoClick={handleBusinessServiceClick}
@@ -155,21 +173,26 @@ function App() {
   const renderPage = () => {
     switch (activeTab) {
       case "mypage":
-        return <MyPage onNavigate={handleTabChange} />;
+        return (
+          <MyPage
+            onNavigate={handleTabChange}
+            onEditProfile={() => handleTabChange("profile")}
+          />
+        );
       case "interview":
         return <InterviewPage />;
       case "credit":
         return <CreditPage onCharge={handleCreditChargeClick} />;
       case "creditCharge":
-        return <CreditChargePage onBack={() => handleTabChange('credit')} />;
+        return <CreditChargePage onBack={() => handleTabChange("credit")} />;
       case "resume":
         return <ResumePage initialMenu={targetMenu} />;
       case "ai-recommend":
         return <AIRecommendationPage />;
       case "matching":
-        return <MatchingPage onEditResume={() => handleTabChange('resume')} />;
+        return <MatchingPage onEditResume={() => handleTabChange("resume")} />;
       default:
-        return <HomePage />;
+        return <HomePage onLoginClick={handleLoginClick} />;
     }
   };
 
