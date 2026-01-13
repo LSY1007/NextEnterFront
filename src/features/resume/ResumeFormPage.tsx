@@ -12,7 +12,6 @@ export default function ResumeFormPage({
   onBack,
   resumeId,
 }: ResumeFormPageProps) {
-export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps) {
   const { user } = useAuth();
   const [activeMenu, setActiveMenu] = useState("resume");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -148,37 +147,6 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
   };
 
   // 등록/수정 처리
-  const handleSubmit = () => {
-    if (resumeId) {
-      // 수정 모드
-      console.log(`이력서 ID ${resumeId} 수정 중...`);
-      // TODO: 백엔드 API 호출 (PUT)
-      // fetch(`/api/resumes/${resumeId}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     job: selectedJob,
-      //     educations,
-      //     careers,
-      //     // ... 등등
-      //   })
-      // });
-      alert("이력서가 수정되었습니다");
-    } else {
-      // 신규 등록 모드
-      console.log("새 이력서 등록 중...");
-      // TODO: 백엔드 API 호출 (POST)
-      // fetch('/api/resumes', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     job: selectedJob,
-      //     educations,
-      //     careers,
-      //     // ... 등등
-      //   })
-      // });
-      alert("이력서가 등록되었습니다");
   const handleSubmit = async () => {
     if (!user?.userId) {
       alert("로그인이 필요합니다.");
@@ -272,7 +240,9 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
       const response = await createResume(resumeData, user.userId);
 
       if (response.success) {
-        alert(resumeId ? "이력서가 수정되었습니다!" : "이력서가 등록되었습니다!");
+        alert(
+          resumeId ? "이력서가 수정되었습니다!" : "이력서가 등록되었습니다!"
+        );
         onBack();
       } else {
         setError(response.message || "이력서 등록에 실패했습니다.");
@@ -888,7 +858,7 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
                   disabled={isLoading}
                   className="px-8 py-3 font-semibold text-white transition bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
                 >
-                    {isLoading ? "처리 중..." : (resumeId ? "수정" : "등록")}
+                  {isLoading ? "처리 중..." : resumeId ? "수정" : "등록"}
                 </button>
               </div>
             </section>
