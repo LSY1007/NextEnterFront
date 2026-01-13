@@ -8,6 +8,10 @@ interface ResumeFormPageProps {
   resumeId?: number | null; // 수정 시 이력서 ID, null이면 새 이력서 작성
 }
 
+export default function ResumeFormPage({
+  onBack,
+  resumeId,
+}: ResumeFormPageProps) {
 export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps) {
   const { user } = useAuth();
   const [activeMenu, setActiveMenu] = useState("resume");
@@ -144,6 +148,37 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
   };
 
   // 등록/수정 처리
+  const handleSubmit = () => {
+    if (resumeId) {
+      // 수정 모드
+      console.log(`이력서 ID ${resumeId} 수정 중...`);
+      // TODO: 백엔드 API 호출 (PUT)
+      // fetch(`/api/resumes/${resumeId}`, {
+      //   method: 'PUT',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     job: selectedJob,
+      //     educations,
+      //     careers,
+      //     // ... 등등
+      //   })
+      // });
+      alert("이력서가 수정되었습니다");
+    } else {
+      // 신규 등록 모드
+      console.log("새 이력서 등록 중...");
+      // TODO: 백엔드 API 호출 (POST)
+      // fetch('/api/resumes', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({
+      //     job: selectedJob,
+      //     educations,
+      //     careers,
+      //     // ... 등등
+      //   })
+      // });
+      alert("이력서가 등록되었습니다");
   const handleSubmit = async () => {
     if (!user?.userId) {
       alert("로그인이 필요합니다.");
@@ -250,6 +285,7 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
     } finally {
       setIsLoading(false);
     }
+    onBack();
   };
 
   // 취소 처리
@@ -344,7 +380,9 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
             {/* 섹션: 인적사항 */}
             <section className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">{resumeId ? '이력서 수정' : '이력서 작성'}</h2>
+                <h2 className="text-2xl font-bold">
+                  {resumeId ? "이력서 수정" : "이력서 작성"}
+                </h2>
                 <button
                   onClick={handleCancel}
                   className="px-6 py-2 text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300"
@@ -850,7 +888,7 @@ export default function ResumeFormPage({ onBack, resumeId }: ResumeFormPageProps
                   disabled={isLoading}
                   className="px-8 py-3 font-semibold text-white transition bg-blue-600 rounded-full hover:bg-blue-700 disabled:opacity-50"
                 >
-{isLoading ? "처리 중..." : (resumeId ? "수정" : "등록")}
+                    {isLoading ? "처리 중..." : (resumeId ? "수정" : "등록")}
                 </button>
               </div>
             </section>
