@@ -64,7 +64,7 @@ export default function HomePage() {
     },
     {
       id: 8,
-      icon: "/icons/ai.png",
+      icon: "/images/AI.png",
       label: "AI 엔지니어",
       color: "bg-cyan-100",
     },
