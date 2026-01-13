@@ -18,7 +18,7 @@ export default function MyPage({ onNavigate }: MyPageProps) {
         onNavigate('resume'); // 이력서 생성 페이지로 이동
         break;
       case '입사 지원 현황':
-        onNavigate('job'); // 입사지원현황 페이지 (홈으로 임시 설정)
+        onNavigate('application-status'); // 입사 지원 현황 페이지로 이동
         break;
       case '모의 면접':
         onNavigate('interview');
@@ -42,7 +42,8 @@ export default function MyPage({ onNavigate }: MyPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
@@ -161,6 +162,7 @@ export default function MyPage({ onNavigate }: MyPageProps) {
           </main>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
