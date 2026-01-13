@@ -7,7 +7,11 @@ type JobCategory = {
   color: string; // 지금은 안 쓰지만 유지
 };
 
-export default function HomePage() {
+type HomePageProps = {
+  onLoginClick: () => void;
+};
+
+export default function HomePage({ onLoginClick }: HomePageProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
   const [selectedLocation, setSelectedLocation] = useState("서울 전체");
   const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
@@ -17,8 +21,7 @@ export default function HomePage() {
   };
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
-    console.log("로그인 완료");
+    onLoginClick();
   };
 
   const handleShiftToggle = (shift: string) => {
@@ -42,19 +45,7 @@ export default function HomePage() {
       label: "백엔드",
       color: "bg-blue-100",
     },
-    {
-      id: 3,
-      icon: "/images/html, css.png",
-      label: "퍼블리셔",
-      color: "bg-yellow-100",
-    },
     { id: 4, icon: "/images/풀스텍.png", label: "풀스택", color: "bg-red-100" },
-    {
-      id: 5,
-      icon: "/images/Figma.png",
-      label: "디자이너",
-      color: "bg-orange-100",
-    },
     { id: 6, icon: "/images/notion.png", label: "PM", color: "bg-gray-100" },
     {
       id: 7,
@@ -63,10 +54,10 @@ export default function HomePage() {
       color: "bg-green-100",
     },
     {
-      id: 8,
-      icon: "/icons/ai.png",
-      label: "AI 엔지니어",
-      color: "bg-cyan-100",
+      id: 5,
+      icon: "/images/Figma.png",
+      label: "디자이너",
+      color: "bg-orange-100",
     },
   ];
 
@@ -161,29 +152,64 @@ export default function HomePage() {
           {/* 업직종별 */}
           <section>
             <h2 className="mb-6 text-2xl font-bold">업직종별</h2>
-            <div className="p-8 bg-white shadow-lg rounded-2xl">
-              <div className="grid grid-cols-4 gap-6">
-                {jobCategories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => handleJobClick(category.id)}
-                    className="flex flex-col items-center p-6 space-y-3 transition bg-white border-2 border-blue-500 rounded-xl hover:shadow-lg"
-                  >
-                    {/* ✅ 모든 아이콘을 같은 프레임에 넣어서 크기 통일 */}
-                    <div className={ICON_FRAME_CLASS}>
-                      <img
-                        src={category.icon}
-                        alt={category.label}
-                        className={ICON_IMG_CLASS}
-                        loading="lazy"
-                      />
+            <div className="p-6 bg-white shadow-lg rounded-2xl">
+              <div className="flex gap-6">
+                {/* 왼쪽 세로 배너 - 광고용 */}
+                <div className="w-44">
+                  <div className="h-full flex flex-col justify-between bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 rounded-xl p-4 text-white">
+                    <div>
+                      <div className="text-2xl mb-2">🎯</div>
+                      <h3 className="text-lg font-bold mb-1">특별 채용</h3>
+                      <h3 className="text-base font-bold mb-3">공고</h3>
                     </div>
+                    
+                    <div className="space-y-2">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
+                        <p className="text-xs font-semibold mb-0.5">프리미엄 기업</p>
+                        <p className="text-[10px]">지금 바로 지원하세요</p>
+                      </div>
+                      
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
+                        <p className="text-xs font-semibold mb-0.5">신입 대환영</p>
+                        <p className="text-[10px]">성장 기회를 잡으세요</p>
+                      </div>
+                      
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2">
+                        <p className="text-xs font-semibold mb-0.5">연봉 UP</p>
+                        <p className="text-[10px]">최고 대우 보장</p>
+                      </div>
+                    </div>
+                    
+                    <button className="w-full mt-3 px-3 py-2 bg-white text-purple-600 text-sm font-bold rounded-lg hover:bg-gray-100 transition">
+                      자세히 보기 →
+                    </button>
+                  </div>
+                </div>
 
-                    <span className="font-semibold text-gray-800">
-                      {category.label}
-                    </span>
-                  </button>
-                ))}
+                {/* 오른쪽 직무 카드들 */}
+                <div className="flex-1 grid grid-cols-3 gap-4">
+                  {jobCategories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => handleJobClick(category.id)}
+                      className="flex flex-col items-center p-4 space-y-2 transition bg-white border-2 border-blue-500 rounded-xl hover:shadow-lg"
+                    >
+                      {/* ✅ 모든 아이콘을 같은 프레임에 넣어서 크기 통일 */}
+                      <div className={ICON_FRAME_CLASS}>
+                        <img
+                          src={category.icon}
+                          alt={category.label}
+                          className={ICON_IMG_CLASS}
+                          loading="lazy"
+                        />
+                      </div>
+
+                      <span className="text-sm font-semibold text-gray-800">
+                        {category.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </section>

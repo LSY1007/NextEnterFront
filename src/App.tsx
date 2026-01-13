@@ -169,7 +169,7 @@ function App() {
       case "matching":
         return <MatchingPage onEditResume={() => handleTabChange('resume')} />;
       default:
-        return <HomePage />;
+        return <HomePage onLoginClick={handleLoginClick} />;
     }
   };
 
