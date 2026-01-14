@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Footer from "../../components/Footer";
 import CreditSidebar from "./components/CreditSidebar";
 // ✅ 메뉴 데이터 불러오기 (이동할 때 필요)
 import { navigationMenuData } from "../../features/navigation-menu/data/menuData";
@@ -79,6 +80,7 @@ export default function CreditPage({
   };
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-8 mx-auto max-w-7xl">
         {/* 헤더 */}
@@ -224,5 +226,7 @@ export default function CreditPage({
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

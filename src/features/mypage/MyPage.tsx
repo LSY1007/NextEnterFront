@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { getUserProfile, UserProfile } from "../../api/user";
+import Footer from "../../components/Footer";
 
 interface MyPageProps {
-  onNavigate?: (page: string) => void;
+  onNavigate: (page: string) => void;
+  onEditProfile?: () => void;
   initialMenu?: string;
 }
 
-export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
+export default function MyPage({ onNavigate, onEditProfile }: MyPageProps) {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [resumeCount] = useState(2);
   const [activeMenu, setActiveMenu] = useState(initialMenu || "home");
 
@@ -15,27 +21,43 @@ export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
     }
   }, [initialMenu]);
 
+  // ✅ 프로필 정보 불러오기
+  useEffect(() => {
+    if (user?.userId) {
+      loadProfile();
+    }
+  }, [user?.userId]);
+
+  const loadProfile = async () => {
+    if (!user?.userId) return;
+
+    try {
+      const response = await getUserProfile(user.userId);
+      if (response.success && response.data) {
+        setProfile(response.data);
+      }
+    } catch (err) {
+      console.error("프로필 로드 오류:", err);
+    }
+  };
+
   const handleClick = (item: string) => {
     console.log(`${item} 클릭됨`);
-    
-    if (!onNavigate) return;
-    
-    // 각 항목에 대한 페이지 이동
-    switch(item) {
-      case '프로필 수정':
-        onNavigate('resume'); // 이력서 생성 페이지로 이동
+
+    switch (item) {
+      case "입사 지원 현황":
+        onNavigate("job");
         break;
       case '입사 지원 현황':
-        onNavigate('job'); // 입사지원현황 페이지 (홈으로 임시 설정)
+        onNavigate('application-status'); // 입사 지원 현황 페이지로 이동
+      case "모의 면접":
+        onNavigate("interview");
         break;
-      case '모의 면접':
-        onNavigate('interview');
+      case "이력서 열람":
+        onNavigate("resume");
         break;
-      case '이력서 열람':
-        onNavigate('resume');
-        break;
-      case 'AI 맞춤 공고':
-        onNavigate('ai-recommend');
+      case "AI 맞춤 공고":
+        onNavigate("ai-recommend");
         break;
       default:
         break;
@@ -50,7 +72,8 @@ export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
@@ -58,23 +81,47 @@ export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
             <div className="p-6 space-y-4 bg-white border-2 border-purple-500 rounded-lg">
               {/* 프로필 이미지 */}
               <div className="flex flex-col items-center space-y-2">
-                <div className="relative flex items-center justify-center w-20 h-20 bg-gray-200 border-2 border-blue-400 rounded-full">
-                  <svg
-                    className="w-12 h-12 text-gray-400"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
+                <div className="relative w-24 h-24 mx-auto mb-4">
+                  <div className="flex items-center justify-center w-full h-full bg-gray-200 border-2 border-blue-400 rounded-full overflow-hidden">
+                    {/* ✅ 프로필 이미지 표시 */}
+                    {profile?.profileImage ? (
+                      <img
+                        src={profile.profileImage}
+                        alt="프로필"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <svg
+                        className="w-12 h-12 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      </svg>
+                    )}
+                  </div>
+                  <button
+                    onClick={onEditProfile}
+                    className="absolute bottom-0 right-0 p-1.5 bg-orange-500 rounded-full hover:bg-orange-600 transition"
+                    title="내 정보 수정"
                   >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                  <button 
-                    onClick={() => handleClick('프로필 수정')}
-                    className="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-xs text-white bg-orange-400 rounded-full hover:bg-orange-500 transition cursor-pointer"
-                  >
-                    ✏️
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
                   </button>
                 </div>
                 <div className="px-8 py-1 border-2 border-blue-400 rounded-full">
-                  <span className="text-sm">이름</span>
+                  <span className="text-sm">{user?.name || "이름"}</span>
                 </div>
               </div>
 
@@ -134,8 +181,8 @@ export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
                   <div className="flex items-center justify-between">
                     <h4 className="text-lg font-bold">이력서 목록</h4>
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => onNavigate && onNavigate('resume')}
+                      <button
+                        onClick={() => onNavigate("resume")}
                         className="px-4 py-2 text-sm bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition cursor-pointer"
                       >
                         수정
@@ -152,8 +199,8 @@ export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
                   <div className="flex items-center justify-between">
                     <h4 className="text-lg font-bold">이력서 목록</h4>
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => onNavigate && onNavigate('resume')}
+                      <button
+                        onClick={() => onNavigate("resume")}
                         className="px-4 py-2 text-sm bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition cursor-pointer"
                       >
                         수정
@@ -169,6 +216,8 @@ export default function MyPage({ onNavigate, initialMenu }: MyPageProps) {
           </main>
         </div>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }
