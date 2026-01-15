@@ -188,8 +188,14 @@ export default function MatchingPage({
   };
 
   // 히스토리 페이지 표시
-  if (activeMenu === "history") {
-    return <MatchingHistoryPage onBackToMatching={handleBackToMatching} />;
+  if (activeMenu === "history" || activeMenu === "matching-sub-2") {
+    return (
+      <MatchingHistoryPage 
+        onBackToMatching={handleBackToMatching} 
+        activeMenu={activeMenu}
+        onMenuClick={handleMenuClick}
+      />
+    );
   }
 
   return (
@@ -204,6 +210,7 @@ export default function MatchingPage({
 
       <div className="min-h-screen bg-gray-50">
         <div className="px-4 py-8 mx-auto max-w-7xl">
+          <h2 className="inline-block mb-6 text-2xl font-bold">매칭현황</h2>
           <div className="flex gap-6">
             {/* 왼쪽 사이드바 */}
             <MatchingSidebar

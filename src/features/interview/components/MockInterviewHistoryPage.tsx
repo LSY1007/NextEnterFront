@@ -8,17 +8,19 @@ interface QA {
   score: number;
 }
 
-interface InterviewHistoryDetailPageProps {
+interface MockInterviewHistoryPageProps {
   interviewId: number;
   onBack: () => void;
+  activeMenu: string; // ✅ 추가
+  onMenuClick: (menuId: string) => void; // ✅ 추가
 }
 
 export default function MockInterviewHistoryPage({
   interviewId,
   onBack,
-}: InterviewHistoryDetailPageProps) {
-  const [activeMenu] = useState("results");
-
+  activeMenu, // ✅ props로 받음
+  onMenuClick, // ✅ props로 받음
+}: MockInterviewHistoryPageProps) {
   // 면접별 질문-답변 데이터
   const interviewDetails: { [key: number]: { 
     level: string; 
@@ -141,6 +143,13 @@ export default function MockInterviewHistoryPage({
     return "text-red-600";
   };
 
+  // 사이드바 클릭 시 확인 후 이동
+  const handleSidebarClick = (menuId: string) => {
+    if (window.confirm("페이지를 이동하시겠습니까?")) {
+      onMenuClick(menuId);
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gray-50">
@@ -164,7 +173,7 @@ export default function MockInterviewHistoryPage({
             {/* 왼쪽 사이드바 */}
             <InterviewSidebar
               activeMenu={activeMenu}
-              onMenuClick={() => {}}
+              onMenuClick={handleSidebarClick}
             />
 
             {/* 메인 컨텐츠 */}
