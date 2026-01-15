@@ -70,6 +70,22 @@ export default function InterviewPage({
     { id: 2, title: "AI 모의 면접 (시니어 차감 - 20)", date: "2024.12.10" },
   ];
 
+  // [Auto-Merge] Incoming 브랜치의 'recentInterviews' 데이터 더미 추가 (HEAD 레이아웃에 통합하기 위해)
+  const recentInterviews = [
+    {
+      id: 1,
+      title: "Frontend 개발자 모의 면접",
+      color: "text-blue-600",
+      date: "2025.12.20",
+    },
+    {
+      id: 2,
+      title: "Backend 개발자 모의 면접",
+      color: "text-green-600",
+      date: "2025.12.18",
+    },
+  ];
+
   // 면접이 시작되면 채팅 화면 표시
   if (isInterviewStarted) {
     return (
@@ -116,7 +132,15 @@ export default function InterviewPage({
 
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <h2 className="inline-block mb-6 text-2xl font-bold">모의면접</h2>
-        {/* 목록 헤더 및 크레딧 표시 */}
+
+        {/* [Auto-Merge] HEAD의 UI/UX 개선(확대된 레이아웃)을 기본으로 채택 */}
+        {/* AI 모의 면접 타이틀 */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg">
+            <span className="text-2xl">🎤</span>
+          </div>
+          <h2 className="text-2xl font-bold">AI 모의 면접</h2>
+        </div>
 
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
@@ -125,87 +149,70 @@ export default function InterviewPage({
             onMenuClick={handleMenuClick}
           />
 
-          {/* 메인 컨텐츠 */}
-          <div className="flex-1 space-y-6">
-            {/* 면접 설정 카드 */}
-            <div className="p-6 bg-white border-2 border-blue-400 rounded-2xl">
-              <h3 className="mb-4 text-lg font-bold">면접 설정</h3>
+          {/* 메인 컨텐츠 - 확대된 면접 설정 */}
+          <div className="flex-1">
+            {/* 면접 설정 카드 - 크기 확대 */}
+            <div className="p-10 bg-white border-2 border-blue-400 rounded-2xl">
+              <h3 className="mb-8 text-2xl font-bold">면접 설정</h3>
 
-            {/* 메인 컨텐츠 - 확대된 면접 설정 */}
-            <div className="flex-1">
-              {/* 면접 설정 카드 - 크기 확대 */}
-              <div className="p-10 bg-white border-2 border-blue-400 rounded-2xl">
-                <h3 className="mb-8 text-2xl font-bold">면접 설정</h3>
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <button
+                  onClick={() => handleLevelClick("junior")}
+                  className={`p-10 rounded-xl border-2 transition ${
+                    selectedLevel === "junior"
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-300 hover:border-blue-300"
+                  }`}
+                >
+                  <div className="mb-3 text-2xl font-bold">주니어</div>
+                  <div className="mb-2 text-base text-gray-600">0~3년 경력</div>
+                  <div className="text-base text-blue-600">
+                    (- 10 크레딧 차감)
+                  </div>
+                </button>
 
-                <div className="grid grid-cols-2 gap-6 mb-10">
-                  <button
-                    onClick={() => handleLevelClick("junior")}
-                    className={`p-10 rounded-xl border-2 transition ${
-                      selectedLevel === "junior"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-300 hover:border-blue-300"
-                    }`}
-                  >
-                    <div className="mb-3 text-2xl font-bold">주니어</div>
-                    <div className="mb-2 text-base text-gray-600">0~3년 경력</div>
-                    <div className="text-base text-blue-600">
-                      (- 10 크레딧 차감)
-                    </div>
-                  </button>
+                <button
+                  onClick={() => handleLevelClick("senior")}
+                  className={`p-10 rounded-xl border-2 transition ${
+                    selectedLevel === "senior"
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-300 hover:border-blue-300"
+                  }`}
+                >
+                  <div className="mb-3 text-2xl font-bold">시니어</div>
+                  <div className="mb-2 text-base text-gray-600">
+                    4년 이상 경력
+                  </div>
+                  <div className="text-base text-blue-600">
+                    (- 20 크레딧 차감)
+                  </div>
+                </button>
+              </div>
 
-                  <button
-                    onClick={() => handleLevelClick("senior")}
-                    className={`p-10 rounded-xl border-2 transition ${
-                      selectedLevel === "senior"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-300 hover:border-blue-300"
-                    }`}
-                  >
-                    <div className="mb-3 text-2xl font-bold">시니어</div>
-                    <div className="mb-2 text-base text-gray-600">4년 이상 경력</div>
-                    <div className="text-base text-blue-600">
-                      (- 20 크레딧 차감)
-                    </div>
-                  </button>
+              {/* 면접 시작 박스 - 크기 확대 */}
+              <div className="p-12 text-center text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl">
+                <div className="mb-6">
+                  <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-white/20">
+                    <span className="text-5xl">💬</span>
+                  </div>
                 </div>
-                <p className="mb-6 text-lg leading-relaxed">
+                <p className="mb-8 text-xl leading-relaxed">
                   AI 면접관과 실전 같은 면접을 경험하세요
                   <br />
                   난이도를 선택하고 시작 버튼을 눌러주세요
                 </p>
                 <button
                   onClick={handleStartInterview}
-                  className="px-8 py-3 text-lg font-bold text-blue-600 transition bg-white rounded-full hover:bg-blue-50"
+                  className="px-10 py-4 text-xl font-bold text-blue-600 transition bg-white rounded-full hover:bg-blue-50"
                 >
                   면접 시작하기
                 </button>
               </div>
             </div>
 
-                {/* 면접 시작 박스 - 크기 확대 */}
-                <div className="p-12 text-center text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl">
-                  <div className="mb-6">
-                    <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-white/20">
-                      <span className="text-5xl">💬</span>
-                    </div>
-                  </div>
-                  <p className="mb-8 text-xl leading-relaxed">
-                    AI 면접관과 실전 같은 면접을 경험하세요
-                    <br />
-                    난이도를 선택하고 시작 버튼을 눌러주세요
-                  </p>
-                  <button
-                    onClick={handleStartInterview}
-                    className="px-10 py-4 text-xl font-bold text-blue-600 transition bg-white rounded-full hover:bg-blue-50"
-                  >
-                    <div className="mb-1 font-semibold">{usage.title}</div>
-                    <div className="text-sm text-gray-500">{usage.date}</div>
-                  </button>
-                ))}
-              </div>
-
+            <div className="grid grid-cols-2 gap-6 mt-6">
               {/* 크레딧 사용 내역 - 크기 확대 */}
-              <div className="p-8 mt-6 bg-white border-2 border-blue-400 rounded-2xl">
+              <div className="p-8 bg-white border-2 border-blue-400 rounded-2xl">
                 <h3 className="mb-6 text-xl font-bold">크레딧 사용 내역</h3>
                 <div className="space-y-4">
                   {creditUsages.map((usage) => (
@@ -214,9 +221,33 @@ export default function InterviewPage({
                       onClick={() => handleCreditUsageClick(usage.id)}
                       className="w-full p-5 text-left transition border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50"
                     >
-                      <div className="mb-2 text-base font-semibold">{usage.title}</div>
+                      <div className="mb-2 text-base font-semibold">
+                        {usage.title}
+                      </div>
                       <div className="text-sm text-gray-500">{usage.date}</div>
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* [Auto-Merge] Incoming의 '최근 면접 기록' 기능을 HEAD 레이아웃에 통합 */}
+              <div className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
+                <h3 className="mb-6 text-xl font-bold">최근 면접 기록</h3>
+                <div className="space-y-3">
+                  {recentInterviews.map((interview) => (
+                    <div
+                      key={interview.id}
+                      className="p-5 border-2 border-gray-100 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <div
+                        className={`font-bold text-lg mb-1 ${interview.color}`}
+                      >
+                        {interview.title}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {interview.date}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
