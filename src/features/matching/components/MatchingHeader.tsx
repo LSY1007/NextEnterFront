@@ -3,7 +3,10 @@ interface MatchingHeaderProps {
   onCreditClick: () => void;
 }
 
-export default function MatchingHeader({ currentCredit, onCreditClick }: MatchingHeaderProps) {
+export default function MatchingHeader({
+  currentCredit,
+  onCreditClick,
+}: MatchingHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-3">

@@ -5,13 +5,17 @@ import { useApp } from "../../../context/AppContext";
 
 interface MatchingHistoryPageProps {
   onBackToMatching: () => void;
+  activeMenu: string; // ⭐ 추가
+  onMenuClick: (menuId: string) => void; // ⭐ 추가
 }
 
 export default function MatchingHistoryPage({
   onBackToMatching,
+  activeMenu, // ⭐ props로 받음
+  onMenuClick, // ⭐ props로 받음
 }: MatchingHistoryPageProps) {
-  const [activeMenu] = useState("history");
-  
+  // ❗ 삭제: const [activeMenu] = useState("history");
+
   // Context에서 실제 히스토리 데이터 가져오기
   const { matchingHistory } = useApp();
 
@@ -34,16 +38,16 @@ export default function MatchingHistoryPage({
           {/* 상단 헤더 */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
-                📊
-              </div>
               <h1 className="text-2xl font-bold">매칭 히스토리</h1>
             </div>
           </div>
 
           <div className="flex gap-6">
             {/* 왼쪽 사이드바 */}
-            <MatchingSidebar activeMenu={activeMenu} onMenuClick={() => {}} />
+            <MatchingSidebar
+              activeMenu={activeMenu}
+              onMenuClick={onMenuClick}
+            />
 
             {/* 메인 컨텐츠 */}
             <div className="flex-1 space-y-6">
@@ -66,8 +70,12 @@ export default function MatchingHistoryPage({
               {matchingHistory.length === 0 ? (
                 <div className="p-16 text-center bg-white border-2 border-gray-200 rounded-2xl">
                   <div className="mb-4 text-6xl">📄</div>
-                  <h3 className="mb-2 text-2xl font-bold text-gray-400">분석 내역이 없습니다</h3>
-                  <p className="mb-6 text-gray-500">AI 매칭 분석을 시작하여 히스토리를 쌓아보세요</p>
+                  <h3 className="mb-2 text-2xl font-bold text-gray-400">
+                    분석 내역이 없습니다
+                  </h3>
+                  <p className="mb-6 text-gray-500">
+                    AI 매칭 분석을 시작하여 히스토리를 쌓아보세요
+                  </p>
                   <button
                     onClick={onBackToMatching}
                     className="px-8 py-3 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -143,7 +151,10 @@ export default function MatchingHistoryPage({
                         <div className="grid grid-cols-2 gap-3">
                           {Object.entries(history.techMatch).map(
                             ([tech, match]) => (
-                              <div key={tech} className="flex items-center gap-2">
+                              <div
+                                key={tech}
+                                className="flex items-center gap-2"
+                              >
                                 <div className="flex-1">
                                   <div className="flex justify-between mb-1 text-xs">
                                     <span className="font-medium">{tech}</span>
@@ -189,7 +200,7 @@ export default function MatchingHistoryPage({
                             {history.strengths.map((strength, idx) => (
                               <li
                                 key={idx}
-                                className="text-xs text-gray-700 flex items-start gap-1"
+                                className="flex items-start gap-1 text-xs text-gray-700"
                               >
                                 <span className="text-green-600 mt-0.5">•</span>
                                 <span>{strength}</span>
@@ -207,9 +218,11 @@ export default function MatchingHistoryPage({
                             {history.improvements.map((improvement, idx) => (
                               <li
                                 key={idx}
-                                className="text-xs text-gray-700 flex items-start gap-1"
+                                className="flex items-start gap-1 text-xs text-gray-700"
                               >
-                                <span className="text-yellow-600 mt-0.5">•</span>
+                                <span className="text-yellow-600 mt-0.5">
+                                  •
+                                </span>
                                 <span>{improvement}</span>
                               </li>
                             ))}

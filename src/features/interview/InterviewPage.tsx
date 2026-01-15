@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import InterviewSidebar from "./components/InterviewSidebar";
 import InterviewChatPage from "./components/InterviewChatPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import MockInterviewHistoryPage from "./components/MockInterviewHistoryPage";
+import MockInterviewResultPage from "./components/MockInterviewResultPage";
 
 interface InterviewPageProps {
   initialMenu?: string;
@@ -23,6 +25,11 @@ export default function InterviewPage({
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [currentCredit, setCurrentCredit] = useState(200);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // 면접 히스토리에서 선택한 면접 ID
+  const [selectedInterviewId, setSelectedInterviewId] = useState<number | null>(
+    null
+  );
 
   const handleCreditClick = () => {
     console.log("보유 크레딧 클릭됨");
@@ -70,7 +77,6 @@ export default function InterviewPage({
     { id: 2, title: "AI 모의 면접 (시니어 차감 - 20)", date: "2024.12.10" },
   ];
 
-  // [Auto-Merge] Incoming 브랜치의 'recentInterviews' 데이터 더미 추가 (HEAD 레이아웃에 통합하기 위해)
   const recentInterviews = [
     {
       id: 1,
@@ -86,16 +92,61 @@ export default function InterviewPage({
     },
   ];
 
-  // 면접이 시작되면 채팅 화면 표시
-  if (isInterviewStarted) {
+  // ============================================
+  // 서브메뉴별 페이지 렌더링
+  // ============================================
+
+  // interview-sub-2: 모의면접 진행 (채팅 화면)
+  if (activeMenu === "interview-sub-2" || isInterviewStarted) {
     return (
       <InterviewChatPage
-        onBack={handleBackToPreparation}
+        onBack={() => {
+          setIsInterviewStarted(false);
+          handleMenuClick("interview-sub-1"); // 모의면접 시작으로 돌아가기
+        }}
         level={selectedLevel}
+        activeMenu={activeMenu}
+        onMenuClick={handleMenuClick}
       />
     );
   }
 
+  // interview-sub-3: 면접 결과
+  if (activeMenu === "interview-sub-3") {
+    return (
+      <MockInterviewResultPage
+        activeMenu={activeMenu}
+        onMenuClick={handleMenuClick}
+        onNavigateToInterview={() => handleMenuClick("interview-sub-1")}
+      />
+    );
+  }
+
+  // interview-sub-4: 면접 히스토리
+  if (activeMenu === "interview-sub-4") {
+    // 특정 면접을 선택한 경우 상세 페이지
+    if (selectedInterviewId !== null) {
+      return (
+        <MockInterviewHistoryPage
+          interviewId={selectedInterviewId}
+          onBack={() => setSelectedInterviewId(null)}
+          activeMenu={activeMenu}
+          onMenuClick={handleMenuClick}
+        />
+      );
+    }
+
+    // 면접 히스토리 목록 (MockInterviewResultPage 재사용)
+    return (
+      <MockInterviewResultPage
+        activeMenu={activeMenu}
+        onMenuClick={handleMenuClick}
+        onNavigateToInterview={() => handleMenuClick("interview-sub-1")}
+      />
+    );
+  }
+
+  // interview-sub-1 또는 기본: 모의면접 시작
   return (
     <>
       {/* 확인 다이얼로그 */}
@@ -132,15 +183,6 @@ export default function InterviewPage({
 
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <h2 className="inline-block mb-6 text-2xl font-bold">모의면접</h2>
-
-        {/* [Auto-Merge] HEAD의 UI/UX 개선(확대된 레이아웃)을 기본으로 채택 */}
-        {/* AI 모의 면접 타이틀 */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg">
-            <span className="text-2xl">🎤</span>
-          </div>
-          <h2 className="text-2xl font-bold">AI 모의 면접</h2>
-        </div>
 
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
@@ -230,14 +272,14 @@ export default function InterviewPage({
                 </div>
               </div>
 
-              {/* [Auto-Merge] Incoming의 '최근 면접 기록' 기능을 HEAD 레이아웃에 통합 */}
+              {/* 최근 면접 기록 */}
               <div className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
                 <h3 className="mb-6 text-xl font-bold">최근 면접 기록</h3>
                 <div className="space-y-3">
                   {recentInterviews.map((interview) => (
                     <div
                       key={interview.id}
-                      className="p-5 border-2 border-gray-100 rounded-lg hover:bg-gray-50 transition"
+                      className="p-5 transition border-2 border-gray-100 rounded-lg hover:bg-gray-50"
                     >
                       <div
                         className={`font-bold text-lg mb-1 ${interview.color}`}

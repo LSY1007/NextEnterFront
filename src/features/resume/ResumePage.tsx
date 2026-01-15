@@ -4,7 +4,6 @@ import { getResumeList, deleteResume, ResumeListItem } from "../../api/resume";
 import ResumeSidebar from "./components/ResumeSidebar";
 import ResumeFormPage from "./ResumeFormPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-
 interface ResumePageProps {
   initialMenu?: string;
   onApplicationStatusClick?: () => void;
@@ -159,7 +158,12 @@ export default function ResumePage({
   // 이력서 작성/수정 페이지 표시
   if (isCreating) {
     return (
-      <ResumeFormPage onBack={handleBackToList} resumeId={selectedResumeId} />
+      <ResumeFormPage
+        onBack={handleBackToList}
+        resumeId={selectedResumeId}
+        initialMenu={activeMenu}
+        onNavigate={onNavigate}
+      />
     );
   }
 
@@ -167,14 +171,14 @@ export default function ResumePage({
     <>
       {/* 삭제 확인 다이얼로그 */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-            <div className="text-center mb-6">
-              <div className="text-5xl mb-4">⚠️</div>
-              <h3 className="text-2xl font-bold mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-8 mx-4 bg-white shadow-2xl rounded-2xl">
+            <div className="mb-6 text-center">
+              <div className="mb-4 text-5xl">⚠️</div>
+              <h3 className="mb-4 text-2xl font-bold">
                 이력서를 삭제하시겠습니까?
               </h3>
-              <p className="text-gray-500 mt-2">
+              <p className="mt-2 text-gray-500">
                 삭제된 이력서는 복구할 수 없습니다.
               </p>
             </div>
@@ -188,7 +192,7 @@ export default function ResumePage({
               <button
                 onClick={handleConfirmDelete}
                 disabled={isLoading}
-                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold disabled:opacity-50"
+                className="flex-1 px-6 py-3 font-semibold text-white transition bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
               >
                 {isLoading ? "삭제 중..." : "삭제"}
               </button>
@@ -199,6 +203,7 @@ export default function ResumePage({
 
       <div className="min-h-screen bg-gray-50">
         <div className="px-4 py-8 mx-auto max-w-7xl">
+          <h1 className="mb-6 text-2xl font-bold">이력서</h1>
           <div className="flex gap-6">
             {/* 왼쪽 사이드바 */}
             <ResumeSidebar
@@ -222,7 +227,7 @@ export default function ResumePage({
 
                 {/* 에러 메시지 */}
                 {error && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-4 mb-6 border border-red-200 rounded-lg bg-red-50">
                     <p className="text-sm text-red-600">{error}</p>
                   </div>
                 )}
@@ -245,18 +250,18 @@ export default function ResumePage({
                       <p className="mb-4">등록된 이력서가 없습니다.</p>
                       <button
                         onClick={handleCreateResume}
-                        className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
+                        className="px-6 py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
                       >
                         첫 이력서 작성하기
                       </button>
                     </div>
                   ) : (
                     // 이력서 목록 - 스크롤 가능
-                    <div className="max-h-96 overflow-y-auto space-y-3 p-2">
+                    <div className="p-2 space-y-3 overflow-y-auto max-h-96">
                       {resumes.map((resume) => (
                         <div
                           key={resume.resumeId}
-                          className="p-6 border-2 border-gray-300 rounded-lg bg-white hover:shadow-md transition"
+                          className="p-6 transition bg-white border-2 border-gray-300 rounded-lg hover:shadow-md"
                         >
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold">
@@ -265,13 +270,13 @@ export default function ResumePage({
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleEdit(resume.resumeId)}
-                                className="px-4 py-2 text-sm font-medium text-blue-600 transition border-2 border-blue-600 rounded-lg hover:bg-blue-600 hover:text-white cursor-pointer"
+                                className="px-4 py-2 text-sm font-medium text-blue-600 transition border-2 border-blue-600 rounded-lg cursor-pointer hover:bg-blue-600 hover:text-white"
                               >
                                 수정
                               </button>
                               <button
                                 onClick={() => handleDelete(resume.resumeId)}
-                                className="px-4 py-2 text-sm font-medium text-red-600 transition border-2 border-red-600 rounded-lg hover:bg-red-600 hover:text-white cursor-pointer"
+                                className="px-4 py-2 text-sm font-medium text-red-600 transition border-2 border-red-600 rounded-lg cursor-pointer hover:bg-red-600 hover:text-white"
                               >
                                 삭제
                               </button>

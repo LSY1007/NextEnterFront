@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AISidebar from "./components/AISidebar";
+import { usePageNavigation } from "../../hooks/usePageNavigation";
 
 interface AIRecommendationPageProps {
   initialMenu?: string;
@@ -10,33 +11,17 @@ export default function AIRecommendationPage({
   initialMenu,
   onNavigate,
 }: AIRecommendationPageProps) {
-  const [activeMenu, setActiveMenu] = useState(initialMenu || "home");
+  // ✅ 커스텀 훅 사용으로 변경
+  const { activeMenu, handleMenuClick } = usePageNavigation(
+    "ai-recommend",
+    initialMenu,
+    onNavigate
+  );
+
   const [selectedResume, setSelectedResume] = useState("");
   const [currentCredit, setCurrentCredit] = useState(200);
   const [hasRecommendations, setHasRecommendations] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-  useEffect(() => {
-    if (initialMenu) {
-      setActiveMenu(initialMenu);
-    }
-  }, [initialMenu]);
-
-  const handleMenuClick = (menuId: string) => {
-    setActiveMenu(menuId);
-    const mainMenus = [
-      "resume",
-      "interview",
-      "matching",
-      "credit",
-      "home",
-      "application",
-      "offer",
-    ];
-    if (onNavigate && mainMenus.includes(menuId)) {
-      onNavigate(menuId, menuId);
-    }
-  };
 
   // 샘플 이력서 목록
   const resumes = [

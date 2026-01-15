@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import ApplicationStautsSidebar from "./components/ApplicationStatusPageSIdebar";
+import ApplicationStautsSidebar from "./components/ApplicationStatusPageSidebar";
 
 interface ApplicationStatusPageProps {
   initialMenu?: string;
@@ -134,7 +134,7 @@ export default function ApplicationStatusPage({
 
         <div className="flex-1">
           <div className="grid grid-cols-4 gap-6 mb-8">
-            <div className="flex flex-col items-center justify-center p-9 bg-white border-2 border-white rounded-2xl">
+            <div className="flex flex-col items-center justify-center bg-white border-2 border-white p-9 rounded-2xl">
               <div className="flex items-center justify-center w-24 h-24 mb-3 text-4xl font-bold text-white bg-blue-500 rounded-full">
                 {stats.total}
               </div>
@@ -143,21 +143,21 @@ export default function ApplicationStatusPage({
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-9 bg-white border-2 border-white rounded-2xl">
+            <div className="flex flex-col items-center justify-center bg-white border-2 border-white p-9 rounded-2xl">
               <div className="flex items-center justify-center w-24 h-24 mb-3 text-4xl font-bold text-white bg-blue-500 rounded-full">
                 {stats.viewed}
               </div>
               <div className="text-lg font-semibold text-gray-700">열람</div>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-9 bg-white border-2 border-white rounded-2xl">
+            <div className="flex flex-col items-center justify-center bg-white border-2 border-white p-9 rounded-2xl">
               <div className="flex items-center justify-center w-24 h-24 mb-3 text-4xl font-bold text-white bg-blue-500 rounded-full">
                 {stats.notViewed}
               </div>
               <div className="text-lg font-semibold text-gray-700">미열람</div>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-9 bg-white border-2 border-white rounded-2xl">
+            <div className="flex flex-col items-center justify-center bg-white border-2 border-white p-9 rounded-2xl">
               <div className="flex items-center justify-center w-24 h-24 mb-3 text-4xl font-bold text-white bg-blue-500 rounded-full">
                 {stats.cancelled}
               </div>

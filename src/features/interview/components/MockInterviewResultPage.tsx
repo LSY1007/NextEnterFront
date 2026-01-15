@@ -5,13 +5,18 @@ import MockInterviewHistoryPage from "./MockInterviewHistoryPage";
 
 interface MockInterviewResultPageProps {
   onNavigateToInterview?: () => void;
+  activeMenu: string;
+  onMenuClick: (menuId: string) => void;
 }
 
-export default function MockInterviewResultPage({ 
-  onNavigateToInterview 
+export default function MockInterviewResultPage({
+  onNavigateToInterview,
+  activeMenu,
+  onMenuClick,
 }: MockInterviewResultPageProps) {
-  const [activeMenu, setActiveMenu] = useState("results");
-  const [selectedInterviewId, setSelectedInterviewId] = useState<number | null>(null);
+  const [selectedInterviewId, setSelectedInterviewId] = useState<number | null>(
+    null
+  );
 
   // 모의 면접 기록 데이터 - 주니어/시니어 구분 (스크롤 가능하도록 더 많은 데이터)
   const interviewRecords = [
@@ -213,6 +218,8 @@ export default function MockInterviewResultPage({
       <MockInterviewHistoryPage
         interviewId={selectedInterviewId}
         onBack={handleBackToList}
+        activeMenu={activeMenu}
+        onMenuClick={onMenuClick}
       />
     );
   }
@@ -221,18 +228,8 @@ export default function MockInterviewResultPage({
     <>
       <div className="min-h-screen bg-gray-50">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          {/* 목록 헤더 */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="inline-block pb-2 text-2xl font-bold text-blue-600 border-b-4 border-blue-600">
-              목록
-            </h1>
-          </div>
-
           {/* AI 모의 면접 타이틀 */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg">
-              <span className="text-2xl">🎤</span>
-            </div>
             <h2 className="text-2xl font-bold">AI 모의 면접 결과</h2>
           </div>
 
@@ -240,7 +237,7 @@ export default function MockInterviewResultPage({
             {/* 왼쪽 사이드바 */}
             <InterviewSidebar
               activeMenu={activeMenu}
-              onMenuClick={setActiveMenu}
+              onMenuClick={onMenuClick}
             />
 
             {/* 메인 컨텐츠 */}

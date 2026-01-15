@@ -1,28 +1,55 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 // 통일성을 위해 기존 이력서 사이드바를 재사용합니다.
 import ResumeSidebar from "../resume/components/ResumeSidebar";
+
+// 초기 데이터 타입 (수정 모드에서 사용)
+interface InitialData {
+  id: number;
+  title: string;
+  content: string;
+  files: string[];
+}
 
 interface CoverLetterFormPageProps {
   onBack: () => void; // 부모(Page)에게 "나 끝났어!" 하고 알리는 신호기
   onMenuClick: (menuId: string) => void;
-  onSave: (data: { title: string; content: string; fileCount: number }) => void;
+  onSave: (data: {
+    title: string;
+    content: string;
+    fileCount: number;
+    files: string[];
+  }) => void;
+  initialData?: InitialData; // 수정 모드일 때 기존 데이터
+  isEditMode?: boolean; // 수정 모드 여부
+  activeMenu?: string; // 현재 활성 메뉴 (부모에서 전달)
 }
 
 export default function CoverLetterFormPage({
   onBack,
   onMenuClick,
   onSave,
+  initialData,
+  isEditMode = false,
+  activeMenu = "resume-sub-2", // 기본값 설정
 }: CoverLetterFormPageProps) {
-  // 1. 메뉴 활성화 (자소서 관리)
-  const [activeMenu, setActiveMenu] = useState("resume-sub-2");
+  // 2. 입력값 관리 (제목, 내용) - 수정 모드일 경우 초기값 설정
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [content, setContent] = useState(initialData?.content || "");
 
-  // 2. 입력값 관리 (제목, 내용)
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  // 3. 파일 업로드 관리
-  const [coverLetterFiles, setCoverLetterFiles] = useState<string[]>([]);
+  // 3. 파일 업로드 관리 - 수정 모드일 경우 기존 파일 목록 설정
+  const [coverLetterFiles, setCoverLetterFiles] = useState<string[]>(
+    initialData?.files || []
+  );
   const coverLetterFileInputRef = useRef<HTMLInputElement>(null);
+
+  // 수정 모드에서 initialData가 변경되면 상태 업데이트
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setContent(initialData.content);
+      setCoverLetterFiles(initialData.files || []);
+    }
+  }, [initialData]);
 
   const handleCoverLetterFileUpload = () => {
     coverLetterFileInputRef.current?.click();
@@ -47,14 +74,18 @@ export default function CoverLetterFormPage({
       title: title,
       content: content,
       fileCount: coverLetterFiles.length,
+      files: coverLetterFiles,
     });
 
-    alert("자소서가 등록되었습니다.");
+    alert(isEditMode ? "자소서가 수정되었습니다." : "자소서가 등록되었습니다.");
   };
 
   const handleCancel = () => {
-    if (window.confirm("작성을 취소하시겠습니까?")) {
-      onBack(); // 목록으로 돌아가기
+    const message = isEditMode
+      ? "수정을 취소하시겠습니까?"
+      : "작성을 취소하시겠습니까?";
+    if (window.confirm(message)) {
+      onBack(); // 이전 화면으로 돌아가기
     }
   };
 
@@ -70,7 +101,9 @@ export default function CoverLetterFormPage({
 
   return (
     <div className="px-4 py-8 mx-auto max-w-7xl">
-      <h2 className="inline-block mb-6 text-2xl font-bold">자소서 작성</h2>
+      <h2 className="inline-block mb-6 text-2xl font-bold">
+        {isEditMode ? "자소서 수정" : "자소서 작성"}
+      </h2>
       <div className="flex gap-6">
         {/* 사이드바 */}
         <ResumeSidebar
@@ -85,6 +118,12 @@ export default function CoverLetterFormPage({
               {/* 제목 입련란 */}
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold">제목</h3>
+                <button
+                  onClick={handleCoverLetterFileUpload}
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  + 파일 첨부
+                </button>
               </div>
               <input
                 type="file"
@@ -98,7 +137,7 @@ export default function CoverLetterFormPage({
                     <div key={index} className="flex items-center gap-2">
                       <button
                         onClick={() => removeCoverLetterFile(index)}
-                        className="px-3 py-1 text-sm border rounded-full"
+                        className="px-3 py-1 text-sm border rounded-full hover:bg-gray-100"
                       >
                         X | {file}
                       </button>
@@ -133,15 +172,15 @@ export default function CoverLetterFormPage({
             <div className="flex justify-end gap-4 pt-6 border-t border-gray-100">
               <button
                 onClick={handleCancel}
-                className="px-8 py-3 font-semibold text-gray-700 bg-gray-200 rounded-full"
+                className="px-8 py-3 font-semibold text-gray-700 bg-gray-200 rounded-full hover:bg-gray-300"
               >
                 취소
               </button>
               <button
                 onClick={handleSubmit}
-                className="px-8 py-3 font-semibold text-white bg-blue-600 rounded-full"
+                className="px-8 py-3 font-semibold text-white bg-blue-600 rounded-full hover:bg-blue-700"
               >
-                등록
+                {isEditMode ? "수정" : "등록"}
               </button>
             </div>
           </section>
