@@ -72,5 +72,6 @@ export const usePageNavigation = (
   return {
     activeMenu,
     handleMenuClick,
+    setActiveMenu,
   };
 };

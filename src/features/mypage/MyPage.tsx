@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getUserProfile, UserProfile } from "../../api/user";
+import Footer from "../../components/Footer";
 
 interface MyPageProps {
   onNavigate: (page: string, subMenu?: string) => void;
@@ -217,7 +218,6 @@ export default function MyPage({ onNavigate, onEditProfile, initialMenu }: MyPag
                     내 이력서 ({resumeCount}개) &gt;
                   </h3>
                 </div>
-              </div>
 
                 <div className="space-y-4">
                   {/* ✅ 이력서 목록 카드 (1개만 유지) */}

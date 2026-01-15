@@ -8,14 +8,21 @@ import { usePageNavigation } from "../../hooks/usePageNavigation";
 interface ResumePageProps {
   initialMenu?: string;
   onApplicationStatusClick?: () => void;
+  onNavigate?: (page: string, subMenu?: string) => void;
 }
 
 export default function ResumePage({
   initialMenu,
   onApplicationStatusClick,
+  onNavigate,
 }: ResumePageProps) {
   const { user } = useAuth();
-  const [activeMenu, setActiveMenu] = useState(initialMenu || "resume");
+  // ✅ 커스텀 훅 사용으로 변경
+  const { activeMenu, handleMenuClick } = usePageNavigation(
+    "resume",
+    initialMenu,
+    onNavigate
+  );
   const [isCreating, setIsCreating] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,7 +203,7 @@ export default function ResumePage({
             {/* 왼쪽 사이드바 */}
             <ResumeSidebar
               activeMenu={activeMenu}
-              onMenuClick={setActiveMenu}
+              onMenuClick={handleMenuClick}
             />
 
             {/* 메인 컨텐츠 */}

@@ -17,6 +17,7 @@ import JobManagementPage from "./pages/JobManagementPage";
 import JobPostingCreatePage from "./pages/JobPostingCreatePage";
 import ApplicantManagementPage from "./pages/ApplicantManagementPage";
 import ApplicantDetailPage from "./pages/ApplicantDetailPage";
+import ApplicantCompatibilityPage from "./pages/ApplicantCompatibilityPage";
 import CreditManagementPage from "./pages/CreditManagementPage";
 import TalentSearchPage from "./pages/TalentSearchPage";
 import BusinessCreditPage from "./pages/BusinessCreditPage";
@@ -42,6 +43,9 @@ function App() {
     "personal"
   );
   const [selectedApplicantId, setSelectedApplicantId] = useState<number>(1);
+  const [selectedAdvertisementId, setSelectedAdvertisementId] =
+    useState<number>(1);
+  const [selectedJobId, setSelectedJobId] = useState<number>(1);
   const [targetMenu, setTargetMenu] = useState<string | undefined>(undefined);
 
   // OAuth2 리다이렉트 감지
@@ -72,17 +76,16 @@ function App() {
   const handleBusinessServiceClick = () => setActiveTab("businessService");
   const handleJobManagementClick = () => setActiveTab("jobManagement");
   const handleJobPostingCreateClick = () => setActiveTab("jobPostingCreate");
+  const handleJobDetailClick = (jobId: number) => {
+    setSelectedJobId(jobId);
+    setActiveTab("jobDetail");
+  };
   const handleApplicantManagementClick = () =>
     setActiveTab("applicantManagement");
   const handleApplicantDetailClick = (applicantId: number) => {
     setSelectedApplicantId(applicantId);
     setActiveTab("applicantDetail");
   };
-  const handleCreditManagementClick = () => setActiveTab("creditManagement");
-  const handleTalentSearchClick = () => setActiveTab("applicantManagement");
-  const handleBusinessCreditClick = () => setActiveTab("businessCredit");
-  const handleCreditChargeClick = () => handleTabChange("credit", "credit-sub-2");
-
   const handleApplicantCompatibilityClick = (applicantId: number) => {
     setSelectedApplicantId(applicantId);
     setActiveTab("applicantCompatibility");
@@ -113,9 +116,7 @@ function App() {
     setActiveTab("advertisementDetail");
   };
 
-  const handleCreditChargeClick = () => {
-    setActiveTab("creditCharge");
-  };
+  const handleCreditChargeClick = () => handleTabChange("credit", "credit-sub-2");
 
   const handleBusinessCreditChargeClick = () => {
     setActiveTab("businessCreditCharge");
@@ -135,6 +136,7 @@ function App() {
         onLoginSuccess={() => handleTabChange("job")}
       />
     );
+  }
   if (activeTab === "signup")
     return (
       <SignupPage
@@ -144,7 +146,8 @@ function App() {
       />
     );
 
-  // 기업 페이지 렌더링
+  // 기업 페이지 렌더링175
+
   if (activeTab === "businessService")
     return (
       <BusinessServicePage
@@ -152,6 +155,8 @@ function App() {
         onLogoClick={handleBusinessServiceClick}
         onApplicantManagementClick={handleTalentSearchClick}
         onCreditManagementClick={handleBusinessCreditClick}
+        onAdvertisementManagementClick={handleAdvertisementManagementClick}
+        onJobDetailClick={handleJobDetailClick}
       />
     );
   if (activeTab === "jobManagement")
@@ -159,6 +164,7 @@ function App() {
       <JobManagementPage
         onNewJobClick={handleJobPostingCreateClick}
         onLogoClick={handleBusinessServiceClick}
+        onJobDetailClick={handleJobDetailClick}
       />
     );
   if (activeTab === "jobPostingCreate")
@@ -171,15 +177,12 @@ function App() {
   if (activeTab === "talentSearch")
     return <TalentSearchPage onLogoClick={handleBusinessServiceClick} />;
   if (activeTab === "businessCredit")
-    return <BusinessCreditPage onLogoClick={handleBusinessServiceClick} />;
-  if (activeTab === "applicantManagement")
     return (
       <BusinessCreditPage
         onLogoClick={handleBusinessServiceClick}
         onChargeClick={handleBusinessCreditChargeClick}
       />
     );
-  }
 
   if (activeTab === "profile") {
     return <ProfilePage onBack={() => handleTabChange(previousTab)} />;
@@ -196,20 +199,74 @@ function App() {
         onApplicantClick={handleApplicantDetailClick}
       />
     );
+  }
+
   if (activeTab === "applicantDetail")
     return (
       <ApplicantDetailPage
         applicantId={selectedApplicantId}
         onBackClick={handleApplicantManagementClick}
         onLogoClick={handleBusinessServiceClick}
+        onCompatibilityClick={handleApplicantCompatibilityClick}
       />
     );
   if (activeTab === "creditManagement")
     return <CreditManagementPage onLogoClick={handleBusinessServiceClick} />;
 
+  if (activeTab === "jobDetail") {
+    return (
+      <JobPostingDetailPage
+        jobId={selectedJobId}
+        onBackClick={handleJobManagementClick}
+        onLogoClick={handleBusinessServiceClick}
+        onEditClick={handleJobPostingCreateClick}
+      />
+    );
+  }
+
+  if (activeTab === "advertisementManagement") {
+    return (
+      <AdvertisementManagementPage
+        onNewAdClick={handleAdvertisementCreateClick}
+        onLogoClick={handleBusinessServiceClick}
+        onAdDetailClick={handleAdvertisementDetailClick}
+      />
+    );
+  }
+
+  if (activeTab === "advertisementCreate") {
+    return (
+      <AdvertisementCreatePage
+        onBackClick={handleAdvertisementManagementClick}
+        onLogoClick={handleBusinessServiceClick}
+      />
+    );
+  }
+
+  if (activeTab === "advertisementDetail") {
+    return (
+      <AdvertisementDetailPage
+        advertisementId={selectedAdvertisementId}
+        onBackClick={handleAdvertisementManagementClick}
+        onLogoClick={handleBusinessServiceClick}
+        onEditClick={handleAdvertisementCreateClick}
+      />
+    );
+  }
+
+  if (activeTab === "applicantCompatibility") {
+    return (
+      <ApplicantCompatibilityPage
+        applicantId={selectedApplicantId}
+        onBackClick={handleApplicantDetailClick.bind(null, selectedApplicantId)}
+        onLogoClick={handleBusinessServiceClick}
+      />
+    );
+  }
+
   const renderPage = () => {
     console.log("현재 activeTab:", activeTab, "targetMenu:", targetMenu); // 디버깅용
-    
+
     switch (activeTab) {
       case "profile":
         return <ProfilePage onBack={() => handleTabChange("mypage")} />;
@@ -222,47 +279,47 @@ function App() {
         );
       case "job":
         // 채용정보 서브메뉴 처리
-        if (targetMenu === "1-1") {
+        if (targetMenu === "job-sub-1") {
           // 전체 공고 페이지
           return (
             <AllJobsPage
               onLogoClick={handleLogoClick}
-              onNavigateToAI={() => handleTabChange("job", "1-2")}
-              onNavigateToPosition={() => handleTabChange("job", "1-3")}
-              onNavigateToLocation={() => handleTabChange("job", "1-4")}
+              onNavigateToAI={() => handleTabChange("job", "job-sub-2")}
+              onNavigateToPosition={() => handleTabChange("job", "job-sub-3")}
+              onNavigateToLocation={() => handleTabChange("job", "job-sub-4")}
             />
           );
         }
-        if (targetMenu === "1-2") {
+        if (targetMenu === "job-sub-2") {
           // AI 추천 공고 페이지
           return (
             <AIRecommendedJobsPage
               onLogoClick={handleLogoClick}
-              onNavigateToAll={() => handleTabChange("job", "1-1")}
-              onNavigateToPosition={() => handleTabChange("job", "1-3")}
-              onNavigateToLocation={() => handleTabChange("job", "1-4")}
+              onNavigateToAll={() => handleTabChange("job", "job-sub-1")}
+              onNavigateToPosition={() => handleTabChange("job", "job-sub-3")}
+              onNavigateToLocation={() => handleTabChange("job", "job-sub-4")}
             />
           );
         }
-        if (targetMenu === "1-3") {
+        if (targetMenu === "job-sub-3") {
           // 직무별 공고 페이지
           return (
             <PositionJobsPage
               onLogoClick={handleLogoClick}
-              onNavigateToAll={() => handleTabChange("job", "1-1")}
-              onNavigateToAI={() => handleTabChange("job", "1-2")}
-              onNavigateToLocation={() => handleTabChange("job", "1-4")}
+              onNavigateToAll={() => handleTabChange("job", "job-sub-1")}
+              onNavigateToAI={() => handleTabChange("job", "job-sub-2")}
+              onNavigateToLocation={() => handleTabChange("job", "job-sub-4")}
             />
           );
         }
-        if (targetMenu === "1-4") {
+        if (targetMenu === "job-sub-4") {
           // 지역별 공고 페이지
           return (
             <LocationJobsPage
               onLogoClick={handleLogoClick}
-              onNavigateToAll={() => handleTabChange("job", "1-1")}
-              onNavigateToAI={() => handleTabChange("job", "1-2")}
-              onNavigateToPosition={() => handleTabChange("job", "1-3")}
+              onNavigateToAll={() => handleTabChange("job", "job-sub-1")}
+              onNavigateToAI={() => handleTabChange("job", "job-sub-2")}
+              onNavigateToPosition={() => handleTabChange("job", "job-sub-3")}
             />
           );
         }
@@ -362,9 +419,7 @@ function App() {
           />
         );
       default:
-        // ✅ [수정] 홈페이지(기본화면)에서도 사이드바 클릭이 되려면 props를 넘겨야 합니다.
-        // (HomePage 코드에도 onNavigate 등을 받을 수 있게 수정이 필요할 수 있습니다)
-        return <HomePage />;
+        return <HomePage onLoginClick={handleLoginClick} />;
     }
   };
 
@@ -374,6 +429,7 @@ function App() {
         onLogoClick={handleLogoClick}
         onLoginClick={handleLoginClick}
         onSignupClick={handleSignupClick}
+        onBusinessServiceClick={handleBusinessServiceClick}
         activeTab={activeTab}
         onTabChange={handleTabChange}
       />
