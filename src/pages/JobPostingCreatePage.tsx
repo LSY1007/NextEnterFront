@@ -1,5 +1,7 @@
 import { useState } from "react";
 import Footer from "../components/Footer";
+import { useApp } from "../context/AppContext";
+import type { BusinessJob } from "../context/AppContext";
 
 interface JobPostingCreatePageProps {
   onBackClick?: () => void;
@@ -10,6 +12,7 @@ export default function JobPostingCreatePage({
   onBackClick,
   onLogoClick,
 }: JobPostingCreatePageProps) {
+  const { addBusinessJob } = useApp();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -67,9 +70,29 @@ export default function JobPostingCreatePage({
       }
     }
 
-    // 여기에 실제 등록 로직 추가
-    console.log("등록 데이터:", formData);
-    alert("공고가 성공적으로 등록되었습니다! 🎉");
+    // BusinessJob 형식으로 변환하여 저장
+    const newJob: BusinessJob = {
+      id: Date.now(), // 고유 ID 생성
+      title: formData.title,
+      status: "ACTIVE",
+      job_category: formData.job_category,
+      location: formData.location,
+      experience_min: formData.experience_min ? parseInt(formData.experience_min) : undefined,
+      experience_max: formData.experience_max ? parseInt(formData.experience_max) : undefined,
+      salary_min: formData.salary_min ? parseInt(formData.salary_min) : undefined,
+      salary_max: formData.salary_max ? parseInt(formData.salary_max) : undefined,
+      deadline: formData.deadline,
+      view_count: 0,
+      applicant_count: 0,
+      bookmark_count: 0,
+      created_at: new Date().toISOString(),
+    };
+
+    // AppContext에 공고 추가 (localStorage에 자동 저장됨)
+    addBusinessJob(newJob);
+    
+    console.log("등록 데이터:", newJob);
+    alert("공고가 성공적으로 등록되었습니다! 🎉\n개인 페이지의 '전체공고'에서 확인하실 수 있습니다.");
     if (onBackClick) {
       onBackClick();
     }

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useApp } from "../../context/AppContext";
 import { getResumeList, deleteResume, ResumeListItem } from "../../api/resume";
 import ResumeSidebar from "./components/ResumeSidebar";
 import ResumeFormPage from "./ResumeFormPage";
@@ -7,6 +8,7 @@ import { usePageNavigation } from "../../hooks/usePageNavigation";
 
 export default function ResumePage() {
   const { user } = useAuth();
+  const { setResumes: setContextResumes } = useApp();
 
   // 쿼리 파라미터에서 메뉴 상태 읽기 (기본값: resume-sub-1)
   const { activeMenu, handleMenuClick } = usePageNavigation(
@@ -44,6 +46,15 @@ export default function ResumePage() {
       const data = await getResumeList(user.userId);
       if (Array.isArray(data)) {
         setResumes(data);
+        
+        // ✅ AppContext에도 저장 (매칭 페이지에서 사용할 수 있도록)
+        const contextResumes = data.map((resume) => ({
+          id: resume.resumeId,
+          title: resume.title,
+          industry: resume.jobCategory || '미지정',
+          applications: 0, // API에서 제공하지 않으므로 0으로 설정
+        }));
+        setContextResumes(contextResumes);
       } else {
         setError("잘못된 응답 형식입니다.");
       }

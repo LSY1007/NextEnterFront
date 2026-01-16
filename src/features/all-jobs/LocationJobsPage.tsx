@@ -36,8 +36,29 @@ export default function LocationJobsPage() {
   };
 
   // AppContext에서 데이터 가져오기
-  const { resumes, jobListings } = useApp();
-  const allJobListings = jobListings;
+  const { resumes, jobListings, businessJobs } = useApp();
+  
+  // businessJobs를 JobListing 형식으로 변환
+  const convertedBusinessJobs: JobListing[] = businessJobs.map(job => {
+    const deadline = new Date(job.deadline);
+    const today = new Date();
+    const diffTime = deadline.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return {
+      id: job.id,
+      company: "등록 기업",
+      title: job.title,
+      requirements: [],
+      tags: [job.job_category],
+      location: job.location,
+      deadline: job.deadline,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+    };
+  });
+  
+  // 기업 공고와 일반 공고 통합
+  const allJobListings = [...jobListings, ...convertedBusinessJobs];
 
   const totalJobs = allJobListings.length;
   const totalPages = Math.ceil(totalJobs / itemsPerPage);

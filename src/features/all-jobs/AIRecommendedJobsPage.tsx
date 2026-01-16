@@ -39,7 +39,30 @@ export default function AIRecommendedJobsPage() {
   };
 
   // AppContext에서 데이터 가져오기
-  const { resumes, jobListings } = useApp();
+  const { resumes, jobListings, businessJobs } = useApp();
+  
+  // businessJobs를 JobListing 형식으로 변환
+  const convertedBusinessJobs: JobListing[] = businessJobs.map(job => {
+    const deadline = new Date(job.deadline);
+    const today = new Date();
+    const diffTime = deadline.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return {
+      id: job.id,
+      company: "등록 기업",
+      title: job.title,
+      requirements: [],
+      tags: [job.job_category],
+      location: job.location,
+      deadline: job.deadline,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+      matchScore: Math.floor(Math.random() * 30) + 70, // 70-100 사이 랜덤 점수
+    };
+  });
+  
+  // 기업 공고와 일반 공고 통합
+  const combinedJobListings = [...jobListings, ...convertedBusinessJobs];
 
   const handleAccessRequest = () => setShowConfirmModal(true);
 
@@ -232,7 +255,7 @@ export default function AIRecommendedJobsPage() {
 
         {/* ... 기존 UI (배너, 리스트 등) 유지 ... */}
         <div className="space-y-4">
-          {jobListings.map((job) => (
+          {combinedJobListings.map((job) => (
             <div
               key={job.id}
               className="relative p-6 transition bg-white border-2 border-blue-500 rounded-lg shadow-md cursor-pointer hover:shadow-xl"
