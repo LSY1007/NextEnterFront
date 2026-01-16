@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react"; // ✅ useEffect 추가
+import { useState, useEffect } from "react";
 import InterviewSidebar from "./components/InterviewSidebar";
 import InterviewChatPage from "./components/InterviewChatPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import MockInterviewResultPage from "./components/MockInterviewResultPage";
-import MockInterviewHistoryPage from "./components/MockInterviewHistoryPage";
-// ✅ [추가 1] 방어막 켜는 함수 임포트
+import MockInterviewHistoryListPage from "./components/MockInterviewHistoryListPage";
 import { setNavigationBlocker } from "../../utils/navigationBlocker";
 
 interface InterviewPageProps {
@@ -29,7 +28,7 @@ export default function InterviewPage({
   const [currentCredit, setCurrentCredit] = useState(200);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // ✅ [추가 2] 면접 상태에 따라 전역 방어막(Header 차단) 켜고 끄기
+  // 면접 상태에 따라 전역 방어막(Header 차단) 켜고 끄기
   useEffect(() => {
     if (isInterviewStarted) {
       setNavigationBlocker(
@@ -44,14 +43,14 @@ export default function InterviewPage({
     return () => setNavigationBlocker(false);
   }, [isInterviewStarted]);
 
-  // ✅ [추가 3] 사이드바 클릭 시 방어 로직 (이전 코드 유지/보완)
+  // 사이드바 클릭 시 방어 로직
   const handleSidebarMenuClick = (menuId: string) => {
     if (isInterviewStarted) {
       const confirmMove = window.confirm(
         "면접이 진행 중입니다. 페이지를 이동하면 현재 진행 상황이 저장되지 않을 수 있습니다. 이동하시겠습니까?"
       );
       if (confirmMove) {
-        setIsInterviewStarted(false); // 여기서 false 되면 useEffect가 감지해서 방어막도 꺼짐
+        setIsInterviewStarted(false);
         handleMenuClick(menuId);
       }
     } else {
@@ -81,29 +80,8 @@ export default function InterviewPage({
   const handleCancelInterview = () => setShowConfirmDialog(false);
   const handleLevelClick = (level: "junior" | "senior") =>
     setSelectedLevel(level);
-  const handleCreditUsageClick = (id: number) =>
-    console.log(`크레딧 사용 내역 ${id} 클릭됨`);
 
-  const creditUsages = [
-    { id: 1, title: "AI 모의 면접 (주니어 차감 - 10)", date: "2025.12.15" },
-    { id: 2, title: "AI 모의 면접 (시니어 차감 - 20)", date: "2024.12.10" },
-  ];
-
-  const recentInterviews = [
-    {
-      id: 1,
-      title: "Frontend 개발자 모의 면접",
-      color: "text-blue-600",
-      date: "2025.12.20",
-    },
-    {
-      id: 2,
-      title: "Backend 개발자 모의 면접",
-      color: "text-green-600",
-      date: "2025.12.18",
-    },
-  ];
-
+  // 면접 진행 중이거나 면접 채팅 페이지
   if (activeMenu === "interview-sub-2" || isInterviewStarted) {
     return (
       <InterviewChatPage
@@ -120,6 +98,7 @@ export default function InterviewPage({
     );
   }
 
+  // 면접 결과 페이지
   if (activeMenu === "interview-sub-3") {
     return (
       <MockInterviewResultPage
@@ -130,17 +109,18 @@ export default function InterviewPage({
     );
   }
 
+  // 면접 히스토리 페이지
   if (activeMenu === "interview-sub-4") {
     return (
-      <MockInterviewHistoryPage
-        interviewId={1}
-        onBack={() => handleMenuClick("interview-sub-3")}
+      <MockInterviewHistoryListPage
         activeMenu={activeMenu}
         onMenuClick={handleMenuClick}
+        onBackToInterview={() => handleMenuClick("interview-sub-1")}
       />
     );
   }
 
+  // 메인 면접 시작 페이지
   return (
     <>
       {showConfirmDialog && (
@@ -233,45 +213,6 @@ export default function InterviewPage({
                 >
                   면접 시작하기
                 </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-6 mt-6">
-              <div className="p-8 bg-white border-2 border-blue-400 rounded-2xl">
-                <h3 className="mb-6 text-xl font-bold">크레딧 사용 내역</h3>
-                <div className="space-y-4">
-                  {creditUsages.map((usage) => (
-                    <button
-                      key={usage.id}
-                      onClick={() => handleCreditUsageClick(usage.id)}
-                      className="w-full p-5 text-left transition border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50"
-                    >
-                      <div className="mb-2 text-base font-semibold">
-                        {usage.title}
-                      </div>
-                      <div className="text-sm text-gray-500">{usage.date}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
-                <h3 className="mb-6 text-xl font-bold">최근 면접 기록</h3>
-                <div className="space-y-3">
-                  {recentInterviews.map((interview) => (
-                    <div
-                      key={interview.id}
-                      className="p-5 transition border-2 border-gray-100 rounded-lg hover:bg-gray-50"
-                    >
-                      <div
-                        className={`font-bold text-lg mb-1 ${interview.color}`}
-                      >
-                        {interview.title}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {interview.date}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

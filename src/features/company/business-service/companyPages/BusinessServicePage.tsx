@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Footer from "../components/Footer";
 
 interface BusinessServicePageProps {
   onJobManagementClick?: () => void;

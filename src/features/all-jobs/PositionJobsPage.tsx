@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { useApp } from "../../context/AppContext";
 
 interface PositionJobsPageProps {
   onLogoClick?: () => void;
@@ -35,75 +36,11 @@ export default function PositionJobsPage() {
     handleMenuClick(menuId);
   };
 
-  const resumes = [
-    {
-      id: 1,
-      title: "프론트엔드 개발자 이력서",
-      lastUpdated: "2024-01-10",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      title: "풀스택 개발자 경력 이력서",
-      lastUpdated: "2024-01-05",
-      isDefault: false,
-    },
-    {
-      id: 3,
-      title: "신입 개발자 이력서",
-      lastUpdated: "2023-12-20",
-      isDefault: false,
-    },
-  ];
+  // AppContext에서 데이터 가져오기
+  const { resumes, jobListings } = useApp();
+  const allJobListings = jobListings;
 
-  const allJobListings: JobListing[] = [
-    {
-      id: 1,
-      company: "(주)테크이노베이션",
-      title: "프론트엔드 개발자 (React, TypeScript 전문가)",
-      requirements: ["경력 2-4년", "대졸이상", "React 필수", "정규직"],
-      tags: ["연봉상위 10%", "재택근무"],
-      location: "서울 강남구",
-      deadline: "~ 02.15(목)",
-      daysLeft: 32,
-      position: "프론트엔드",
-    },
-    {
-      id: 2,
-      company: "AI 스타트업",
-      title: "백엔드 개발자 (Java/Spring Boot)",
-      requirements: ["경력 3-5년", "대졸이상", "정규직"],
-      tags: ["4대보험", "퇴직금"],
-      location: "서울 판교",
-      deadline: "~ 02.20(화)",
-      daysLeft: 37,
-      position: "백엔드",
-    },
-    {
-      id: 3,
-      company: "(주)핀테크솔루션",
-      title: "풀스택 개발자 (Node.js + React)",
-      requirements: ["경력 1-3년", "정규직"],
-      tags: ["스톡옵션", "유연근무"],
-      location: "서울 여의도",
-      deadline: "~ 02.28(금)",
-      daysLeft: 45,
-      position: "풀스택",
-    },
-    {
-      id: 4,
-      company: "(주)디자인스튜디오",
-      title: "UI/UX 디자이너 (Figma 전문가)",
-      requirements: ["경력 2-4년", "정규직"],
-      tags: ["포트폴리오 필수", "재택근무"],
-      location: "서울 강남구",
-      deadline: "~ 02.25(일)",
-      daysLeft: 42,
-      position: "디자이너",
-    },
-  ];
-
-  const totalJobs = 234;
+  const totalJobs = allJobListings.length;
   const totalPages = Math.ceil(totalJobs / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalJobs);

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { useApp } from "../../context/AppContext";
 
 interface LocationJobsPageProps {
   onLogoClick?: () => void;
@@ -34,71 +35,11 @@ export default function LocationJobsPage() {
     handleMenuClick(menuId);
   };
 
-  const resumes = [
-    {
-      id: 1,
-      title: "프론트엔드 개발자 이력서",
-      lastUpdated: "2024-01-10",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      title: "풀스택 개발자 경력 이력서",
-      lastUpdated: "2024-01-05",
-      isDefault: false,
-    },
-    {
-      id: 3,
-      title: "신입 개발자 이력서",
-      lastUpdated: "2023-12-20",
-      isDefault: false,
-    },
-  ];
+  // AppContext에서 데이터 가져오기
+  const { resumes, jobListings } = useApp();
+  const allJobListings = jobListings;
 
-  const allJobListings: JobListing[] = [
-    {
-      id: 1,
-      company: "(주)강남테크",
-      title: "프론트엔드 개발자 (React 경력자)",
-      requirements: ["경력 2-4년", "대졸이상", "React 필수", "정규직"],
-      tags: ["연봉상위 10%", "재택근무"],
-      location: "서울 강남구",
-      deadline: "~ 02.15(목)",
-      daysLeft: 32,
-    },
-    {
-      id: 2,
-      company: "(주)판교IT",
-      title: "백엔드 개발자 (Java/Spring)",
-      requirements: ["경력 3-5년", "정규직"],
-      tags: ["4대보험", "퇴직금"],
-      location: "경기 판교",
-      deadline: "~ 02.20(화)",
-      daysLeft: 37,
-    },
-    {
-      id: 3,
-      company: "(주)마포소프트",
-      title: "풀스택 개발자 모집",
-      requirements: ["경력 1-3년", "정규직"],
-      tags: ["스톡옵션", "유연근무"],
-      location: "서울 마포구",
-      deadline: "~ 02.28(금)",
-      daysLeft: 45,
-    },
-    {
-      id: 4,
-      company: "(주)강북솔루션",
-      title: "시스템 엔지니어",
-      requirements: ["경력무관", "정규직"],
-      tags: ["신입환영", "교육지원"],
-      location: "서울 강북구",
-      deadline: "~ 02.25(일)",
-      daysLeft: 42,
-    },
-  ];
-
-  const totalJobs = 189;
+  const totalJobs = allJobListings.length;
   const totalPages = Math.ceil(totalJobs / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalJobs);
