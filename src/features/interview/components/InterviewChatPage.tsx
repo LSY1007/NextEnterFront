@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import InterviewSidebar from './InterviewSidebar';
+import { useApp } from '../../../context/AppContext';
 
 interface Message {
   id: number;
@@ -21,17 +22,27 @@ export default function InterviewChatPage({
   activeMenu = "interview-sub-2",
   onMenuClick,
 }: InterviewChatPageProps) {
+  const { addInterviewResult, addInterviewHistory } = useApp();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       sender: 'ai',
       text: '안녕하세요! AI 면접관입니다. 편안하게 답변해 주시기 바랍니다. 준비되셨나요?',
-      timestamp: '오전 9:41'
+      timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
     }
   ]);
   const [inputText, setInputText] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState(1);
+  const [startTime] = useState(Date.now());
+  const [userAnswerCount, setUserAnswerCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // 질문-답변 쌍 저장용 (히스토리에 저장할 데이터)
+  const [qaList, setQaList] = useState<Array<{question: string, answer: string, score: number}>>([]);
+  const [currentQA, setCurrentQA] = useState<{question: string, answer: string} | null>(null);
+
+  // 난이도에 따른 질문 수
+  const totalQuestions = level === 'junior' ? 5 : 7;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -41,9 +52,75 @@ export default function InterviewChatPage({
     scrollToBottom();
   }, [messages]);
 
+  // 면접 완료 처리
+  const handleCompleteInterview = () => {
+    // 소요 시간 계산 (분 단위)
+    const duration = Math.round((Date.now() - startTime) / 60000);
+    const durationText = `${duration}분`;
+
+    // 점수 계산 (랜덤 75-95)
+    const score = Math.floor(Math.random() * 21) + 75;
+    
+    // 좋은 답변 개수 (랜덤)
+    const goodAnswers = Math.floor(Math.random() * (totalQuestions - Math.floor(totalQuestions * 0.6))) + Math.floor(totalQuestions * 0.6);
+
+    // 결과 판정 (80점 이상 합격)
+    const result = score >= 80 ? "합격" : "불합격";
+
+    // 현재 날짜/시간
+    const now = new Date();
+    const date = now.toLocaleDateString('ko-KR', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    }).replace(/\. /g, '.').replace(/\.$/, '');
+    const time = now.toLocaleTimeString('ko-KR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+
+    const interviewId = Date.now();
+
+    // Context에 면접 결과 저장
+    const newResult = {
+      id: interviewId,
+      date: date,
+      time: time,
+      level: level === 'junior' ? '주니어' as const : '시니어' as const,
+      totalQuestions: totalQuestions,
+      goodAnswers: goodAnswers,
+      score: score,
+      duration: durationText,
+      result: result,
+    };
+
+    addInterviewResult(newResult);
+
+    // ✅ 면접 히스토리 저장 (질문-답변 상세 포함)
+    const newHistory = {
+      id: interviewId, // 결과와 동일한 ID 사용
+      date: date,
+      time: time,
+      level: level === 'junior' ? '주니어' as const : '시니어' as const,
+      score: score,
+      result: result,
+      qaList: qaList, // 저장된 질문-답변 리스트
+    };
+
+    addInterviewHistory(newHistory);
+
+    // 완료 알림
+    alert(`면접이 완료되었습니다!\n점수: ${score}점 (${result})\n소요 시간: ${durationText}`);
+    
+    // 뒤로 가기
+    onBack();
+  };
+
   const handleSend = () => {
     if (!inputText.trim()) return;
 
+    // 사용자 메시지 추가
     const userMessage: Message = {
       id: messages.length + 1,
       sender: 'user',
@@ -52,25 +129,68 @@ export default function InterviewChatPage({
     };
 
     setMessages([...messages, userMessage]);
+    
+    // ✅ 현재 질문에 대한 답변 저장
+    if (currentQA && currentQA.question) {
+      const answerScore = Math.floor(Math.random() * 21) + 75; // 75-95점 랜덤
+      const completedQA = {
+        question: currentQA.question,
+        answer: inputText,
+        score: answerScore
+      };
+      setQaList(prev => [...prev, completedQA]);
+      setCurrentQA(null); // 현재 QA 초기화
+    }
+    
     setInputText('');
+    
+    // 사용자 답변 카운트 증가
+    const newUserAnswerCount = userAnswerCount + 1;
+    setUserAnswerCount(newUserAnswerCount);
 
+    // AI 응답 시뮬레이션 (2초 후)
     setTimeout(() => {
-      const aiResponses = [
-        '좋습니다. 잘 답변하셨습니다.',
+      // 마지막 질문 체크
+      if (currentQuestion >= totalQuestions) {
+        const finalMessage: Message = {
+          id: messages.length + 2,
+          sender: 'ai',
+          text: '모든 질문이 완료되었습니다. 수고하셨습니다!',
+          timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, finalMessage]);
+        
+        // 3초 후 면접 완료 처리
+        setTimeout(() => {
+          handleCompleteInterview();
+        }, 3000);
+        return;
+      }
+
+      const aiQuestions = [
         'React에서 useReducer를 사용한 경험은 어떠셨나요? 구체적인 예를 들어주실 수 있나요?',
         'useReducer와 useContext를 사용한 상태 관리가 Redux와 차이가 크지 않다고 생각하시는군요. 각각의 장단점을 비교해 주실 수 있을까요?',
-        '좋은 답변입니다. 다 같이 협업하면 위한 이런 방법들을 사용하셨나요? 구체적인 경험을 들려주시면 감사하겠습니다.',
-        '훌륭합니다. 마지막 질문입니다.'
+        '좋은 답변입니다. 팀과 협업하면서 어떤 방법들을 사용하셨나요? 구체적인 경험을 들려주시면 감사하겠습니다.',
+        '성능 최적화를 위해 어떤 기법들을 사용해 보셨나요?',
+        'TypeScript를 프로젝트에 도입한 경험이 있으신가요? 어떤 점이 좋았고, 어려운 점은 무엇이었나요?',
+        '코드 리뷰 시 중요하게 생각하는 부분은 무엇인가요?',
+        '마지막 질문입니다. 본인의 강점과 앞으로의 목표를 말씀해 주세요.'
       ];
 
+      const nextQuestion = aiQuestions[currentQuestion % aiQuestions.length];
+      
       const aiMessage: Message = {
         id: messages.length + 2,
         sender: 'ai',
-        text: aiResponses[currentQuestion % aiResponses.length],
+        text: nextQuestion,
         timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      
+      // ✅ 새로운 질문 저장
+      setCurrentQA({ question: nextQuestion, answer: '' });
+      
       setCurrentQuestion(prev => prev + 1);
     }, 2000);
   };
@@ -82,10 +202,12 @@ export default function InterviewChatPage({
     }
   };
 
-  // 사이드바 클릭 시 바로 이동
+  // 사이드바 클릭 시 확인 후 이동
   const handleSidebarClick = (menuId: string) => {
-    if (onMenuClick) {
-      onMenuClick(menuId);
+    if (window.confirm("면접을 종료하고 페이지를 이동하시겠습니까?\n진행 중인 면접 내용은 저장되지 않습니다.")) {
+      if (onMenuClick) {
+        onMenuClick(menuId);
+      }
     }
   };
 
@@ -131,9 +253,12 @@ export default function InterviewChatPage({
                 
                 <div className="flex items-center gap-4">
                   <div className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold">
-                    {currentQuestion}/5 질문
+                    {currentQuestion}/{totalQuestions} 질문
                   </div>
-                  <span className="text-gray-500">05:41</span>
+                  <span className="text-gray-500">
+                    {Math.floor((Date.now() - startTime) / 60000).toString().padStart(2, '0')}:
+                    {Math.floor(((Date.now() - startTime) % 60000) / 1000).toString().padStart(2, '0')}
+                  </span>
                 </div>
               </div>
             </div>
@@ -148,6 +273,7 @@ export default function InterviewChatPage({
                     message.sender === 'user' ? 'flex-row-reverse' : ''
                   }`}
                 >
+                  {/* 아바타 */}
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                       message.sender === 'ai' ? 'bg-blue-500' : 'bg-gray-400'
@@ -158,6 +284,7 @@ export default function InterviewChatPage({
                     </span>
                   </div>
 
+                  {/* 메시지 박스 */}
                   <div
                     className={`flex flex-col max-w-2xl ${
                       message.sender === 'user' ? 'items-end' : 'items-start'

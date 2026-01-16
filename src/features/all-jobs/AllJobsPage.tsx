@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { useApp } from "../../context/AppContext";
 
 interface AllJobsPageProps {
   onLogoClick?: () => void;
@@ -36,93 +37,33 @@ export default function AllJobsPage() {
     handleMenuClick(menuId);
   };
 
-  // ... (데이터는 동일)
-  const resumes = [
-    {
-      id: 1,
-      title: "프론트엔드 개발자 이력서",
-      lastUpdated: "2024-01-10",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      title: "풀스택 개발자 경력 이력서",
-      lastUpdated: "2024-01-05",
-      isDefault: false,
-    },
-    {
-      id: 3,
-      title: "신입 개발자 이력서",
-      lastUpdated: "2023-12-20",
-      isDefault: false,
-    },
-  ];
+  // AppContext에서 데이터 가져오기
+  const { resumes, jobListings, businessJobs } = useApp();
+  
+  // businessJobs를 JobListing 형식으로 변환
+  const convertedBusinessJobs: JobListing[] = businessJobs.map(job => {
+    // 마감일까지 남은 일수 계산
+    const deadline = new Date(job.deadline);
+    const today = new Date();
+    const diffTime = deadline.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return {
+      id: job.id,
+      company: "등록 기업", // 실제로는 기업명을 저장해야 함
+      title: job.title,
+      requirements: [], // 필요시 추가
+      tags: [job.job_category], // 직무를 태그로
+      location: job.location,
+      deadline: job.deadline,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+    };
+  });
+  
+  // 기업 공고와 일반 공고 통합
+  const allJobListings = [...jobListings, ...convertedBusinessJobs];
 
-  const allJobListings: JobListing[] = [
-    {
-      id: 1,
-      company: "(주)스포츠와이드넷",
-      title:
-        "경제통계팀(천연가스 사업자) (주)스포츠와이드넷 안내포스 직원 모집",
-      requirements: ["인턴/수습", "고졸이상", "경력무관", "정규직/계약직"],
-      tags: ["세후", "주휴 급여"],
-      location: "서울 강북구",
-      deadline: "~ 01.31(금)",
-      daysLeft: 20,
-    },
-    {
-      id: 2,
-      company: "24시간다줌홈빌",
-      title: "[주4일/아파트 경비원캐디/파트타임종합판매] 본사 직영사 모집 공고",
-      requirements: ["인턴/수습", "정규직/계약"],
-      tags: ["1일(근무)시간", "19개월 주 휴무"],
-      location: "서울 마포구",
-      deadline: "~ 02.14(금)",
-      daysLeft: 39,
-    },
-    {
-      id: 3,
-      company: "(주)비에이치씨",
-      title: "[삼성전자 수리/서비스] 서비스센터 매뉴얼집 제공자님",
-      requirements: ["프로필", "학력", "사회", "경험없어도 무관"],
-      tags: ["일주 4-5일 근무 금일고", "내일고 주 휴무"],
-      location: "경기 화성",
-      deadline: "~ 02.11(화)",
-      daysLeft: 34,
-    },
-    {
-      id: 4,
-      company: "(주)테크솔루션",
-      title: "백엔드 개발자 (Java/Spring) 경력 3년 이상",
-      requirements: ["경력 3년↑", "대졸이상", "정규직"],
-      tags: ["4대보험", "연봉협상"],
-      location: "서울 강남구",
-      deadline: "~ 02.28(금)",
-      daysLeft: 45,
-    },
-    {
-      id: 5,
-      company: "AI 스타트업",
-      title: "프론트엔드 개발자 React 전문가 모집",
-      requirements: ["경력 2년↑", "대졸이상", "정규직"],
-      tags: ["재택근무", "스톡옵션"],
-      location: "서울 판교",
-      deadline: "~ 02.20(화)",
-      daysLeft: 37,
-    },
-    {
-      id: 6,
-      company: "(주)핀테크",
-      title: "DevOps 엔지니어 모집",
-      requirements: ["경력 4년↑", "대졸이상", "정규직"],
-      tags: ["연봉상위 10%", "복지우수"],
-      location: "서울 여의도",
-      deadline: "~ 02.25(일)",
-      daysLeft: 42,
-    },
-  ];
-
-  const totalJobs = 567;
+  const totalJobs = allJobListings.length;
   const totalPages = Math.ceil(totalJobs / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalJobs);

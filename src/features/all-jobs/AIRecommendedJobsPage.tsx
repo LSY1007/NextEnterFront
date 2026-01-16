@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import { useApp } from "../../context/AppContext";
 
 // ✅ 인터페이스는 유지 (App.tsx 에러 방지용)
 interface AIRecommendedJobsPageProps {
@@ -37,62 +38,31 @@ export default function AIRecommendedJobsPage() {
     handleMenuClick(menuId);
   };
 
-  const resumes = [
-    {
-      id: 1,
-      title: "프론트엔드 개발자 이력서",
-      lastUpdated: "2024-01-10",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      title: "풀스택 개발자 경력 이력서",
-      lastUpdated: "2024-01-05",
-      isDefault: false,
-    },
-    {
-      id: 3,
-      title: "신입 개발자 이력서",
-      lastUpdated: "2023-12-20",
-      isDefault: false,
-    },
-  ];
-
-  const jobListings: JobListing[] = [
-    {
-      id: 1,
-      company: "(주)테크이노베이션",
-      title: "프론트엔드 개발자 (React, TypeScript 전문가)",
-      requirements: ["경력 2-4년", "대졸이상", "React 필수", "정규직"],
-      tags: ["연봉상위 10%", "재택근무"],
-      location: "서울 강남구",
-      deadline: "~ 02.15(목)",
-      daysLeft: 32,
-      matchScore: 95,
-    },
-    {
-      id: 2,
-      company: "AI 스타트업",
-      title: "풀스택 개발자 (Node.js + React 우대)",
-      requirements: ["경력 1-3년", "정규직"],
-      tags: ["스톡옵션", "유연근무"],
-      location: "서울 판교",
-      deadline: "~ 02.20(화)",
-      daysLeft: 37,
-      matchScore: 92,
-    },
-    {
-      id: 3,
-      company: "(주)핀테크솔루션",
-      title: "백엔드 개발자 (Java/Spring 경력자)",
-      requirements: ["경력 3-5년", "대졸이상", "Spring Boot", "정규직"],
-      tags: ["4대보험", "퇴직금"],
-      location: "서울 여의도",
-      deadline: "~ 02.28(금)",
-      daysLeft: 45,
-      matchScore: 88,
-    },
-  ];
+  // AppContext에서 데이터 가져오기
+  const { resumes, jobListings, businessJobs } = useApp();
+  
+  // businessJobs를 JobListing 형식으로 변환
+  const convertedBusinessJobs: JobListing[] = businessJobs.map(job => {
+    const deadline = new Date(job.deadline);
+    const today = new Date();
+    const diffTime = deadline.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return {
+      id: job.id,
+      company: "등록 기업",
+      title: job.title,
+      requirements: [],
+      tags: [job.job_category],
+      location: job.location,
+      deadline: job.deadline,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+      matchScore: Math.floor(Math.random() * 30) + 70, // 70-100 사이 랜덤 점수
+    };
+  });
+  
+  // 기업 공고와 일반 공고 통합
+  const combinedJobListings = [...jobListings, ...convertedBusinessJobs];
 
   const handleAccessRequest = () => setShowConfirmModal(true);
 
@@ -285,7 +255,7 @@ export default function AIRecommendedJobsPage() {
 
         {/* ... 기존 UI (배너, 리스트 등) 유지 ... */}
         <div className="space-y-4">
-          {jobListings.map((job) => (
+          {combinedJobListings.map((job) => (
             <div
               key={job.id}
               className="relative p-6 transition bg-white border-2 border-blue-500 rounded-lg shadow-md cursor-pointer hover:shadow-xl"

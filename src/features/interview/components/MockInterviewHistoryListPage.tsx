@@ -1,88 +1,38 @@
 import { useState } from "react";
-import Footer from "../../../components/Footer";
 import InterviewSidebar from "./InterviewSidebar";
 import MockInterviewHistoryPage from "./MockInterviewHistoryPage";
 import { useApp } from "../../../context/AppContext";
 
-interface MockInterviewResultPageProps {
-  onNavigateToInterview?: () => void;
+interface MockInterviewHistoryListPageProps {
   activeMenu: string;
   onMenuClick: (menuId: string) => void;
+  onBackToInterview: () => void;
 }
 
-export default function MockInterviewResultPage({
-  onNavigateToInterview,
+export default function MockInterviewHistoryListPage({
   activeMenu,
   onMenuClick,
-}: MockInterviewResultPageProps) {
-  const [selectedInterviewId, setSelectedInterviewId] = useState<number | null>(
+  onBackToInterview,
+}: MockInterviewHistoryListPageProps) {
+  const [selectedHistoryId, setSelectedHistoryId] = useState<number | null>(
     null
   );
 
-  // Context에서 실제 면접 결과 데이터 가져오기
-  const { interviewResults, clearInterviewResults, clearInterviewHistories } = useApp();
+  // Context에서 면접 히스토리 데이터 가져오기
+  const { interviewHistories, clearInterviewHistories, clearInterviewResults } = useApp();
 
   // 전체 삭제 핸들러 (이중 확인)
   const handleClearAll = () => {
     // 첫 번째 확인
-    if (window.confirm('모든 면접 결과와 히스토리를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+    if (window.confirm('모든 면접 히스토리와 결과를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
       // 두 번째 확인
       if (window.confirm('⚠️ 정말 삭제하시겠습니까?\n모든 면접 데이터가 영구적으로 삭제됩니다.')) {
-        clearInterviewResults();
         clearInterviewHistories();
+        clearInterviewResults();
         alert('모든 면접 데이터가 삭제되었습니다.');
       }
     }
   };
-
-  // 통계 계산
-  const calculateStatistics = () => {
-    if (interviewResults.length === 0) {
-      return {
-        maxScore: 0,
-        minScore: 0,
-        avgScore: 0,
-      };
-    }
-
-    const scores = interviewResults.map((record) => record.score);
-    const maxScore = Math.max(...scores);
-    const minScore = Math.min(...scores);
-    const avgScore = Math.round(
-      scores.reduce((a, b) => a + b, 0) / scores.length
-    );
-
-    return { maxScore, minScore, avgScore };
-  };
-
-  const { maxScore, minScore, avgScore } = calculateStatistics();
-
-  const statistics = [
-    {
-      title: "최고 점수",
-      value: maxScore,
-      icon: "📈",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-300",
-    },
-    {
-      title: "최저 점수",
-      value: minScore,
-      icon: "📉",
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-300",
-    },
-    {
-      title: "평균 점수",
-      value: avgScore,
-      icon: "📊",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-300",
-    },
-  ];
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "text-green-600 bg-green-50 border-green-300";
@@ -92,26 +42,18 @@ export default function MockInterviewResultPage({
   };
 
   const handleViewHistory = (id: number) => {
-    console.log(`면접 기록 ${id} 히스토리 보기`);
-    setSelectedInterviewId(id);
+    setSelectedHistoryId(id);
   };
 
   const handleBackToList = () => {
-    setSelectedInterviewId(null);
-  };
-
-  const handleNewInterview = () => {
-    console.log("새 모의 면접 시작 - InterviewPage로 이동");
-    if (onNavigateToInterview) {
-      onNavigateToInterview();
-    }
+    setSelectedHistoryId(null);
   };
 
   // 히스토리 상세 페이지 표시
-  if (selectedInterviewId !== null) {
+  if (selectedHistoryId !== null) {
     return (
       <MockInterviewHistoryPage
-        interviewId={selectedInterviewId}
+        interviewId={selectedHistoryId}
         onBack={handleBackToList}
         activeMenu={activeMenu}
         onMenuClick={onMenuClick}
@@ -125,7 +67,7 @@ export default function MockInterviewResultPage({
         <div className="px-4 py-8 mx-auto max-w-7xl">
           {/* AI 모의 면접 타이틀 */}
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold">AI 모의 면접 결과</h2>
+            <h2 className="text-2xl font-bold">AI 모의 면접 히스토리</h2>
           </div>
 
           <div className="flex gap-6">
@@ -137,18 +79,18 @@ export default function MockInterviewResultPage({
 
             {/* 메인 컨텐츠 */}
             <div className="flex-1 space-y-6">
-              {interviewResults.length === 0 ? (
-                /* 면접 결과 없을 때 */
+              {interviewHistories.length === 0 ? (
+                /* 히스토리가 없을 때 */
                 <div className="p-16 text-center bg-white border-2 border-gray-200 rounded-2xl">
-                  <div className="mb-4 text-6xl">🎤</div>
+                  <div className="mb-4 text-6xl">📋</div>
                   <h3 className="mb-2 text-2xl font-bold text-gray-400">
-                    면접 결과가 없습니다
+                    면접 히스토리가 없습니다
                   </h3>
                   <p className="mb-6 text-gray-500">
-                    AI 모의 면접을 시작하여 결과를 확인해보세요
+                    AI 모의 면접을 시작하여 히스토리를 만들어보세요
                   </p>
                   <button
-                    onClick={handleNewInterview}
+                    onClick={onBackToInterview}
                     className="px-8 py-3 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
                   >
                     AI 모의 면접 시작하기
@@ -156,10 +98,15 @@ export default function MockInterviewResultPage({
                 </div>
               ) : (
                 <>
-                  {/* 면접 통계 카드 */}
+                  {/* 히스토리 목록 - 스크롤 가능 */}
                   <div className="p-6 bg-white border-2 border-blue-400 rounded-2xl">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-bold">면접 통계</h3>
+                      <div className="flex items-center gap-4">
+                        <h3 className="text-xl font-bold">면접 히스토리 목록</h3>
+                        <span className="text-sm text-gray-600">
+                          총 {interviewHistories.length}개의 면접 히스토리
+                        </span>
+                      </div>
                       {/* 전체 삭제 버튼 */}
                       <button
                         onClick={handleClearAll}
@@ -168,106 +115,72 @@ export default function MockInterviewResultPage({
                         전체 삭제
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      {statistics.map((stat, index) => (
-                        <div
-                          key={index}
-                          className={`${stat.bgColor} border-2 ${stat.borderColor} rounded-xl p-6`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="mb-2 text-sm text-gray-600">
-                                {stat.title}
-                              </p>
-                              <p className={`text-4xl font-bold ${stat.color}`}>
-                                {stat.value}
-                                <span className="ml-1 text-xl">점</span>
-                              </p>
-                            </div>
-                            <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full">
-                              <span className="text-3xl">{stat.icon}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 최근 면접 기록 - 스크롤 가능 */}
-                  <div className="p-6 bg-white border-2 border-blue-400 rounded-2xl">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-bold">최근 면접 기록</h3>
-                      <span className="text-sm text-gray-600">
-                        총 {interviewResults.length}개의 면접 기록
-                      </span>
-                    </div>
 
                     {/* 스크롤 가능한 컨테이너 */}
-                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                      {interviewResults.map((record) => (
+                    <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2">
+                      {interviewHistories.map((history) => (
                         <div
-                          key={record.id}
-                          className="p-5 transition border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50"
+                          key={history.id}
+                          className="p-5 transition border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 cursor-pointer"
+                          onClick={() => handleViewHistory(history.id)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-3">
                                 <span
                                   className={`px-4 py-1.5 text-base font-bold rounded-lg ${
-                                    record.level === "주니어"
+                                    history.level === "주니어"
                                       ? "bg-blue-100 text-blue-700"
                                       : "bg-purple-100 text-purple-700"
                                   }`}
                                 >
-                                  {record.level}
+                                  {history.level}
                                 </span>
                                 <span
                                   className={`px-3 py-1 text-sm font-semibold border-2 rounded-full ${getScoreColor(
-                                    record.score
+                                    history.score
                                   )}`}
                                 >
-                                  {record.score}점
+                                  {history.score}점
                                 </span>
                                 <span
                                   className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                                    record.result === "합격"
+                                    history.result === "합격"
                                       ? "bg-green-100 text-green-700"
                                       : "bg-red-100 text-red-700"
                                   }`}
                                 >
-                                  {record.result}
+                                  {history.result}
                                 </span>
                               </div>
 
                               <div className="flex items-center gap-2 mb-3">
                                 <span className="text-xl">✓</span>
                                 <span className="text-base font-semibold text-gray-900">
-                                  {record.totalQuestions}개 질문 중{" "}
-                                  {record.goodAnswers}개 질문에 대한 좋은 답변
+                                  {history.qaList.length}개의 질문-답변
                                 </span>
                               </div>
 
                               <div className="flex items-center gap-6 text-sm text-gray-600">
                                 <div className="flex items-center gap-2">
                                   <span>📅</span>
-                                  <span>{record.date}</span>
+                                  <span>{history.date}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span>🕐</span>
-                                  <span>{record.time}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span>⏱️</span>
-                                  <span>소요시간: {record.duration}</span>
+                                  <span>{history.time}</span>
                                 </div>
                               </div>
                             </div>
 
                             <button
-                              onClick={() => handleViewHistory(record.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewHistory(history.id);
+                              }}
                               className="flex items-center gap-2 px-4 py-2 ml-4 text-blue-600 transition rounded-lg hover:bg-blue-100"
                             >
-                              히스토리
+                              상세보기
                               <svg
                                 className="w-4 h-4"
                                 fill="none"
@@ -288,10 +201,10 @@ export default function MockInterviewResultPage({
                     </div>
                   </div>
 
-                  {/* 액션 버튼 - 새 모의 면접만 표시 */}
+                  {/* 액션 버튼 */}
                   <div className="flex justify-center">
                     <button
-                      onClick={handleNewInterview}
+                      onClick={onBackToInterview}
                       className="px-8 py-3 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
                     >
                       새 모의 면접 시작
@@ -303,7 +216,6 @@ export default function MockInterviewResultPage({
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

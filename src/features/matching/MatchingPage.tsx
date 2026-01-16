@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { getResumeList } from "../../api/resume";
 import MatchingSidebar from "./components/MatchingSidebar";
 import MatchingHistoryPage from "./components/MatchingHistoryPage";
 import ConfirmDialog from "./components/ConfirmDialog";
@@ -27,6 +30,9 @@ export default function MatchingPage({
   initialMenu = "matching",
   onNavigate,
 }: MatchingPageProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   // [Auto-Merge] Incoming 브랜치의 usePageNavigation 훅 사용 (사이드바 연동)
   const { activeMenu, handleMenuClick, setActiveMenu } = usePageNavigation(
     "matching",
@@ -42,7 +48,31 @@ export default function MatchingPage({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Context에서 실제 데이터 가져오기 - 기업 공고 사용!
-  const { resumes, businessJobs, addMatchingHistory } = useApp();
+  const { resumes, businessJobs, addMatchingHistory, setResumes } = useApp();
+
+  // ✅ 이력서가 비어있으면 API에서 불러오기
+  useEffect(() => {
+    const loadResumesIfEmpty = async () => {
+      if (resumes.length === 0 && user?.userId) {
+        try {
+          const data = await getResumeList(user.userId);
+          if (Array.isArray(data) && data.length > 0) {
+            const contextResumes = data.map((resume) => ({
+              id: resume.resumeId,
+              title: resume.title,
+              industry: resume.jobCategory || '미지정',
+              applications: 0,
+            }));
+            setResumes(contextResumes);
+          }
+        } catch (error) {
+          console.error('이력서 로드 오류:', error);
+        }
+      }
+    };
+
+    loadResumesIfEmpty();
+  }, [user?.userId, resumes.length, setResumes]);
 
   // 이력서를 TargetSelection에서 사용할 수 있는 형식으로 변환
   const resumeOptions = resumes.map((resume) => ({
@@ -61,7 +91,8 @@ export default function MatchingPage({
     }));
 
   const handleCreditClick = () => {
-    // 크레딧 충전 페이지로 이동 가능
+    // 크레딧 충전 페이지로 이동
+    navigate('/user/credit/charge?menu=credit-sub-2');
   };
 
   const handleAnalyze = () => {
@@ -149,7 +180,8 @@ export default function MatchingPage({
   };
 
   const handleAddResume = () => {
-    alert("이력서 작성 페이지로 이동합니다.");
+    // 이력서 작성 페이지로 이동
+    navigate('/user/resume?menu=resume-sub-1');
   };
 
   // 지원 적합 여부 결정
@@ -170,15 +202,13 @@ export default function MatchingPage({
   };
 
   const handleEditResume = () => {
-    if (onEditResume) {
-      onEditResume();
-    } else {
-      alert("이력서 수정 페이지로 이동합니다");
-    }
+    // 이력서 수정 페이지로 이동
+    navigate('/user/resume?menu=resume-sub-1');
   };
 
   const handleApply = () => {
-    alert("지원하기 페이지로 이동합니다");
+    // 채용공고 목록 페이지로 이동
+    navigate('/user/jobs/all?menu=job-sub-1');
   };
 
   // 히스토리 페이지 표시
