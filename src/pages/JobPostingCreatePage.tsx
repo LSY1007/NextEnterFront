@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 
 interface JobPostingCreatePageProps {
   onBackClick?: () => void;
@@ -47,7 +47,7 @@ export default function JobPostingCreatePage({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 유효성 검사
     if (formData.experience_min && formData.experience_max) {
       const min = parseInt(formData.experience_min);
@@ -75,6 +75,7 @@ export default function JobPostingCreatePage({
     }
   };
 
+  // 헤더가 없어져서 사용되지 않지만, props 인터페이스 유지를 위해 함수는 남겨둡니다.
   const handleGoToMain = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -91,50 +92,7 @@ export default function JobPostingCreatePage({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-6 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            {/* 로고 */}
-            <div
-              onClick={handleGoToMain}
-              className="transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                ■ 채용공고
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                자료
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                홍보
-              </button>
-            </nav>
-
-            {/* 오른쪽 버튼 */}
-            <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                로그인
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                회원가입
-              </button>
-              <button
-                onClick={handleGoToMain}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* ❌ 헤더 삭제됨 */}
 
       {/* 타이틀 배너 */}
       <div className="py-8 bg-gradient-to-r from-purple-600 to-blue-600">
@@ -337,7 +295,7 @@ export default function JobPostingCreatePage({
                     name="deadline"
                     value={formData.deadline}
                     onChange={handleInputChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split("T")[0]}
                     className="w-full px-4 py-3 transition-colors border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
                     required
                   />
@@ -430,7 +388,6 @@ export default function JobPostingCreatePage({
           </form>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

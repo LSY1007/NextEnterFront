@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
-export default function BusinessServicePage() {
+export default function CompanyHomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [activeService, setActiveService] = useState<string>("");
@@ -22,24 +22,24 @@ export default function BusinessServicePage() {
       id: "announcement",
       icon: "📄",
       title: "공고 등록",
-      description: "채용 정보",
-      features: ["지원 확인", "지원 예약", "지원 예약"],
+      description: "채용 정보 관리",
+      features: ["공고 작성", "지원자 확인", "공고 수정/삭제"],
       path: "/company/jobs",
     },
     {
       id: "talent",
       icon: "👥",
       title: "인재 검색",
-      description: "지원 확인",
-      features: ["지원 확인", "지원 예약", "지원 예약"],
+      description: "인재 풀 검색",
+      features: ["조건별 검색", "이력서 열람", "스크랩 관리"],
       path: "/company/talent-search",
     },
     {
       id: "service",
       icon: "⭐",
       title: "광고 관리",
-      description: "지원 확인",
-      features: ["지원 확인", "지원 예약", "지원 예약"],
+      description: "채용 광고 관리",
+      features: ["광고 등록", "노출 현황", "광고 효과 분석"],
       path: "/company/ads",
     },
     {
@@ -102,98 +102,27 @@ export default function BusinessServicePage() {
     },
   ];
 
-  const handleLogoClick = () => {
-    navigate("/company");
-  };
-
   const handleJobDetailClick = (jobId: number) => {
     handleProtectedNavigation(`/company/jobs/${jobId}`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            {/* 로고 */}
-            <div
-              onClick={handleLogoClick}
-              className="transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 중앙 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button 
-                onClick={() => handleProtectedNavigation("/company/jobs")}
-                className="px-4 py-2 text-gray-700 hover:text-blue-600"
-              >
-                채용공고
-              </button>
-              <button 
-                onClick={() => handleProtectedNavigation("/company/talent-search")}
-                className="px-4 py-2 text-gray-700 hover:text-blue-600"
-              >
-                인재검색
-              </button>
-              <button 
-                onClick={() => handleProtectedNavigation("/company/ads")}
-                className="px-4 py-2 text-gray-700 hover:text-blue-600"
-              >
-                광고관리
-              </button>
-            </nav>
-
-            {/* 오른쪽 로그인/회원가입 버튼 */}
-            <div className="flex items-center space-x-4">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => navigate("/company/credit")}
-                  className="px-4 py-2 text-gray-700 transition hover:text-blue-600"
-                >
-                  크레딧 관리
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate("/company/login")}
-                    className="px-4 py-2 text-gray-700 transition hover:text-blue-600"
-                  >
-                    로그인
-                  </button>
-                  <button
-                    onClick={() => navigate("/company/signup")}
-                    className="px-4 py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
-                  >
-                    회원가입
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => navigate("/user")}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
-              >
-                개인 서비스
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* 메인 배너 */}
-      <div className="py-6 text-white bg-gradient-to-r from-purple-600 to-blue-500">
+      <div className="py-8 text-white bg-gradient-to-r from-purple-600 to-blue-500">
         <div className="px-4 mx-auto text-center max-w-7xl">
-          <h1 className="text-2xl font-bold">
+          <h1 className="mb-2 text-3xl font-bold">
             더 나은 인재를 구하기 위한 플랫폼
           </h1>
+          <p className="text-purple-100">
+            NextEnter에서 최고의 인재를 찾아보세요
+          </p>
         </div>
       </div>
 
       {/* 서비스 카드 섹션 */}
       <div className="px-4 py-8 mx-auto max-w-7xl">
+        <h2 className="mb-6 text-xl font-bold">서비스 바로가기</h2>
         <div className="grid grid-cols-4 gap-4 mb-8">
           {services.map((service) => (
             <button
@@ -202,20 +131,18 @@ export default function BusinessServicePage() {
                 setActiveService(service.id);
                 handleProtectedNavigation(service.path);
               }}
-              className={`p-6 bg-white border-2 rounded-xl hover:shadow-lg transition ${
+              className={`p-6 bg-white border-2 rounded-xl hover:shadow-lg transition text-left ${
                 activeService === service.id
-                  ? "border-blue-500"
+                  ? "border-purple-500"
                   : "border-gray-200"
               }`}
             >
               <div className="mb-2 text-4xl">{service.icon}</div>
               <h3 className="mb-1 text-lg font-bold">{service.title}</h3>
-              <p className="mb-3 text-sm text-gray-600">
-                {service.description}
-              </p>
-              <div className="space-y-1 text-xs text-left text-gray-500">
+              <p className="mb-3 text-sm text-gray-600">{service.description}</p>
+              <div className="space-y-1 text-xs text-gray-500">
                 {service.features.map((feature, idx) => (
-                  <div key={idx}>{feature}</div>
+                  <div key={idx}>• {feature}</div>
                 ))}
               </div>
             </button>
@@ -224,7 +151,7 @@ export default function BusinessServicePage() {
 
         {/* 기재 공고 섹션 */}
         <div>
-          <h2 className="mb-6 text-2xl font-bold">기재 공고</h2>
+          <h2 className="mb-6 text-xl font-bold">등록된 공고</h2>
           <div className="grid grid-cols-3 gap-6">
             {products.map((product) => (
               <div
@@ -242,43 +169,35 @@ export default function BusinessServicePage() {
                 <div className="p-4">
                   <h3 className="mb-2 text-lg font-bold">{product.title}</h3>
 
-                  {/* 상품 설명 */}
                   <div className="mb-3">
-                    <p className="text-sm text-gray-700">
-                      {product.description}
-                    </p>
+                    <p className="text-sm text-gray-700">{product.description}</p>
                   </div>
 
-                  {/* 태그들 */}
                   <div className="mb-4 space-y-1">
                     {product.tags.map((tag, idx) => (
                       <div key={idx} className="flex items-start space-x-2">
-                        <span className="flex-shrink-0 mt-1 text-blue-600">
-                          •
-                        </span>
+                        <span className="flex-shrink-0 mt-1 text-purple-600">•</span>
                         <span className="text-xs text-gray-600">{tag}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* 판매자 정보 */}
                   <div className="pt-3 mb-3 text-sm border-t border-gray-200">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">{product.seller}</span>
-                      <span className="px-2 py-1 text-xs text-blue-600 rounded bg-blue-50">
+                      <span className="px-2 py-1 text-xs text-purple-600 rounded bg-purple-50">
                         {product.period}
                       </span>
                     </div>
                   </div>
 
-                  {/* 가격 및 버튼 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-blue-600">
+                    <span className="text-xl font-bold text-purple-600">
                       {product.price}
                     </span>
                     <button
                       onClick={() => handleJobDetailClick(product.id)}
-                      className="px-6 py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
+                      className="px-6 py-2 text-white transition bg-purple-600 rounded-lg hover:bg-purple-700"
                     >
                       확인하기
                     </button>

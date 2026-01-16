@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 
 interface AdvertisementManagementPageProps {
   onNewAdClick?: () => void;
@@ -18,13 +18,15 @@ interface Advertisement {
   impressions: number;
 }
 
-export default function AdvertisementManagementPage({ 
-  onNewAdClick, 
+export default function AdvertisementManagementPage({
+  onNewAdClick,
   onLogoClick,
-  onAdDetailClick
+  onAdDetailClick,
 }: AdvertisementManagementPageProps) {
   const [statusFilter, setStatusFilter] = useState<string>("전체");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
+    null
+  );
 
   // 샘플 광고 데이터
   const [advertisements] = useState<Advertisement[]>([
@@ -36,7 +38,7 @@ export default function AdvertisementManagementPage({
       budget: "500,000원",
       status: "진행중",
       clicks: 234,
-      impressions: 5420
+      impressions: 5420,
     },
     {
       id: 2,
@@ -46,7 +48,7 @@ export default function AdvertisementManagementPage({
       budget: "300,000원",
       status: "진행중",
       clicks: 156,
-      impressions: 3210
+      impressions: 3210,
     },
     {
       id: 3,
@@ -56,7 +58,7 @@ export default function AdvertisementManagementPage({
       budget: "400,000원",
       status: "예정",
       clicks: 0,
-      impressions: 0
+      impressions: 0,
     },
     {
       id: 4,
@@ -66,8 +68,8 @@ export default function AdvertisementManagementPage({
       budget: "600,000원",
       status: "종료",
       clicks: 489,
-      impressions: 8934
-    }
+      impressions: 8934,
+    },
   ]);
 
   const handleNewAdClick = () => {
@@ -76,6 +78,7 @@ export default function AdvertisementManagementPage({
     }
   };
 
+  // 헤더가 삭제되어 사용되지 않지만 인터페이스 유지를 위해 남겨둠
   const handleLogoClick = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -103,9 +106,10 @@ export default function AdvertisementManagementPage({
     setShowDeleteConfirm(null);
   };
 
-  const filteredAds = statusFilter === "전체" 
-    ? advertisements 
-    : advertisements.filter(ad => ad.status === statusFilter);
+  const filteredAds =
+    statusFilter === "전체"
+      ? advertisements
+      : advertisements.filter((ad) => ad.status === statusFilter);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -122,31 +126,7 @@ export default function AdvertisementManagementPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div 
-              onClick={handleLogoClick}
-              className="cursor-pointer hover:opacity-80 transition-opacity"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            <div className="flex items-center space-x-6">
-              <button className="text-gray-600 hover:text-gray-900">대시보드</button>
-              <button className="text-gray-600 hover:text-gray-900">채용관리</button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* ❌ 헤더 삭제됨 */}
 
       {/* 메인 콘텐츠 */}
       <div className="px-4 py-8 mx-auto max-w-7xl">
@@ -155,7 +135,7 @@ export default function AdvertisementManagementPage({
           <h1 className="text-3xl font-bold text-gray-900">광고 관리</h1>
           <button
             onClick={handleNewAdClick}
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
+            className="px-6 py-3 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
           >
             + 새 광고 등록
           </button>
@@ -181,29 +161,29 @@ export default function AdvertisementManagementPage({
         </div>
 
         {/* 광고 목록 테이블 */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-hidden bg-white rounded-lg shadow">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-left text-gray-700">
                   광고 제목
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-center text-gray-700">
                   기간
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-center text-gray-700">
                   예산
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-center text-gray-700">
                   상태
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-center text-gray-700">
                   노출수
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-center text-gray-700">
                   클릭수
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                <th className="px-6 py-4 text-sm font-semibold text-center text-gray-700">
                   관리
                 </th>
               </tr>
@@ -211,9 +191,9 @@ export default function AdvertisementManagementPage({
             <tbody className="divide-y divide-gray-200">
               {filteredAds.length > 0 ? (
                 filteredAds.map((ad) => (
-                  <tr 
-                    key={ad.id} 
-                    className="hover:bg-gray-50 transition cursor-pointer"
+                  <tr
+                    key={ad.id}
+                    className="transition cursor-pointer hover:bg-gray-50"
                     onClick={() => handleAdClick(ad.id)}
                   >
                     <td className="px-6 py-4">
@@ -221,10 +201,10 @@ export default function AdvertisementManagementPage({
                         {ad.title}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                    <td className="px-6 py-4 text-sm text-center text-gray-700">
                       {ad.startDate} ~ {ad.endDate}
                     </td>
-                    <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 text-sm font-medium text-center text-gray-900">
                       {ad.budget}
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -236,20 +216,20 @@ export default function AdvertisementManagementPage({
                         {ad.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                    <td className="px-6 py-4 text-sm text-center text-gray-700">
                       {ad.impressions.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-center text-sm text-gray-700">
+                    <td className="px-6 py-4 text-sm text-center text-gray-700">
                       {ad.clicks.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center space-x-2">
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAdClick(ad.id);
                           }}
-                          className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-800"
                         >
                           상세
                         </button>
@@ -258,7 +238,7 @@ export default function AdvertisementManagementPage({
                             e.stopPropagation();
                             handleDeleteClick(ad.id);
                           }}
-                          className="px-3 py-1 text-sm text-red-600 hover:text-red-800 font-medium"
+                          className="px-3 py-1 text-sm font-medium text-red-600 hover:text-red-800"
                         >
                           삭제
                         </button>
@@ -268,7 +248,10 @@ export default function AdvertisementManagementPage({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     해당하는 광고가 없습니다.
                   </td>
                 </tr>
@@ -279,22 +262,26 @@ export default function AdvertisementManagementPage({
 
         {/* 통계 요약 */}
         <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-500 mb-1">진행 중인 광고</div>
+          <div className="p-6 bg-white rounded-lg shadow">
+            <div className="mb-1 text-sm text-gray-500">진행 중인 광고</div>
             <div className="text-3xl font-bold text-blue-600">
-              {advertisements.filter(ad => ad.status === "진행중").length}
+              {advertisements.filter((ad) => ad.status === "진행중").length}
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-500 mb-1">총 노출수</div>
+          <div className="p-6 bg-white rounded-lg shadow">
+            <div className="mb-1 text-sm text-gray-500">총 노출수</div>
             <div className="text-3xl font-bold text-gray-900">
-              {advertisements.reduce((sum, ad) => sum + ad.impressions, 0).toLocaleString()}
+              {advertisements
+                .reduce((sum, ad) => sum + ad.impressions, 0)
+                .toLocaleString()}
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="text-sm text-gray-500 mb-1">총 클릭수</div>
+          <div className="p-6 bg-white rounded-lg shadow">
+            <div className="mb-1 text-sm text-gray-500">총 클릭수</div>
             <div className="text-3xl font-bold text-gray-900">
-              {advertisements.reduce((sum, ad) => sum + ad.clicks, 0).toLocaleString()}
+              {advertisements
+                .reduce((sum, ad) => sum + ad.clicks, 0)
+                .toLocaleString()}
             </div>
           </div>
         </div>
@@ -302,24 +289,22 @@ export default function AdvertisementManagementPage({
 
       {/* 삭제 확인 모달 */}
       {showDeleteConfirm !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
-              광고 삭제
-            </h3>
-            <p className="text-gray-600 mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg">
+            <h3 className="mb-2 text-lg font-bold text-gray-900">광고 삭제</h3>
+            <p className="mb-6 text-gray-600">
               정말로 이 광고를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
             </p>
             <div className="flex space-x-3">
               <button
                 onClick={handleCancelDelete}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                className="flex-1 px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 취소
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                className="flex-1 px-4 py-2 text-white transition bg-red-600 rounded-lg hover:bg-red-700"
               >
                 삭제
               </button>
@@ -328,7 +313,7 @@ export default function AdvertisementManagementPage({
         </div>
       )}
 
-      <Footer />
+      {/* ❌ 푸터 삭제됨 */}
     </div>
   );
 }

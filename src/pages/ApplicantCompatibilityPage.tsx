@@ -1,4 +1,4 @@
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 
 interface ApplicantCompatibilityPageProps {
   applicantId?: number;
@@ -216,6 +216,7 @@ export default function ApplicantCompatibilityPage({
     }
   };
 
+  // 헤더 삭제로 사용되지 않지만 인터페이스 유지를 위해 남겨둠
   const handleLogoClick = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -231,41 +232,7 @@ export default function ApplicantCompatibilityPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleBackClick}
-                className="text-2xl text-gray-600 transition hover:text-gray-900"
-              >
-                ←
-              </button>
-              <div
-                onClick={handleLogoClick}
-                className="transition-opacity cursor-pointer hover:opacity-80"
-              >
-                <span className="text-xl font-bold text-blue-600">Next </span>
-                <span className="text-xl font-bold text-blue-800">Enter</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-6">
-              <button className="text-gray-600 hover:text-gray-900">
-                대시보드
-              </button>
-              <button className="text-gray-600 hover:text-gray-900">
-                채용관리
-              </button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 text-gray-700 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* ❌ 헤더 삭제됨 */}
 
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <div className="p-8 bg-white shadow-lg rounded-2xl">
@@ -426,7 +393,7 @@ export default function ApplicantCompatibilityPage({
           </div>
         </div>
       </div>
-      <Footer />
+      {/* ❌ 푸터 삭제됨 */}
     </div>
   );
 }

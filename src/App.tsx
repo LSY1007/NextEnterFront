@@ -27,7 +27,7 @@ import LocationJobsPage from "./features/all-jobs/LocationJobsPage";
 import OAuth2CallbackPage from "./pages/OAuth2CallbackPage";
 
 // 기업회원 페이지들
-import BusinessServicePage from "./features/company/business-service/companyPages/BusinessServicePage";
+import CompanyHomePage from "./features-company/home/CompanyHomePage";
 import JobManagementPage from "./pages/JobManagementPage";
 import JobPostingCreatePage from "./pages/JobPostingCreatePage";
 import JobPostingDetailPage from "./pages/JobPostingDetailPage";
@@ -35,7 +35,7 @@ import ApplicantManagementPage from "./pages/ApplicantManagementPage";
 import ApplicantDetailPage from "./pages/ApplicantDetailPage";
 import ApplicantCompatibilityPage from "./pages/ApplicantCompatibilityPage";
 import TalentSearchPage from "./pages/TalentSearchPage";
-import BusinessCreditPage from "./features/company/business-service/companyPages/BusinessCreditPage";
+import BusinessCreditPage from "./features-company/credit/BusinessCreditPage";
 import AdvertisementManagementPage from "./pages/AdvertisementManagementPage";
 import AdvertisementCreatePage from "./pages/AdvertisementCreatePage";
 import AdvertisementDetailPage from "./pages/AdvertisementDetailPage";
@@ -172,7 +172,7 @@ function App() {
           {/* ===== 기업회원 영역 (/company) ===== */}
           <Route path="/company" element={<CompanyLayout />}>
             {/* 공개 페이지 */}
-            <Route index element={<BusinessServicePage />} />
+            <Route index element={<CompanyHomePage />} />
             <Route
               path="login"
               element={<LoginPage initialAccountType="business" />}

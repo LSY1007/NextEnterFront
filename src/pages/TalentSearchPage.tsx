@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 
 interface TalentSearchPageProps {
   onLogoClick?: () => void;
@@ -17,7 +17,9 @@ interface Talent {
   available: boolean;
 }
 
-export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps) {
+export default function TalentSearchPage({
+  onLogoClick,
+}: TalentSearchPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPosition, setSelectedPosition] = useState("전체");
   const [selectedExperience, setSelectedExperience] = useState("전체");
@@ -32,7 +34,7 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
       location: "서울",
       salary: "5,000~7,000만원",
       matchScore: 92,
-      available: true
+      available: true,
     },
     {
       id: 2,
@@ -43,7 +45,7 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
       location: "경기",
       salary: "6,000~8,000만원",
       matchScore: 88,
-      available: true
+      available: true,
     },
     {
       id: 3,
@@ -54,7 +56,7 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
       location: "서울",
       salary: "4,500~6,500만원",
       matchScore: 85,
-      available: false
+      available: false,
     },
     {
       id: 4,
@@ -65,8 +67,8 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
       location: "서울",
       salary: "6,500~8,500만원",
       matchScore: 90,
-      available: true
-    }
+      available: true,
+    },
   ];
 
   const handleContact = (talentId: number) => {
@@ -77,6 +79,7 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
     console.log(`인재 ${talentId} 저장하기`);
   };
 
+  // 헤더 삭제로 사용되지 않지만 인터페이스 유지를 위해 남겨둠
   const handleLogoClick = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -86,41 +89,8 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            {/* 로고 */}
-            <div 
-              onClick={handleLogoClick}
-              className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">■ 채용공고</button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">자료</button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">홍보</button>
-            </nav>
-
-            {/* 오른쪽 버튼 */}
-            <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">로그인</button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">회원가입</button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* ❌ 헤더 삭제됨 */}
 
       {/* 메인 컨텐츠 */}
       <div className="flex-1 px-4 py-8 mx-auto max-w-7xl">
@@ -133,7 +103,9 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
         {/* 필터 섹션 */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">포지션</label>
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              포지션
+            </label>
             <select
               value={selectedPosition}
               onChange={(e) => setSelectedPosition(e.target.value)}
@@ -148,7 +120,9 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">경력</label>
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              경력
+            </label>
             <select
               value={selectedExperience}
               onChange={(e) => setSelectedExperience(e.target.value)}
@@ -163,7 +137,9 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">검색</label>
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              검색
+            </label>
             <input
               type="text"
               placeholder="기술 스택으로 검색"
@@ -177,7 +153,10 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
         {/* 인재 목록 */}
         <div className="space-y-4">
           {talents.map((talent) => (
-            <div key={talent.id} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition">
+            <div
+              key={talent.id}
+              className="p-6 transition bg-white border border-gray-200 rounded-xl hover:shadow-lg"
+            >
               <div className="flex items-start justify-between">
                 {/* 왼쪽: 인재 정보 */}
                 <div className="flex-1">
@@ -197,11 +176,15 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
                   <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
                     <div>
                       <span className="text-gray-500">경력:</span>
-                      <span className="ml-2 font-medium">{talent.experience}</span>
+                      <span className="ml-2 font-medium">
+                        {talent.experience}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-500">지역:</span>
-                      <span className="ml-2 font-medium">{talent.location}</span>
+                      <span className="ml-2 font-medium">
+                        {talent.location}
+                      </span>
                     </div>
                     <div>
                       <span className="text-gray-500">희망연봉:</span>
@@ -225,11 +208,13 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
                 {/* 오른쪽: 매칭 점수 및 버튼 */}
                 <div className="flex flex-col items-center gap-4 ml-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">{talent.matchScore}</div>
+                    <div className="text-3xl font-bold text-blue-600">
+                      {talent.matchScore}
+                    </div>
                     <div className="text-sm text-gray-500">매칭 점수</div>
                   </div>
 
-                  <div className="flex flex-col gap-2 w-32">
+                  <div className="flex flex-col w-32 gap-2">
                     <button
                       onClick={() => handleContact(talent.id)}
                       className="px-4 py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -250,7 +235,7 @@ export default function TalentSearchPage({ onLogoClick }: TalentSearchPageProps)
         </div>
       </div>
 
-      <Footer />
+      {/* ❌ 푸터 삭제됨 */}
     </div>
   );
 }

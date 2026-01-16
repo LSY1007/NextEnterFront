@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 
 interface Applicant {
   id: number;
@@ -101,6 +101,7 @@ export default function ApplicantManagementPage({
     ...Array.from(new Set(applicants.map((a) => a.jobPosting))),
   ];
 
+  // 헤더 삭제로 사용되지 않지만 인터페이스 유지를 위해 남겨둠
   const handleLogoClick = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -159,50 +160,7 @@ export default function ApplicantManagementPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            {/* 로고 */}
-            <div
-              onClick={handleLogoClick}
-              className="transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                ■ 채용공고
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                자료
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                홍보
-              </button>
-            </nav>
-
-            {/* 오른쪽 버튼 */}
-            <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                로그인
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                회원가입
-              </button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* 헤더 삭제 */}
 
       {/* 메인 콘텐츠 */}
       <div className="px-4 py-8 mx-auto max-w-7xl">
@@ -212,7 +170,7 @@ export default function ApplicantManagementPage({
 
           {/* 필터 섹션 - 순서: 공고선택 - 직무선택 - 경력범위 */}
           <div className="grid grid-cols-3 gap-4 mb-8">
-            {/* 공고 선택 (기존 평점 위치) */}
+            {/* 공고 선택 */}
             <div>
               <label className="block mb-2 text-sm font-medium text-gray-700">
                 공고 선택
@@ -380,7 +338,6 @@ export default function ApplicantManagementPage({
           )}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

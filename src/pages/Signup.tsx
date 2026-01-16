@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 import { signup } from "../api/auth";
 import { registerCompany } from "../api/company";
 
@@ -213,17 +213,10 @@ export default function SignupPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="w-full bg-white border-b border-gray-200 py-6 flex justify-center">
-        <div
-          className="w-32 h-12 border-2 border-gray-300 rounded flex items-center justify-center cursor-pointer hover:border-gray-400 transition"
-          onClick={onLogoClick}
-        >
-          <p className="text-gray-400 text-xs">로고</p>
-        </div>
-      </div>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      {/* ❌ 상단 로고 헤더 삭제됨 */}
 
-      <div className="flex-1 flex flex-col items-center px-4 py-8">
+      <div className="flex flex-col items-center flex-1 px-4 py-8">
         <div className="w-full max-w-md">
           <div className="flex mb-6">
             <button
@@ -257,8 +250,8 @@ export default function SignupPage({
           </div>
 
           {apiError && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded">
-              <p className="text-red-600 text-sm">{apiError}</p>
+            <div className="p-4 mb-4 border border-red-200 rounded bg-red-50">
+              <p className="text-sm text-red-600">{apiError}</p>
             </div>
           )}
 
@@ -276,7 +269,7 @@ export default function SignupPage({
                 }`}
               />
               {errors.email && touched.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.email}</p>
               )}
             </div>
             <div>
@@ -292,7 +285,7 @@ export default function SignupPage({
                 }`}
               />
               {errors.password && touched.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.password}</p>
               )}
             </div>
             <div>
@@ -312,19 +305,19 @@ export default function SignupPage({
                 }`}
               />
               {showPasswordMismatch && touched.passwordConfirm && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="mt-1 text-xs text-red-500">
                   비밀번호가 일치하지 않습니다
                 </p>
               )}
               {passwordsMatch && touched.passwordConfirm && (
-                <p className="text-green-500 text-xs mt-1">
+                <p className="mt-1 text-xs text-green-500">
                   비밀번호가 일치합니다
                 </p>
               )}
               {errors.passwordConfirm &&
                 !showPasswordMismatch &&
                 touched.passwordConfirm && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.passwordConfirm}
                   </p>
                 )}
@@ -344,7 +337,7 @@ export default function SignupPage({
                 }`}
               />
               {errors.name && touched.name && (
-                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.name}</p>
               )}
             </div>
             <div>
@@ -360,7 +353,7 @@ export default function SignupPage({
                 }`}
               />
               {errors.phone && touched.phone && (
-                <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
               )}
             </div>
             {accountType === "personal" && (
@@ -372,7 +365,7 @@ export default function SignupPage({
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100"
+                    className="w-full px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -380,7 +373,7 @@ export default function SignupPage({
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm text-gray-700 disabled:bg-gray-100"
+                    className="w-full px-4 py-3 text-sm text-gray-700 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   >
                     <option value="">성별 선택 (선택사항)</option>
                     <option value="male">남성</option>
@@ -407,7 +400,7 @@ export default function SignupPage({
                     }`}
                   />
                   {errors.businessNumber && touched.businessNumber && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="mt-1 text-xs text-red-500">
                       {errors.businessNumber}
                     </p>
                   )}
@@ -425,7 +418,7 @@ export default function SignupPage({
                     }`}
                   />
                   {errors.companyName && touched.companyName && (
-                    <p className="text-red-500 text-xs mt-1">
+                    <p className="mt-1 text-xs text-red-500">
                       {errors.companyName}
                     </p>
                   )}
@@ -437,7 +430,7 @@ export default function SignupPage({
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100"
+                    className="w-full px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -445,7 +438,7 @@ export default function SignupPage({
                     value={employeeCount}
                     onChange={(e) => setEmployeeCount(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm text-gray-700 disabled:bg-gray-100"
+                    className="w-full px-4 py-3 text-sm text-gray-700 border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   >
                     <option value="">직원수 선택 (선택사항)</option>
                     <option value="1-10">1-10명</option>
@@ -462,7 +455,7 @@ export default function SignupPage({
                     value={companyUrl}
                     onChange={(e) => setCompanyUrl(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm disabled:bg-gray-100"
+                    className="w-full px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -472,7 +465,7 @@ export default function SignupPage({
                     onChange={(e) => setCompanyDescription(e.target.value)}
                     disabled={isLoading}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 text-sm resize-none disabled:bg-gray-100"
+                    className="w-full px-4 py-3 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   />
                 </div>
               </>
@@ -480,29 +473,29 @@ export default function SignupPage({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 bg-blue-600 text-white text-base font-bold rounded hover:bg-blue-700 transition-colors mt-6 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full py-4 mt-6 text-base font-bold text-white transition-colors bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {isLoading ? "가입 중..." : "가입하기"}
             </button>
           </form>
-          <div className="text-center mt-6 text-sm text-gray-600">
+          <div className="mt-6 text-sm text-center text-gray-600">
             이미 계정이 있으신가요?{" "}
             <button
               onClick={() => {
-                if (location.pathname.includes('/company')) {
+                if (location.pathname.includes("/company")) {
                   navigate("/company/login");
                 } else {
                   navigate("/user/login");
                 }
               }}
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="font-medium text-blue-600 hover:text-blue-700"
             >
               로그인
             </button>
           </div>
         </div>
       </div>
-      <Footer />
+      {/* ❌ 푸터 삭제됨 */}
     </div>
   );
 }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Footer from "../components/Footer";
 import { useApp } from "../context/AppContext";
+import CompanyHeader from "../features-company/components/CompanyHeader";
 
 interface Job {
   id: number;
@@ -33,7 +34,7 @@ export default function JobManagementPage({
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Context에서 기업 공고 가져오기
   const { businessJobs, updateBusinessJob } = useApp();
   const jobs = businessJobs;
@@ -84,7 +85,7 @@ export default function JobManagementPage({
       )
     ) {
       // 상태를 CLOSED로 변경
-      const updatedJob = jobs.find(j => j.id === jobId);
+      const updatedJob = jobs.find((j) => j.id === jobId);
       if (updatedJob) {
         updateBusinessJob(jobId, { ...updatedJob, status: "CLOSED" as const });
         alert("공고가 마감되었습니다.");
@@ -92,6 +93,7 @@ export default function JobManagementPage({
     }
   };
 
+  // handleLogoClick은 이제 안쓰이지만 props 때문에 함수는 남겨둡니다.
   const handleLogoClick = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -154,7 +156,7 @@ export default function JobManagementPage({
       (selectedStatus === "기간만료" && job.status === "EXPIRED");
 
     const regionMatch =
-      selectedRegion === "전체" || 
+      selectedRegion === "전체" ||
       (selectedRegion === "서울 전체" && job.location.startsWith("서울")) ||
       job.location === selectedRegion;
 
@@ -167,51 +169,6 @@ export default function JobManagementPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            {/* 로고 */}
-            <div
-              onClick={handleLogoClick}
-              className="flex items-center space-x-2 transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                ■ 채용공고
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                자료
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                홍보
-              </button>
-            </nav>
-
-            {/* 오른쪽 버튼 */}
-            <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                로그인
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                회원가입
-              </button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* 메인 컨텐츠 */}
       <div className="px-4 py-8 mx-auto max-w-7xl">
         {/* 타이틀과 버튼 */}
@@ -302,7 +259,7 @@ export default function JobManagementPage({
             <div
               key={job.id}
               onClick={() => handleJobClick(job.id)}
-              className="p-6 transition bg-white border border-gray-200 rounded-xl hover:shadow-lg cursor-pointer"
+              className="p-6 transition bg-white border border-gray-200 cursor-pointer rounded-xl hover:shadow-lg"
             >
               {/* 제목과 상태 */}
               <div className="flex items-start justify-between mb-4">

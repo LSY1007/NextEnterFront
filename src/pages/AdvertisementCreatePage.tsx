@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Footer from "../components/Footer";
+// Footer 임포트 제거됨
 
 interface AdvertisementCreatePageProps {
   onBackClick?: () => void;
@@ -25,6 +25,7 @@ export default function AdvertisementCreatePage({
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
+  // 헤더 삭제로 사용되지 않지만 인터페이스 유지를 위해 남겨둠
   const handleLogoClick = () => {
     if (onLogoClick) {
       onLogoClick();
@@ -82,35 +83,7 @@ export default function AdvertisementCreatePage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div
-              onClick={handleLogoClick}
-              className="transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            <div className="flex items-center space-x-6">
-              <button className="text-gray-600 hover:text-gray-900">
-                대시보드
-              </button>
-              <button className="text-gray-600 hover:text-gray-900">
-                채용관리
-              </button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 text-gray-700 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* ❌ 헤더 삭제됨 */}
 
       {/* 메인 콘텐츠 */}
       <div className="max-w-5xl px-4 py-8 mx-auto">
@@ -352,7 +325,7 @@ export default function AdvertisementCreatePage({
         </div>
       )}
 
-      <Footer />
+      {/* ❌ 푸터 삭제됨 */}
     </div>
   );
 }

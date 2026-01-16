@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom"; // ✅ 1. URL 제어용 훅 추가
 import OfferSidebar from "./components/OfferSidebar";
-// ✅ 커스텀 훅 경로 확인해주세요
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 
 interface InterviewOfferPageProps {
@@ -12,16 +12,19 @@ export default function InterviewOfferPage({
   initialMenu,
   onNavigate,
 }: InterviewOfferPageProps) {
+  // ✅ 2. URL 파라미터 훅 사용
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // 1. 네비게이션 훅
   const { activeMenu, handleMenuClick } = usePageNavigation(
-    "offer-sub-2",
-    initialMenu,
+    "offer", // 카테고리
+    initialMenu || "offer-sub-2", // 기본 메뉴 (면접 제안)
     onNavigate
   );
 
-  // 2. 상태 관리 (Logic은 InterviewPage, Style용 state 추가)
+  // 2. 상태 관리
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
-  const [hoveredId, setHoveredId] = useState<number | null>(null); // ✅ 호버 효과용 (OfferPage 스타일)
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const [interviewOffers, setInterviewOffers] = useState([
     {
@@ -46,19 +49,42 @@ export default function InterviewOfferPage({
     },
   ]);
 
+  // ✅ 3. URL 변경 감지 -> 화면 전환 (목록 <-> 상세)
+  useEffect(() => {
+    const idParam = searchParams.get("id");
+    if (idParam) {
+      setSelectedOfferId(Number(idParam));
+    } else {
+      setSelectedOfferId(null);
+    }
+  }, [searchParams]);
+
+  // ✅ 4. 클릭 시 URL에 id 추가
+  const handleOfferClick = (id: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("id", id.toString());
+    setSearchParams(newParams);
+  };
+
+  // ✅ 5. 목록으로 돌아가기 (URL에서 id 제거)
+  const handleBackToList = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("id");
+    setSearchParams(newParams);
+  };
+
   // 3. 핸들러
   const handleDelete = (id: number, event: React.MouseEvent) => {
     event.stopPropagation(); // 카드 클릭 방지
     if (window.confirm("제안을 삭제하시겠습니까?")) {
       setInterviewOffers(interviewOffers.filter((item) => item.id !== id));
+
+      // 만약 보고 있는 제안을 삭제했다면 목록으로 나가기
       if (selectedOfferId === id) {
-        setSelectedOfferId(null);
+        handleBackToList();
       }
     }
   };
-
-  const handleOfferClick = (id: number) => setSelectedOfferId(id);
-  const handleBackToList = () => setSelectedOfferId(null);
 
   const selectedOffer = interviewOffers.find((o) => o.id === selectedOfferId);
 
@@ -70,14 +96,14 @@ export default function InterviewOfferPage({
         <OfferSidebar activeMenu={activeMenu} onMenuClick={handleMenuClick} />
         {/* 메인 컨텐츠 */}
         <div className="flex-1">
-          {/* 포지션 제안 섹션 */}
+          {/* 면접 제안 섹션 */}
           <div className="mb-6">
             <h3 className="pb-2 mb-4 text-lg font-bold text-blue-600 border-b-2 border-blue-600">
               면접 제안
             </h3>
 
             {selectedOfferId && selectedOffer ? (
-              // 🟦 상세 화면 (기존 로직 유지)
+              // 🟦 상세 화면
               <section className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
                 <div className="flex items-center justify-between pb-6 mb-8 border-b border-gray-100">
                   <div>
@@ -141,7 +167,7 @@ export default function InterviewOfferPage({
                 </div>
               </section>
             ) : (
-              // 🟦 목록 화면 (✨ 여기가 중요: OfferPage 스타일 적용됨)
+              // 🟦 목록 화면
               <section className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
                 <div className="space-y-4">
                   {interviewOffers.length === 0 ? (
@@ -164,7 +190,7 @@ export default function InterviewOfferPage({
                         {/* 왼쪽 정보 영역 */}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            {/* 회사명 (호버시 진해짐) */}
+                            {/* 회사명 */}
                             <h4
                               className={`transition-all ${
                                 hoveredId === offer.id
@@ -174,7 +200,7 @@ export default function InterviewOfferPage({
                             >
                               {offer.company}
                             </h4>
-                            {/* 면접 상태 배지 (디자인 유지하면서 추가) */}
+                            {/* 면접 상태 배지 */}
                             <span className="px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-md border border-blue-100">
                               {offer.status}
                             </span>
@@ -184,7 +210,7 @@ export default function InterviewOfferPage({
                           </p>
                         </div>
 
-                        {/* 오른쪽 쓰레기통 아이콘 (SVG 적용) */}
+                        {/* 오른쪽 쓰레기통 아이콘 */}
                         <button
                           onClick={(e) => handleDelete(offer.id, e)}
                           className="p-2 text-gray-400 transition-all rounded-lg hover:text-red-600 hover:bg-red-50"
