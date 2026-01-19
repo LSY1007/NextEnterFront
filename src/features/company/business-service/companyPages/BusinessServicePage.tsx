@@ -27,10 +27,19 @@ export default function BusinessServicePage({
     {
       id: "announcement",
       icon: "📄",
-      title: "공고 등록",
+      title: "공고 관리",
       description: "채용 정보",
       features: ["지원 확인", "지원 예약", "지원 예약"],
-      onClick: onJobManagementClick,
+      onClick: () => {
+        // 로그인 체크
+        if (!isAuthenticated || user?.userType !== "company") {
+          alert("기업 회원 로그인이 필요합니다.");
+          navigate("/company/login");
+          return;
+        }
+        // 공고 관리 페이지로 이동 (공고 목록)
+        navigate("/company/jobs");
+      },
     },
     {
       id: "talent",
@@ -38,7 +47,16 @@ export default function BusinessServicePage({
       title: "인재 검색",
       description: "지원 확인",
       features: ["지원 확인", "지원 예약", "지원 예약"],
-      onClick: onApplicantManagementClick,
+      onClick: () => {
+        // 로그인 체크
+        if (!isAuthenticated || user?.userType !== "company") {
+          alert("기업 회원 로그인이 필요합니다.");
+          navigate("/company/login");
+          return;
+        }
+        // 인재 검색 페이지로 이동
+        navigate("/company/talent-search");
+      },
     },
     {
       id: "service",
@@ -46,7 +64,16 @@ export default function BusinessServicePage({
       title: "광고 관리",
       description: "지원 확인",
       features: ["지원 확인", "지원 예약", "지원 예약"],
-      onClick: onAdvertisementManagementClick,
+      onClick: () => {
+        // 로그인 체크
+        if (!isAuthenticated || user?.userType !== "company") {
+          alert("기업 회원 로그인이 필요합니다.");
+          navigate("/company/login");
+          return;
+        }
+        // 광고 관리 페이지로 이동
+        navigate("/company/ads");
+      },
     },
     {
       id: "credit",
@@ -54,7 +81,16 @@ export default function BusinessServicePage({
       title: "크레딧",
       description: "크레딧 충전 및 관리",
       features: ["크레딧 충전", "사용 내역", "충전 혜택"],
-      onClick: onCreditManagementClick,
+      onClick: () => {
+        // 로그인 체크
+        if (!isAuthenticated || user?.userType !== "company") {
+          alert("기업 회원 로그인이 필요합니다.");
+          navigate("/company/login");
+          return;
+        }
+        // 크레딧 페이지로 이동
+        navigate("/company/credit");
+      },
     },
   ];
 

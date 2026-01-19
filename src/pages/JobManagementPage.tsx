@@ -1,74 +1,71 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Footer from "../components/Footer";
-import { useApp } from "../context/AppContext";
+import { getJobPostings, deleteJobPosting, type JobPostingListResponse } from "../api/job";
 
-interface Job {
-  id: number;
-  title: string;
-  status: "ACTIVE" | "CLOSED" | "EXPIRED";
-  job_category: string;
-  location: string;
-  experience_min?: number;
-  experience_max?: number;
-  salary_min?: number;
-  salary_max?: number;
-  deadline: string;
-  view_count: number;
-  applicant_count: number;
-  bookmark_count: number;
-  created_at: string;
-}
-
-interface JobManagementPageProps {
-  onNewJobClick?: () => void;
-  onLogoClick?: () => void;
-  onJobDetailClick?: (jobId: number) => void;
-}
-
-export default function JobManagementPage({
-  onNewJobClick,
-  onLogoClick,
-  onJobDetailClick,
-}: JobManagementPageProps) {
+export default function JobManagementPage() {
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Context에서 기업 공고 가져오기
-  const { businessJobs, updateBusinessJob } = useApp();
-  const jobs = businessJobs;
+  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState<JobPostingListResponse[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // 공고 목록 로드
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        setLoading(true);
+        
+        // API 호출 파라미터 구성
+        const params: any = {
+          page: currentPage,
+          size: 20,
+        };
+
+        // 카테고리 필터 (현재는 사용하지 않음)
+        // if (selectedStatus !== "전체") {
+        //   params.status = selectedStatus;
+        // }
+
+        // 검색 키워드
+        if (searchQuery) {
+          params.keyword = searchQuery;
+        }
+
+        const response = await getJobPostings(params);
+        setJobs(response.content);
+        setTotalPages(response.totalPages);
+      } catch (error: any) {
+        console.error("공고 목록 조회 실패:", error);
+        alert(error.response?.data?.message || "공고 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadJobs();
+  }, [currentPage, searchQuery]);
 
   const handleNewJob = () => {
-    if (onNewJobClick) {
-      onNewJobClick();
-    } else {
-      console.log("새 공고 등록 클릭");
-    }
+    navigate("/company/jobs/create");
   };
 
   const handleJobClick = (jobId: number) => {
-    console.log("공고 클릭됨:", jobId);
-    if (onJobDetailClick) {
-      console.log("onJobDetailClick 호출");
-      onJobDetailClick(jobId);
-    } else {
-      console.log("onJobDetailClick이 정의되지 않음");
-    }
+    navigate(`/company/jobs/${jobId}`);
   };
 
   const handleEdit = (jobId: number) => {
-    const job = jobs.find((j) => j.id === jobId);
-    if (!job) return;
-
-    if (window.confirm(`"${job.title}" 공고를 수정하시겠습니까?`)) {
-      console.log(`공고 ${jobId} 수정`);
-      // 여기에 수정 페이지로 이동하는 로직 추가
-      // onEditJobClick?.(jobId);
-    }
+    navigate(`/company/jobs/edit/${jobId}`);
   };
 
-  const handleClose = (jobId: number) => {
-    const job = jobs.find((j) => j.id === jobId);
+  const handleClose = async (jobId: number) => {
+    const job = jobs.find((j) => j.jobId === jobId);
     if (!job) return;
 
     if (job.status === "CLOSED") {
@@ -76,28 +73,38 @@ export default function JobManagementPage({
       return;
     }
 
+    if (!user?.companyId) {
+      alert("기업 정보를 찾을 수 없습니다.");
+      return;
+    }
+
     if (
       window.confirm(
         `"${job.title}" 공고를 마감하시겠습니까?\n\n` +
-          `현재 지원자: ${job.applicant_count}명\n` +
+          `현재 지원자: ${job.applicantCount}명\n` +
           `마감 후에는 다시 활성화할 수 없습니다.`
       )
     ) {
-      // 상태를 CLOSED로 변경
-      const updatedJob = jobs.find(j => j.id === jobId);
-      if (updatedJob) {
-        updateBusinessJob(jobId, { ...updatedJob, status: "CLOSED" as const });
+      try {
+        await deleteJobPosting(jobId, user.companyId);
         alert("공고가 마감되었습니다.");
+        
+        // 목록 새로고침
+        const response = await getJobPostings({
+          page: currentPage,
+          size: 20,
+          keyword: searchQuery || undefined,
+        });
+        setJobs(response.content);
+      } catch (error: any) {
+        console.error("공고 마감 실패:", error);
+        alert(error.response?.data?.message || "공고 마감에 실패했습니다.");
       }
     }
   };
 
   const handleLogoClick = () => {
-    if (onLogoClick) {
-      onLogoClick();
-    } else {
-      console.log("메인 페이지로 이동");
-    }
+    navigate("/company");
   };
 
   const getStatusText = (status: string) => {
@@ -145,7 +152,7 @@ export default function JobManagementPage({
     return (80 + Math.random() * 15).toFixed(1);
   };
 
-  // 필터링
+  // 필터링 (클라이언트 측)
   const filteredJobs = jobs.filter((job) => {
     const statusMatch =
       selectedStatus === "전체" ||
@@ -156,14 +163,18 @@ export default function JobManagementPage({
     const regionMatch =
       selectedRegion === "전체" || 
       (selectedRegion === "서울 전체" && job.location.startsWith("서울")) ||
-      job.location === selectedRegion;
+      job.location.includes(selectedRegion);
 
-    const searchMatch =
-      searchQuery === "" ||
-      job.title.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return statusMatch && regionMatch && searchMatch;
+    return statusMatch && regionMatch;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl font-semibold text-gray-600">로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -173,7 +184,7 @@ export default function JobManagementPage({
           <div className="flex items-center justify-between">
             {/* 로고 */}
             <div
-              onClick={handleLogoClick}
+              onClick={() => navigate("/company")}
               className="flex items-center space-x-2 transition-opacity cursor-pointer hover:opacity-80"
             >
               <span className="text-2xl font-bold text-blue-600">Next </span>
@@ -182,7 +193,10 @@ export default function JobManagementPage({
 
             {/* 네비게이션 */}
             <nav className="flex space-x-8">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
+              <button 
+                onClick={() => navigate("/company/jobs")}
+                className="px-4 py-2 text-blue-600 font-medium hover:text-blue-700"
+              >
                 ■ 채용공고
               </button>
               <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
@@ -195,18 +209,49 @@ export default function JobManagementPage({
 
             {/* 오른쪽 버튼 */}
             <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                로그인
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                회원가입
-              </button>
-              <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
+              {isAuthenticated && user?.userType === "company" ? (
+                <>
+                  <span className="text-gray-700 font-medium">
+                    {user.companyName || user.name}님
+                  </span>
+                  <button
+                    onClick={() => {
+                      logout();
+                      navigate("/company/login");
+                    }}
+                    className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+                  >
+                    로그아웃
+                  </button>
+                  <button
+                    onClick={() => navigate("/user")}
+                    className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    개인 회원
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate("/company/login")}
+                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
+                  >
+                    로그인
+                  </button>
+                  <button
+                    onClick={() => navigate("/company/signup")}
+                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
+                  >
+                    회원가입
+                  </button>
+                  <button
+                    onClick={() => navigate("/user")}
+                    className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    개인 회원
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -300,8 +345,8 @@ export default function JobManagementPage({
         <div className="grid grid-cols-3 gap-6">
           {filteredJobs.map((job) => (
             <div
-              key={job.id}
-              onClick={() => handleJobClick(job.id)}
+              key={job.jobId}
+              onClick={() => handleJobClick(job.jobId)}
               className="p-6 transition bg-white border border-gray-200 rounded-xl hover:shadow-lg cursor-pointer"
             >
               {/* 제목과 상태 */}
@@ -318,7 +363,7 @@ export default function JobManagementPage({
 
               {/* 등록일 */}
               <div className="mb-4 text-sm text-gray-500">
-                등록일: {job.created_at}
+                등록일: {job.createdAt}
               </div>
 
               {/* 상세 정보 */}
@@ -330,13 +375,13 @@ export default function JobManagementPage({
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-500">📋</span>
                   <span className="text-gray-700">
-                    {formatExperience(job.experience_min, job.experience_max)}
+                    {formatExperience(job.experienceMin, job.experienceMax)}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-yellow-500">💰</span>
                   <span className="text-gray-700">
-                    {formatSalary(job.salary_min, job.salary_max)}
+                    {formatSalary(job.salaryMin, job.salaryMax)}
                   </span>
                 </div>
               </div>
@@ -346,13 +391,13 @@ export default function JobManagementPage({
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-bold text-blue-600">
-                      {job.applicant_count}
+                      {job.applicantCount}
                     </div>
                     <div className="text-sm text-gray-500">지원자</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-blue-600">
-                      {calculateAverageScore(job.applicant_count)}
+                      {calculateAverageScore(job.applicantCount)}
                     </div>
                     <div className="text-sm text-gray-500">평균 점수</div>
                   </div>
@@ -363,11 +408,11 @@ export default function JobManagementPage({
               <div className="flex justify-around py-2 mb-4 text-xs text-gray-600 rounded-lg bg-gray-50">
                 <div className="text-center">
                   <div className="font-semibold">조회수</div>
-                  <div>{job.view_count}</div>
+                  <div>{job.viewCount}</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold">북마크</div>
-                  <div>{job.bookmark_count}</div>
+                  <div>{/* bookmarkCount는 JobPostingListResponse에 없음 */}0</div>
                 </div>
               </div>
 
@@ -376,7 +421,7 @@ export default function JobManagementPage({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleEdit(job.id);
+                    handleEdit(job.jobId);
                   }}
                   className="px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200"
                 >
@@ -385,7 +430,7 @@ export default function JobManagementPage({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleClose(job.id);
+                    handleClose(job.jobId);
                   }}
                   disabled={job.status === "CLOSED" || job.status === "EXPIRED"}
                   className={`px-4 py-2 text-white transition rounded-lg ${
