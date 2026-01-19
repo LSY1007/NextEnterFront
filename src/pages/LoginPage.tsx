@@ -91,6 +91,7 @@ export default function LoginPage({
               email: userEmail,
               name,
               userType: "company",
+              companyId, // ✅ companyId 추가
               companyName,
               businessNumber: bn,
             },

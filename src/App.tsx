@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserLayout from "./layouts/UserLayout";
 import CompanyLayout from "./layouts/CompanyLayout";
+import JobPostingEditPage from "./pages/JobPostingEditPage";
 
 // 개인회원 페이지들
 import HomePage from "./features/home/HomePage";
@@ -198,6 +199,14 @@ function App() {
               element={
                 <ProtectedRoute allowedUserType="company">
                   <JobPostingCreatePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="jobs/edit/:jobId"
+              element={
+                <ProtectedRoute allowedUserType="company">
+                  <JobPostingEditPage />
                 </ProtectedRoute>
               }
             />

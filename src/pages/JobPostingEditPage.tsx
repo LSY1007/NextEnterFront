@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Footer from "../components/Footer";
-import { createJobPosting, type JobPostingRequest } from "../api/job";
+import { getJobPosting, updateJobPosting, type JobPostingRequest } from "../api/job";
 
-export default function JobPostingCreatePage() {
+export default function JobPostingEditPage() {
   const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>();
   const { isAuthenticated, user, logout } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -21,6 +24,44 @@ export default function JobPostingCreatePage() {
     description: "",
     deadline: "",
   });
+
+  // 공고 데이터 로드
+  useEffect(() => {
+    const loadJobPosting = async () => {
+      if (!jobId) {
+        alert("잘못된 접근입니다.");
+        navigate("/company/jobs");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const job = await getJobPosting(parseInt(jobId));
+        
+        setFormData({
+          title: job.title,
+          jobCategory: job.jobCategory,
+          requiredSkills: job.requiredSkills || "",
+          preferredSkills: job.preferredSkills || "",
+          experienceMin: job.experienceMin?.toString() || "",
+          experienceMax: job.experienceMax?.toString() || "",
+          salaryMin: job.salaryMin?.toString() || "",
+          salaryMax: job.salaryMax?.toString() || "",
+          location: job.location,
+          description: job.description || "",
+          deadline: job.deadline,
+        });
+      } catch (error: any) {
+        console.error("공고 조회 실패:", error);
+        alert(error.response?.data?.message || "공고를 불러오는데 실패했습니다.");
+        navigate("/company/jobs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadJobPosting();
+  }, [jobId, navigate]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,6 +86,8 @@ export default function JobPostingCreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!jobId) return;
+
     // 필수 항목 검사
     if (!formData.title.trim()) {
       alert("공고 제목을 입력해주세요.");
@@ -109,23 +152,31 @@ export default function JobPostingCreatePage() {
       };
 
       // API 호출
-      await createJobPosting(requestData, companyId);
+      await updateJobPosting(parseInt(jobId), requestData, companyId);
       
-      alert("공고가 성공적으로 등록되었습니다! 🎉");
+      alert("공고가 성공적으로 수정되었습니다! 🎉");
       
       // 공고 관리 페이지로 리다이렉트
       navigate("/company/jobs");
     } catch (error: any) {
-      console.error("공고 등록 실패:", error);
-      alert(error.response?.data?.message || "공고 등록에 실패했습니다.");
+      console.error("공고 수정 실패:", error);
+      alert(error.response?.data?.message || "공고 수정에 실패했습니다.");
     }
   };
 
   const handleCancel = () => {
-    if (window.confirm("작성 중인 내용이 사라집니다. 정말 취소하시겠습니까?")) {
+    if (window.confirm("수정 중인 내용이 사라집니다. 정말 취소하시겠습니까?")) {
       navigate("/company/jobs");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl font-semibold text-gray-600">로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -206,7 +257,7 @@ export default function JobPostingCreatePage() {
       <div className="py-8 bg-gradient-to-r from-purple-600 to-blue-600">
         <div className="px-6 mx-auto max-w-7xl">
           <h1 className="text-3xl font-bold text-center text-white">
-            새 공고 등록
+            공고 수정
           </h1>
         </div>
       </div>
@@ -458,21 +509,6 @@ export default function JobPostingCreatePage() {
                     />
                   </div>
                 </div>
-
-                {/* 크레딧 정보 */}
-                <div className="p-5 border-2 border-yellow-400 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-2xl">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-yellow-900">
-                      차감 크레딧
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">🪙</span>
-                      <span className="text-2xl font-bold text-yellow-900">
-                        50
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -489,7 +525,7 @@ export default function JobPostingCreatePage() {
                 type="submit"
                 className="flex-1 px-8 py-4 font-semibold text-white transition-all shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:shadow-xl hover:from-blue-700 hover:to-blue-800"
               >
-                공고 등록하기
+                수정 완료
               </button>
             </div>
           </form>
