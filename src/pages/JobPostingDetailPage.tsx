@@ -1,175 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Footer from "../components/Footer";
+import { getJobPosting, deleteJobPosting, type JobPostingResponse } from "../api/job";
 
-interface JobPostingDetailPageProps {
-  jobId?: number;
-  onBackClick?: () => void;
-  onLogoClick?: () => void;
-  onEditClick?: (id: number) => void;
-}
-
-interface JobDetail {
-  id: number;
-  title: string;
-  status: "진행중" | "마감" | "종료";
-  company: string;
-  location: string;
-  jobCategory: string;
-  experienceMin?: number;
-  experienceMax?: number;
-  salaryMin?: number;
-  salaryMax?: number;
-  employmentType: string;
-  deadline: string;
-  createdAt: string;
-  viewCount: number;
-  applicantCount: number;
-  bookmarkCount: number;
-  description: string;
-  requirements: string[];
-  benefits: string[];
-  workingHours: string;
-  recruits: number;
-}
-
-export default function JobPostingDetailPage({
-  jobId = 1,
-  onBackClick,
-  onLogoClick,
-  onEditClick,
-}: JobPostingDetailPageProps) {
+export default function JobPostingDetailPage() {
+  const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>();
+  const { isAuthenticated, user, logout } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [job, setJob] = useState<JobPostingResponse | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // 샘플 공고 상세 데이터
-  const jobData: { [key: number]: JobDetail } = {
-    1: {
-      id: 1,
-      title: "프론트엔드 개발자",
-      status: "진행중",
-      company: "테크 스타트업 A사",
-      location: "서울 강남구",
-      jobCategory: "프론트엔드 개발자",
-      experienceMin: 5,
-      salaryMin: 6000,
-      salaryMax: 6000,
-      employmentType: "정규직",
-      deadline: "2024-12-31",
-      createdAt: "2024-12-01",
-      viewCount: 120,
-      applicantCount: 42,
-      bookmarkCount: 15,
-      description:
-        "저희는 혁신적인 웹 서비스를 개발하는 테크 스타트업입니다. React와 TypeScript를 활용한 최신 프론트엔드 개발 환경에서 함께 성장할 시니어 프론트엔드 개발자를 찾고 있습니다.",
-      requirements: [
-        "React, TypeScript 5년 이상 실무 경험",
-        "반응형 웹 디자인 및 크로스 브라우징 경험",
-        "RESTful API 연동 경험",
-        "Git을 활용한 협업 경험",
-        "웹 성능 최적화 경험",
-      ],
-      benefits: [
-        "연봉 6,000만원",
-        "4대 보험 완비",
-        "연차 15일 + 리프레시 휴가 5일",
-        "자유로운 연차 사용",
-        "최신 장비 지원 (맥북 프로)",
-        "도서 구입비 지원",
-        "교육비 지원",
-        "점심 식대 지원",
-      ],
-      workingHours: "주 5일 (월~금), 09:00 ~ 18:00 (유연근무제)",
-      recruits: 2,
-    },
-    2: {
-      id: 2,
-      title: "백엔드 개발자",
-      status: "진행중",
-      company: "핀테크 기업 B사",
-      location: "서울 강북구",
-      jobCategory: "백엔드 개발자",
-      experienceMin: 3,
-      salaryMin: 5000,
-      salaryMax: 7000,
-      employmentType: "정규직",
-      deadline: "2024-12-28",
-      createdAt: "2024-11-28",
-      viewCount: 98,
-      applicantCount: 38,
-      bookmarkCount: 12,
-      description:
-        "Node.js와 Express를 활용한 백엔드 개발자를 모집합니다. MSA 환경에서 확장 가능한 API를 설계하고 구현하실 분을 찾습니다.",
-      requirements: [
-        "Node.js, Express 3년 이상 경험",
-        "RESTful API 설계 및 구현 경험",
-        "데이터베이스 설계 및 최적화 경험",
-        "MSA 아키텍처 이해",
-        "AWS 클라우드 서비스 경험 우대",
-      ],
-      benefits: [
-        "연봉 5,000~7,000만원 (협의)",
-        "성과급 별도 지급",
-        "4대 보험 완비",
-        "재택근무 주 2회",
-        "최신 개발 장비 지원",
-        "컨퍼런스 참가 지원",
-      ],
-      workingHours: "주 5일 (월~금), 10:00 ~ 19:00",
-      recruits: 3,
-    },
-    3: {
-      id: 3,
-      title: "풀스택 개발자",
-      status: "진행중",
-      company: "이커머스 C사",
-      location: "서울 송파구",
-      jobCategory: "풀스택 개발자",
-      experienceMin: 3,
-      salaryMin: 4500,
-      salaryMax: 6500,
-      employmentType: "정규직",
-      deadline: "2024-12-25",
-      createdAt: "2024-11-20",
-      viewCount: 156,
-      applicantCount: 29,
-      bookmarkCount: 20,
-      description:
-        "React와 Spring Boot를 활용한 풀스택 개발자를 모집합니다. 프론트엔드부터 백엔드까지 전체 개발 프로세스에 참여하실 분을 찾습니다.",
-      requirements: [
-        "React 및 Spring Boot 경험",
-        "프론트엔드 및 백엔드 개발 경험 3년 이상",
-        "데이터베이스 설계 경험",
-        "Git을 활용한 협업 경험",
-        "신입/경력 모두 환영",
-      ],
-      benefits: [
-        "연봉 4,500~6,500만원",
-        "원격근무 주 2일 가능",
-        "유연한 근무 환경",
-        "교육 및 자기계발 지원",
-        "점심 및 간식 제공",
-      ],
-      workingHours: "주 5일 (월~금), 09:00 ~ 18:00 (유연근무제)",
-      recruits: 1,
-    },
-  };
+  // 공고 데이터 로드
+  useEffect(() => {
+    const loadJobPosting = async () => {
+      if (!jobId) {
+        alert("잘못된 접근입니다.");
+        navigate("/company/jobs");
+        return;
+      }
 
-  const job = jobData[jobId || 1];
+      try {
+        setLoading(true);
+        const jobData = await getJobPosting(parseInt(jobId));
+        setJob(jobData);
+      } catch (error: any) {
+        console.error("공고 조회 실패:", error);
+        alert(error.response?.data?.message || "공고를 불러오는데 실패했습니다.");
+        navigate("/company/jobs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadJobPosting();
+  }, [jobId, navigate]);
 
   const handleBackClick = () => {
-    if (onBackClick) {
-      onBackClick();
-    }
+    navigate("/company/jobs");
   };
 
   const handleLogoClick = () => {
-    if (onLogoClick) {
-      onLogoClick();
-    }
+    navigate("/company");
   };
 
   const handleEditClick = () => {
-    if (onEditClick) {
-      onEditClick(jobId);
+    if (jobId) {
+      navigate(`/company/jobs/edit/${jobId}`);
     }
   };
 
@@ -177,28 +56,82 @@ export default function JobPostingDetailPage({
     setShowDeleteConfirm(true);
   };
 
-  const handleConfirmDelete = () => {
-    alert("공고가 삭제되었습니다.");
-    setShowDeleteConfirm(false);
-    handleBackClick();
+  const handleConfirmDelete = async () => {
+    if (!jobId || !user?.companyId) {
+      alert("삭제 권한이 없습니다.");
+      return;
+    }
+
+    try {
+      await deleteJobPosting(parseInt(jobId), user.companyId);
+      alert("공고가 삭제되었습니다.");
+      setShowDeleteConfirm(false);
+      navigate("/company/jobs");
+    } catch (error: any) {
+      console.error("공고 삭제 실패:", error);
+      alert(error.response?.data?.message || "공고 삭제에 실패했습니다.");
+      setShowDeleteConfirm(false);
+    }
   };
 
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false);
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "진행중";
+      case "CLOSED":
+        return "마감";
+      case "EXPIRED":
+        return "기간만료";
+      default:
+        return status;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "진행중":
+      case "ACTIVE":
         return "bg-green-100 text-green-700";
-      case "마감":
+      case "CLOSED":
         return "bg-gray-100 text-gray-700";
-      case "종료":
+      case "EXPIRED":
         return "bg-red-100 text-red-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
   };
+
+  const formatExperience = (min?: number, max?: number) => {
+    if (min === undefined && max === undefined) return "경력무관";
+    if (min === 0) return "신입";
+    if (max === undefined) return `${min}년 이상`;
+    return `${min}~${max}년`;
+  };
+
+  const formatSalary = (min?: number, max?: number) => {
+    if (min === undefined && max === undefined) return "협의";
+    if (min === max) return `${min?.toLocaleString()}만원`;
+    return `${min?.toLocaleString()} ~ ${max?.toLocaleString()}만원`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl font-semibold text-gray-600">로딩 중...</div>
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl font-semibold text-gray-600">공고를 찾을 수 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -214,16 +147,58 @@ export default function JobPostingDetailPage({
               <span className="text-2xl font-bold text-blue-800">Enter</span>
             </div>
 
-            <div className="flex items-center space-x-6">
-              <button className="text-gray-600 hover:text-gray-900">
-                대시보드
+            {/* 네비게이션 */}
+            <nav className="flex space-x-8">
+              <button 
+                onClick={() => navigate("/company/jobs")}
+                className="px-4 py-2 text-blue-600 font-medium hover:text-blue-700"
+              >
+                ■ 채용공고
               </button>
-              <button className="text-gray-600 hover:text-gray-900">
-                채용관리
+              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
+                자료
               </button>
+              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
+                홍보
+              </button>
+            </nav>
+
+            {/* 오른쪽 버튼 */}
+            <div className="flex items-center space-x-4">
+              {isAuthenticated && user?.userType === "company" ? (
+                <>
+                  <span className="text-gray-700 font-medium">
+                    {user.companyName || user.name}님
+                  </span>
+                  <button
+                    onClick={() => {
+                      logout();
+                      navigate("/company/login");
+                    }}
+                    className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate("/company/login")}
+                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
+                  >
+                    로그인
+                  </button>
+                  <button
+                    onClick={() => navigate("/company/signup")}
+                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
+                  >
+                    회원가입
+                  </button>
+                </>
+              )}
               <button
-                onClick={handleLogoClick}
-                className="px-4 py-2 text-gray-700 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                onClick={() => navigate("/user")}
+                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 개인 회원
               </button>
@@ -249,7 +224,7 @@ export default function JobPostingDetailPage({
                 job.status
               )}`}
             >
-              {job.status}
+              {getStatusText(job.status)}
             </span>
           </div>
           <div className="flex space-x-3">
@@ -261,7 +236,12 @@ export default function JobPostingDetailPage({
             </button>
             <button
               onClick={handleDeleteClick}
-              className="px-6 py-2 font-semibold text-white transition bg-red-600 rounded-lg hover:bg-red-700"
+              disabled={job.status === "CLOSED" || job.status === "EXPIRED"}
+              className={`px-6 py-2 font-semibold text-white transition rounded-lg ${
+                job.status === "CLOSED" || job.status === "EXPIRED"
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
             >
               삭제
             </button>
@@ -297,7 +277,7 @@ export default function JobPostingDetailPage({
             <div>
               <div className="mb-1 text-sm text-gray-500">회사명</div>
               <div className="text-base font-medium text-gray-900">
-                {job.company}
+                {job.companyName}
               </div>
             </div>
             <div>
@@ -313,37 +293,15 @@ export default function JobPostingDetailPage({
               </div>
             </div>
             <div>
-              <div className="mb-1 text-sm text-gray-500">고용 형태</div>
-              <div className="text-base font-medium text-gray-900">
-                {job.employmentType}
-              </div>
-            </div>
-            <div>
               <div className="mb-1 text-sm text-gray-500">경력</div>
               <div className="text-base font-medium text-gray-900">
-                {job.experienceMin}년 이상
+                {formatExperience(job.experienceMin, job.experienceMax)}
               </div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">급여</div>
               <div className="text-base font-medium text-gray-900">
-                {job.salaryMin}
-                {job.salaryMax && job.salaryMax !== job.salaryMin
-                  ? ` ~ ${job.salaryMax}`
-                  : ""}
-                만원
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 text-sm text-gray-500">모집 인원</div>
-              <div className="text-base font-medium text-gray-900">
-                {job.recruits}명
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 text-sm text-gray-500">근무 시간</div>
-              <div className="text-base font-medium text-gray-900">
-                {job.workingHours}
+                {formatSalary(job.salaryMin, job.salaryMax)}
               </div>
             </div>
             <div>
@@ -362,39 +320,34 @@ export default function JobPostingDetailPage({
         </div>
 
         {/* 공고 설명 */}
-        <div className="p-8 mb-6 bg-white rounded-lg shadow">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">공고 설명</h2>
-          <p className="leading-relaxed text-gray-700">{job.description}</p>
-        </div>
-
-        {/* 자격 요건 */}
-        <div className="p-8 mb-6 bg-white rounded-lg shadow">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">자격 요건</h2>
-          <ul className="space-y-3">
-            {job.requirements.map((req, idx) => (
-              <li key={idx} className="flex items-start space-x-3">
-                <span className="mt-1 text-blue-600">✓</span>
-                <span className="text-gray-700">{req}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 복리후생 */}
-        <div className="p-8 bg-white rounded-lg shadow">
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">복리후생</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {job.benefits.map((benefit, idx) => (
-              <div
-                key={idx}
-                className="flex items-center p-3 space-x-2 rounded-lg bg-blue-50"
-              >
-                <span className="text-blue-600">•</span>
-                <span className="text-gray-700">{benefit}</span>
-              </div>
-            ))}
+        {job.description && (
+          <div className="p-8 mb-6 bg-white rounded-lg shadow">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">공고 설명</h2>
+            <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">
+              {job.description}
+            </p>
           </div>
-        </div>
+        )}
+
+        {/* 필수 스킬 */}
+        {job.requiredSkills && (
+          <div className="p-8 mb-6 bg-white rounded-lg shadow">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">필수 스킬</h2>
+            <div className="leading-relaxed text-gray-700 whitespace-pre-wrap">
+              {job.requiredSkills}
+            </div>
+          </div>
+        )}
+
+        {/* 우대 스킬 */}
+        {job.preferredSkills && (
+          <div className="p-8 bg-white rounded-lg shadow">
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">우대 스킬</h2>
+            <div className="leading-relaxed text-gray-700 whitespace-pre-wrap">
+              {job.preferredSkills}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 삭제 확인 모달 */}
@@ -403,7 +356,8 @@ export default function JobPostingDetailPage({
           <div className="w-full max-w-md p-6 mx-4 bg-white rounded-lg">
             <h3 className="mb-2 text-lg font-bold text-gray-900">공고 삭제</h3>
             <p className="mb-6 text-gray-600">
-              정말로 이 공고를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+              정말로 이 공고를 삭제하시겠습니까?<br />
+              공고 상태가 "마감"으로 변경되며, 이 작업은 되돌릴 수 없습니다.
             </p>
             <div className="flex space-x-3">
               <button

@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserLayout from "./layouts/UserLayout";
 import CompanyLayout from "./layouts/CompanyLayout";
+import JobPostingEditPage from "./pages/JobPostingEditPage";
 
 // 개인회원 페이지들
 import HomePage from "./features/home/HomePage";
@@ -12,6 +13,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import MyPage from "./features/mypage/MyPage";
 import CreditPage from "./features/credit/CreditPage";
 import CreditChargePage from "./features/credit-charge/CreditChargePage";
+import PaymentCompletePage from "./features/payment-complete/PaymentCompletePage"; // ✅ 추가
 import InterviewPage from "./features/interview/InterviewPage";
 import ResumePage from "./features/resume/ResumePage";
 import CoverLetterPage from "./features/coverletter/CoverLetterPage";
@@ -25,6 +27,7 @@ import AllJobsPage from "./features/all-jobs/AllJobsPage";
 import AIRecommendedJobsPage from "./features/all-jobs/AIRecommendedJobsPage";
 import PositionJobsPage from "./features/all-jobs/PositionJobsPage";
 import LocationJobsPage from "./features/all-jobs/LocationJobsPage";
+import UserJobDetailPage from "./pages/UserJobDetailPage";
 import OAuth2CallbackPage from "./pages/OAuth2CallbackPage";
 
 // 기업회원 페이지들
@@ -71,6 +74,7 @@ function App() {
             <Route path="jobs/ai" element={<AIRecommendedJobsPage />} />
             <Route path="jobs/position" element={<PositionJobsPage />} />
             <Route path="jobs/location" element={<LocationJobsPage />} />
+            <Route path="jobs/:jobId" element={<UserJobDetailPage />} />
 
             {/* 보호된 페이지 (로그인 필요 + 개인회원만) */}
             <Route
@@ -102,6 +106,15 @@ function App() {
               element={
                 <ProtectedRoute allowedUserType="personal">
                   <CreditChargePage />
+                </ProtectedRoute>
+              }
+            />
+            {/* ✅ 결제 완료 페이지 추가 */}
+            <Route
+              path="credit/complete"
+              element={
+                <ProtectedRoute allowedUserType="personal">
+                  <PaymentCompletePage />
                 </ProtectedRoute>
               }
             />
@@ -198,6 +211,14 @@ function App() {
               element={
                 <ProtectedRoute allowedUserType="company">
                   <JobPostingCreatePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="jobs/edit/:jobId"
+              element={
+                <ProtectedRoute allowedUserType="company">
+                  <JobPostingEditPage />
                 </ProtectedRoute>
               }
             />

@@ -11,6 +11,7 @@ interface User {
   email: string;
   name: string;
   userType?: "personal" | "company"; // ✅ 추가
+  companyId?: number; // ✅ 기업 사용자용
   companyName?: string; // ✅ 기업 사용자용
   businessNumber?: string; // ✅ 기업 사용자용
 }
