@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import Footer from "../components/Footer";
-import { createJobPosting, type JobPostingRequest } from "../api/job";
+import { useAuth } from "../../context/AuthContext";
+import { createJobPosting, type JobPostingRequest } from "../../api/job";
 
 export default function JobPostingCreatePage() {
   const navigate = useNavigate();
@@ -111,7 +110,7 @@ export default function JobPostingCreatePage() {
       // API 호출
       await createJobPosting(requestData, companyId);
       
-      alert("공고가 성공적으로 등록되었습니다! 🎉");
+      alert("공고가 성공적으로 등록되었습니다!");
       
       // 공고 관리 페이지로 리다이렉트
       navigate("/company/jobs");
@@ -129,79 +128,6 @@ export default function JobPostingCreatePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-6 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            {/* 로고 */}
-            <div
-              onClick={() => navigate("/company")}
-              className="transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button 
-                onClick={() => navigate("/company/jobs")}
-                className="px-4 py-2 text-blue-600 font-medium hover:text-blue-700"
-              >
-                ■ 채용공고
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                자료
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                홍보
-              </button>
-            </nav>
-
-            {/* 오른쪽 버튼 */}
-            <div className="flex items-center space-x-4">
-              {isAuthenticated && user?.userType === "company" ? (
-                <>
-                  <span className="text-gray-700 font-medium">
-                    {user.companyName || user.name}님
-                  </span>
-                  <button
-                    onClick={() => {
-                      logout();
-                      navigate("/company/login");
-                    }}
-                    className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-                  >
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate("/company/login")}
-                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
-                  >
-                    로그인
-                  </button>
-                  <button
-                    onClick={() => navigate("/company/signup")}
-                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
-                  >
-                    회원가입
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => navigate("/user")}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* 타이틀 배너 */}
       <div className="py-8 bg-gradient-to-r from-purple-600 to-blue-600">
         <div className="px-6 mx-auto max-w-7xl">
@@ -402,7 +328,7 @@ export default function JobPostingCreatePage() {
                     name="deadline"
                     value={formData.deadline}
                     onChange={handleInputChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split("T")[0]}
                     className="w-full px-4 py-3 transition-colors border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
                     required
                   />
@@ -495,7 +421,6 @@ export default function JobPostingCreatePage() {
           </form>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

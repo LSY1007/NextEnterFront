@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import OfferSidebar from "./components/OfferSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import { useApp } from "../../context/AppContext";
@@ -9,9 +10,13 @@ interface OfferPageProps {
 }
 
 export default function OfferPage({ initialMenu, onNavigate }: OfferPageProps) {
+  // ✅ 1. useSearchParams 훅 사용 (URL 읽기/쓰기)
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [selectedOffer, setSelectedOffer] = useState<number | null>(null);
   const [isMessageExpanded, setIsMessageExpanded] = useState(false);
+
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "offer",
     initialMenu || "offer-sub-1",
@@ -21,31 +26,49 @@ export default function OfferPage({ initialMenu, onNavigate }: OfferPageProps) {
   // AppContext에서 포지션 제안 데이터 가져오기
   const { positionOffers, deletePositionOffer } = useApp();
 
-  const handleOfferClick = (id: number) => {
-    setSelectedOffer(id);
+  // URL의 'id' 파라미터를 감지해서 화면 전환
+  useEffect(() => {
+    const offerId = searchParams.get("id");
+
+    if (offerId) {
+      setSelectedOffer(Number(offerId));
+    } else {
+      setSelectedOffer(null);
+    }
+
     setIsMessageExpanded(false);
+  }, [searchParams]);
+
+  // ✅ 3. 클릭 시 URL에 id 추가
+  const handleOfferClick = (id: number) => {
+    // 기존 쿼리(menu 등)는 유지하고 id만 추가
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("id", id.toString());
+    setSearchParams(newParams);
   };
 
+  // ✅ 4. 뒤로가기 시 URL에서 id 제거
   const handleBack = () => {
-    setSelectedOffer(null);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("id"); // id만 쏙 뺍니다.
+    setSearchParams(newParams);
   };
 
   const handleAccept = () => {
     console.log("제안 수락");
-    // 추후 API 연동
   };
 
   const handleReject = () => {
     console.log("제안 거절");
-    // 추후 API 연동
   };
 
   const handleDelete = (id: number, event: React.MouseEvent) => {
-    event.stopPropagation(); // 카드 클릭 이벤트 방지
+    event.stopPropagation();
     if (window.confirm("정말 삭제하시겠습니까?")) {
       deletePositionOffer(id);
+      // 만약 보고 있던 제안을 삭제했다면 목록으로 돌아가기
       if (selectedOffer === id) {
-        setSelectedOffer(null);
+        handleBack();
       }
       console.log(`제안 ${id} 삭제됨`);
     }
@@ -55,8 +78,10 @@ export default function OfferPage({ initialMenu, onNavigate }: OfferPageProps) {
   if (selectedOffer !== null) {
     const detail = positionOffers.find(o => o.id === selectedOffer);
     
+    // 해당 ID의 데이터가 없으면(삭제됨 등) 목록으로 복귀
     if (!detail) {
-      return <div>제안을 찾을 수 없습니다.</div>;
+      handleBack();
+      return null;
     }
 
     return (
@@ -93,7 +118,6 @@ export default function OfferPage({ initialMenu, onNavigate }: OfferPageProps) {
               {/* Header: 발신자 정보 */}
               <div className="p-6 border-b-2 border-gray-200 bg-blue-50">
                 <div className="flex items-start gap-4">
-                  {/* 기업 로고 */}
                   <div className="flex items-center justify-center flex-shrink-0 w-16 h-16 bg-gray-300 rounded-lg">
                     <span className="text-xs text-gray-600">로고</span>
                   </div>

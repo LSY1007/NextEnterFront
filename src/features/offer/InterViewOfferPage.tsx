@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom"; // ✅ 1. URL 제어용 훅 추가
 import OfferSidebar from "./components/OfferSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import { useApp } from "../../context/AppContext";
@@ -12,6 +13,9 @@ export default function InterviewOfferPage({
   initialMenu,
   onNavigate,
 }: InterviewOfferPageProps) {
+  // ✅ 2. URL 파라미터 훅 사용
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // 1. 네비게이션 훅
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "offer",
@@ -26,19 +30,41 @@ export default function InterviewOfferPage({
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
+  // URL 변경 감지 -> 화면 전환 (목록 <-> 상세)
+  useEffect(() => {
+    const idParam = searchParams.get("id");
+    if (idParam) {
+      setSelectedOfferId(Number(idParam));
+    } else {
+      setSelectedOfferId(null);
+    }
+  }, [searchParams]);
+
+  // 클릭 시 URL에 id 추가
+  const handleOfferClick = (id: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("id", id.toString());
+    setSearchParams(newParams);
+  };
+
+  // 목록으로 돌아가기 (URL에서 id 제거)
+  const handleBackToList = () => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("id");
+    setSearchParams(newParams);
+  };
+
   // 4. 핸들러
   const handleDelete = (id: number, event: React.MouseEvent) => {
     event.stopPropagation(); // 카드 클릭 방지
     if (window.confirm("제안을 삭제하시겠습니까?")) {
       deleteInterviewOffer(id);
+      // 만약 보고 있는 제안을 삭제했다면 목록으로 나가기
       if (selectedOfferId === id) {
-        setSelectedOfferId(null);
+        handleBackToList();
       }
     }
   };
-
-  const handleOfferClick = (id: number) => setSelectedOfferId(id);
-  const handleBackToList = () => setSelectedOfferId(null);
 
   const selectedOffer = interviewOffers.find((o) => o.id === selectedOfferId);
 
@@ -144,7 +170,7 @@ export default function InterviewOfferPage({
                         {/* 왼쪽 정보 영역 */}
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            {/* 회사명 (호버시 진해짐) */}
+                            {/* 회사명 */}
                             <h4
                               className={`transition-all ${
                                 hoveredId === offer.id

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import Footer from "../components/Footer";
-import { getJobPosting, deleteJobPosting, type JobPostingResponse } from "../api/job";
+import { useAuth } from "../../context/AuthContext";
+import { getJobPosting, deleteJobPosting, type JobPostingResponse } from "../../api/job";
 
 export default function JobPostingDetailPage() {
   const navigate = useNavigate();
@@ -42,6 +41,7 @@ export default function JobPostingDetailPage() {
     navigate("/company/jobs");
   };
 
+  // 헤더 삭제로 인해 사용되지 않지만 인터페이스 유지를 위해 남겨둠
   const handleLogoClick = () => {
     navigate("/company");
   };
@@ -135,78 +135,6 @@ export default function JobPostingDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div
-              onClick={handleLogoClick}
-              className="transition-opacity cursor-pointer hover:opacity-80"
-            >
-              <span className="text-2xl font-bold text-blue-600">Next </span>
-              <span className="text-2xl font-bold text-blue-800">Enter</span>
-            </div>
-
-            {/* 네비게이션 */}
-            <nav className="flex space-x-8">
-              <button 
-                onClick={() => navigate("/company/jobs")}
-                className="px-4 py-2 text-blue-600 font-medium hover:text-blue-700"
-              >
-                ■ 채용공고
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                자료
-              </button>
-              <button className="px-4 py-2 text-gray-700 hover:text-blue-600">
-                홍보
-              </button>
-            </nav>
-
-            {/* 오른쪽 버튼 */}
-            <div className="flex items-center space-x-4">
-              {isAuthenticated && user?.userType === "company" ? (
-                <>
-                  <span className="text-gray-700 font-medium">
-                    {user.companyName || user.name}님
-                  </span>
-                  <button
-                    onClick={() => {
-                      logout();
-                      navigate("/company/login");
-                    }}
-                    className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-                  >
-                    로그아웃
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate("/company/login")}
-                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
-                  >
-                    로그인
-                  </button>
-                  <button
-                    onClick={() => navigate("/company/signup")}
-                    className="px-4 py-2 text-gray-700 hover:text-blue-600"
-                  >
-                    회원가입
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => navigate("/user")}
-                className="px-4 py-2 transition bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                개인 회원
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* 메인 콘텐츠 */}
       <div className="px-4 py-8 mx-auto max-w-7xl">
         {/* 상단: 뒤로가기 & 제목 */}
@@ -377,7 +305,7 @@ export default function JobPostingDetailPage() {
         </div>
       )}
 
-      <Footer />
+      {/* ❌ 푸터 삭제됨 */}
     </div>
   );
 }
