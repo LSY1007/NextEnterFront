@@ -1,47 +1,117 @@
-import MatchingScoreCard, { type SuitabilityInfo } from './MatchingScoreCard';
-import StrengthAnalysis, { type StrengthItem } from './StrengthAnalysis';
-import WeaknessAnalysis, { type WeaknessItem } from './WeaknessAnalysis';
-import TechStackMatching, { type TechSkill } from './TechStackMatching';
-import AIRecommendation, { type Recommendation } from './AIRecommendation';
+import { CompanyInfo } from '../../../api/ai';
 import ActionButtons from './ActionButtons';
 
 interface AnalysisResultProps {
-  suitabilityInfo: SuitabilityInfo;
-  strengths: StrengthItem[];
-  weaknesses: WeaknessItem[];
-  techSkills: TechSkill[];
-  recommendations: Recommendation[];
+  recommendedCompanies: CompanyInfo[];
+  aiReport: string;
   onReanalyze: () => void;
   onEditResume: () => void;
   onApply: () => void;
 }
 
 export default function AnalysisResult({
-  suitabilityInfo,
-  strengths,
-  weaknesses,
-  techSkills,
-  recommendations,
+  recommendedCompanies,
+  aiReport,
   onReanalyze,
   onEditResume,
   onApply
 }: AnalysisResultProps) {
+  const getMatchLevelColor = (level: string) => {
+    switch (level) {
+      case 'BEST':
+        return 'bg-green-100 text-green-700 border-green-300';
+      case 'HIGH':
+        return 'bg-blue-100 text-blue-700 border-blue-300';
+      case 'LOW':
+        return 'bg-gray-100 text-gray-700 border-gray-300';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+  };
+
+  const getMatchLevelText = (level: string) => {
+    switch (level) {
+      case 'BEST':
+        return '최적 매칭';
+      case 'HIGH':
+        return '높은 적합도';
+      case 'LOW':
+        return '보통';
+      default:
+        return '분석 중';
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* 매칭 결과 카드 */}
-      <MatchingScoreCard suitabilityInfo={suitabilityInfo} />
-
-      {/* 세부 분석 */}
-      <div className="grid grid-cols-2 gap-6">
-        <StrengthAnalysis strengths={strengths} />
-        <WeaknessAnalysis weaknesses={weaknesses} />
+      {/* 추천 결과 헤더 */}
+      <div className="p-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl">
+        <h3 className="mb-2 text-2xl font-bold text-white">
+          🤖 AI 기업 추천 결과
+        </h3>
+        <p className="text-blue-100">
+          이력서를 분석하여 가장 적합한 기업 {recommendedCompanies.length}곳을 추천합니다
+        </p>
       </div>
 
-      {/* 기술 스택 매칭 */}
-      <TechStackMatching skills={techSkills} />
+      {/* 추천 기업 카드 */}
+      <div className="space-y-4">
+        {recommendedCompanies.map((company, idx) => (
+          <div
+            key={idx}
+            className="p-6 bg-white border-2 border-gray-200 transition hover:border-blue-400 hover:shadow-lg rounded-2xl"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl font-bold text-blue-600">
+                    #{idx + 1}
+                  </span>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {company.company_name}
+                  </h3>
+                </div>
+                <p className="text-lg text-gray-600 mb-3">{company.role}</p>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <span className={`px-4 py-2 rounded-full border-2 font-bold text-sm ${getMatchLevelColor(company.match_level)}`}>
+                  {getMatchLevelText(company.match_level)}
+                </span>
+                {company.is_exact_match && (
+                  <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-full text-xs font-bold">
+                    ⭐ 완벽 매칭
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+              <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full">
+                <span className="text-2xl font-bold text-white">
+                  {company.score}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm text-blue-600 font-medium">매칭 점수</p>
+                <p className="text-2xl font-bold text-blue-900">{company.score}점</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* AI 추천 개선 사항 */}
-      <AIRecommendation recommendations={recommendations} />
+      {/* AI 리포트 */}
+      <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-3xl">🤖</span>
+          <h4 className="text-xl font-bold text-gray-900">AI 분석 리포트</h4>
+        </div>
+        <div className="p-4 bg-white rounded-xl border border-blue-100">
+          <p className="whitespace-pre-line text-gray-700 leading-relaxed">
+            {aiReport}
+          </p>
+        </div>
+      </div>
 
       {/* 하단 버튼 */}
       <ActionButtons 

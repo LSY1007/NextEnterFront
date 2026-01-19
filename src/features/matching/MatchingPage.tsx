@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getResumeList } from "../../api/resume";
+import { getResumeList, getResumeDetail } from "../../api/resume";
+import { getJobPostings } from "../../api/job";
+import { getAiRecommendation, CompanyInfo } from "../../api/ai";
+import { mapResumeToAiFormat } from "../../utils/resumeMapper";
 import MatchingSidebar from "./components/MatchingSidebar";
 import MatchingHistoryPage from "./components/MatchingHistoryPage";
 import ConfirmDialog from "./components/ConfirmDialog";
@@ -41,14 +44,15 @@ export default function MatchingPage({
   );
 
   const [selectedResume, setSelectedResume] = useState("");
-  const [selectedJob, setSelectedJob] = useState("");
   const [currentCredit, setCurrentCredit] = useState(200);
   const [hasAnalysis, setHasAnalysis] = useState(false);
-  const [matchingScore, setMatchingScore] = useState(0);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [recommendedCompanies, setRecommendedCompanies] = useState<CompanyInfo[]>([]);
+  const [aiReport, setAiReport] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Context에서 실제 데이터 가져오기 - 기업 공고 사용!
-  const { resumes, businessJobs, addMatchingHistory, setResumes } = useApp();
+  const { resumes, businessJobs, addMatchingHistory, setResumes, setBusinessJobs } = useApp();
 
   // ✅ 이력서가 비어있으면 API에서 불러오기
   useEffect(() => {
@@ -73,6 +77,40 @@ export default function MatchingPage({
 
     loadResumesIfEmpty();
   }, [user?.userId, resumes.length, setResumes]);
+
+  // ✅ 공고 목록 로딩 (백엔드 API에서 가져오기)
+  useEffect(() => {
+    const loadJobsIfEmpty = async () => {
+      if (businessJobs.length === 0) {
+        try {
+          const response = await getJobPostings({ size: 100 });
+          if (response.content && response.content.length > 0) {
+            const jobs = response.content.map(job => ({
+              id: job.jobId,
+              title: job.title,
+              status: job.status as "ACTIVE" | "CLOSED" | "EXPIRED",
+              job_category: job.jobCategory,
+              location: job.location,
+              experience_min: job.experienceMin,
+              experience_max: job.experienceMax,
+              salary_min: job.salaryMin,
+              salary_max: job.salaryMax,
+              deadline: job.deadline,
+              view_count: job.viewCount,
+              applicant_count: job.applicantCount,
+              bookmark_count: 0,
+              created_at: job.createdAt
+            }));
+            setBusinessJobs(jobs);
+          }
+        } catch (error) {
+          console.error('공고 로드 오류:', error);
+        }
+      }
+    };
+
+    loadJobsIfEmpty();
+  }, [businessJobs.length, setBusinessJobs]);
 
   // 이력서를 TargetSelection에서 사용할 수 있는 형식으로 변환
   const resumeOptions = resumes.map((resume) => ({
@@ -101,10 +139,6 @@ export default function MatchingPage({
         alert("이력서를 먼저 선택해주세요!");
         return;
       }
-      if (!selectedJob) {
-        alert("분석할 공고를 선택해주세요!");
-        return;
-      }
       if (currentCredit < CREDIT_COST) {
         alert("크레딧이 부족합니다!");
         return;
@@ -117,26 +151,39 @@ export default function MatchingPage({
     }
   };
 
-  const handleConfirmAnalysis = () => {
+  const handleConfirmAnalysis = async () => {
+    setShowConfirmDialog(false);
+    setIsLoading(true);
+
     try {
-      setCurrentCredit(currentCredit - CREDIT_COST);
-
-      // 랜덤 점수 생성 (85-95 사이)
-      const score = Math.floor(Math.random() * 11) + 85;
-      setMatchingScore(score);
-      setHasAnalysis(true);
-      setShowConfirmDialog(false);
-
-      // 선택된 이력서와 공고 정보 가져오기
+      // 1. 선택된 이력서 정보 가져오기
       const selectedResumeInfo = resumes.find(
         (r) => r.id.toString() === selectedResume
       );
-      const selectedJobInfo = businessJobs.find(
-        (j) => j.id.toString() === selectedJob
-      );
 
-      if (selectedResumeInfo && selectedJobInfo) {
-        // 현재 날짜/시간
+      if (!selectedResumeInfo || !user?.userId) {
+        alert("이력서 정보를 찾을 수 없습니다.");
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. 백엔드 API로 이력서 상세 조회
+      const resumeData = await getResumeDetail(selectedResumeInfo.id, user.userId);
+
+      // 3. NextEnterAI 형식으로 변환
+      const aiRequest = mapResumeToAiFormat(resumeData, user.userId);
+
+      // 4. AI 추천 API 호출
+      const aiResult = await getAiRecommendation(aiRequest);
+
+      // 5. 결과 저장 및 UI 표시
+      setRecommendedCompanies(aiResult.companies);
+      setAiReport(aiResult.ai_report);
+      setHasAnalysis(true);
+      setCurrentCredit(currentCredit - CREDIT_COST);
+
+      // 6. 히스토리에 추가 (첫 번째 추천 기업 기준)
+      if (aiResult.companies.length > 0) {
         const now = new Date();
         const date = now
           .toLocaleDateString("ko-KR")
@@ -144,34 +191,31 @@ export default function MatchingPage({
           .replace(".", "");
         const time = now.toTimeString().slice(0, 5);
 
-        // 히스토리 데이터 생성
-        const historyId = Date.now(); // 고유 ID
+        const topCompany = aiResult.companies[0];
+        const historyId = Date.now();
         const newHistory = {
           id: historyId,
           date: date,
           time: time,
           resume: selectedResumeInfo.title,
           resumeId: selectedResumeInfo.id,
-          company: selectedJobInfo.job_category, // 직무 카테고리를 회사명처럼 사용
-          position: selectedJobInfo.title,
-          jobId: selectedJobInfo.id,
-          score: score,
-          suitable: score >= 75,
-          techMatch: SAMPLE_TECH_SKILLS.reduce((acc, skill) => {
-            acc[skill.name] = skill.match;
-            return acc;
-          }, {} as { [key: string]: number }),
-          strengths: SAMPLE_STRENGTHS.map((s) => s.text),
-          improvements: SAMPLE_WEAKNESSES.map((w) => w.text),
+          company: topCompany.company_name,
+          position: topCompany.role,
+          jobId: 0, // AI 추천은 실제 jobId가 없음
+          score: topCompany.score,
+          suitable: topCompany.match_level === "BEST" || topCompany.match_level === "HIGH",
+          techMatch: {},
+          strengths: ["AI 기반 매칭"],
+          improvements: ["상세 분석은 AI 리포트 참조"],
         };
 
-        // Context에 히스토리 추가
         addMatchingHistory(newHistory);
       }
     } catch (error) {
-      console.error("분석 완료 중 오류:", error);
-      alert("분석을 완료하는 동안 오류가 발생했습니다.");
-      setShowConfirmDialog(false);
+      console.error("AI 매칭 오류:", error);
+      alert("AI 분석 중 오류가 발생했습니다. NextEnterAI 서버가 실행 중인지 확인해주세요.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -184,14 +228,6 @@ export default function MatchingPage({
     navigate('/user/resume?menu=resume-sub-1');
   };
 
-  // 지원 적합 여부 결정
-  const getSuitability = (score: number) => {
-    if (score >= 75)
-      return { suitable: true, message: "매우 적합", emoji: "🎉" };
-    return { suitable: false, message: "부적합", emoji: "⚠️" };
-  };
-
-  const suitabilityInfo = getSuitability(matchingScore);
 
   const handleBackToMatching = () => {
     setActiveMenu("matching");
@@ -199,6 +235,8 @@ export default function MatchingPage({
 
   const handleReanalyze = () => {
     setHasAnalysis(false);
+    setRecommendedCompanies([]);
+    setAiReport("");
   };
 
   const handleEditResume = () => {
@@ -253,11 +291,8 @@ export default function MatchingPage({
               {/* 선택 카드 */}
               <TargetSelection
                 resumes={resumeOptions}
-                jobs={jobOptions}
                 selectedResume={selectedResume}
-                selectedJob={selectedJob}
                 onResumeChange={setSelectedResume}
-                onJobChange={setSelectedJob}
                 onAddResume={handleAddResume}
                 onAnalyze={handleAnalyze}
               />
@@ -265,13 +300,18 @@ export default function MatchingPage({
               {/* 분석 결과 영역 */}
               {!hasAnalysis ? (
                 <EmptyAnalysis />
+              ) : isLoading ? (
+                <div className="p-12 text-center bg-white border-2 border-gray-200 rounded-2xl">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-xl font-bold text-gray-700">AI가 분석 중입니다...</p>
+                    <p className="text-gray-500">이력서를 분석하고 최적의 기업을 찾고 있습니다.</p>
+                  </div>
+                </div>
               ) : (
                 <AnalysisResult
-                  suitabilityInfo={suitabilityInfo}
-                  strengths={SAMPLE_STRENGTHS}
-                  weaknesses={SAMPLE_WEAKNESSES}
-                  techSkills={SAMPLE_TECH_SKILLS}
-                  recommendations={SAMPLE_RECOMMENDATIONS}
+                  recommendedCompanies={recommendedCompanies}
+                  aiReport={aiReport}
                   onReanalyze={handleReanalyze}
                   onEditResume={handleEditResume}
                   onApply={handleApply}

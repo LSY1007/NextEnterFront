@@ -11,33 +11,26 @@ interface Job {
 
 interface TargetSelectionProps {
   resumes: Resume[];
-  jobs: Job[];
   selectedResume: string;
-  selectedJob: string;
   onResumeChange: (resumeId: string) => void;
-  onJobChange: (jobId: string) => void;
   onAddResume: () => void;
   onAnalyze: () => void;
 }
 
 export default function TargetSelection({
   resumes,
-  jobs,
   selectedResume,
-  selectedJob,
   onResumeChange,
-  onJobChange,
   onAddResume,
   onAnalyze
 }: TargetSelectionProps) {
   const selectedResumeInfo = resumes.find(r => r.id === selectedResume);
-  const selectedJobInfo = jobs.find(j => j.id === selectedJob);
 
   return (
     <div className="p-8 mb-6 bg-white border-2 border-blue-400 rounded-2xl">
-      <h2 className="mb-6 text-xl font-bold">분석 대상 선택</h2>
+      <h2 className="mb-6 text-xl font-bold">AI 기업 추천</h2>
       
-      <div className="mb-6 space-y-4">
+      <div className="mb-6">
         {/* 이력서 선택 */}
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -69,30 +62,6 @@ export default function TargetSelection({
             </p>
           )}
         </div>
-
-        {/* 공고 선택 */}
-        <div>
-          <label className="block mb-2 text-sm font-medium text-gray-700">
-            분석할 공고 선택
-          </label>
-          <select
-            value={selectedJob}
-            onChange={(e) => onJobChange(e.target.value)}
-            className="w-full p-4 text-gray-700 bg-white border-2 border-gray-300 outline-none cursor-pointer rounded-xl hover:border-blue-400 focus:border-blue-500"
-          >
-            <option value="">공고를 선택하세요</option>
-            {jobs.map((job) => (
-              <option key={job.id} value={job.id}>
-                {job.name}
-              </option>
-            ))}
-          </select>
-          {selectedJobInfo && (
-            <p className="mt-2 text-sm text-green-600">
-              ✓ {selectedJobInfo.name} 선택됨
-            </p>
-          )}
-        </div>
       </div>
 
       {/* 분석 시작 버튼 */}
@@ -100,8 +69,8 @@ export default function TargetSelection({
         onClick={onAnalyze}
         className="flex items-center justify-center w-full gap-2 py-4 text-lg font-bold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700"
       >
-        <span>🔍</span>
-        <span>AI 매칭 분석 시작</span>
+        <span>🤖</span>
+        <span>AI가 최적 공고 3곳 추천받기</span>
         <span className="text-sm">(크레딧 30)</span>
       </button>
 
@@ -110,7 +79,7 @@ export default function TargetSelection({
         <div className="flex items-center gap-2 text-blue-700">
           <span>💡</span>
           <span className="font-medium">
-            AI가 이력서와 공고를 분석하여 매칭률, 강점, 개선사항을 알려드립니다
+            AI가 이력서를 분석하여 가장 적합한 기업 공고 3곳을 자동으로 추천해드립니다
           </span>
         </div>
       </div>
