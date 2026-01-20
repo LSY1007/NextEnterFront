@@ -22,9 +22,7 @@ export default function AnalysisResult({
         return 'bg-green-100 text-green-700 border-green-300';
       case 'HIGH':
         return 'bg-blue-100 text-blue-700 border-blue-300';
-      case 'LOW':
-        return 'bg-gray-100 text-gray-700 border-gray-300';
-      default:
+      case 'GAP':
         return 'bg-gray-100 text-gray-700 border-gray-300';
     }
   };
@@ -34,11 +32,9 @@ export default function AnalysisResult({
       case 'BEST':
         return '최적 매칭';
       case 'HIGH':
-        return '높은 적합도';
-      case 'LOW':
-        return '보통';
-      default:
-        return '분석 중';
+        return '충분하다';
+      case 'GAP':
+        return '스킬 보완 필요';
     }
   };
 
@@ -96,6 +92,23 @@ export default function AnalysisResult({
                 <p className="text-2xl font-bold text-blue-900">{company.score}점</p>
               </div>
             </div>
+
+            {/* 부족한 스킬 표시 (GAP인 경우에만) */}
+            {company.match_level === 'GAP' && company.missing_skills && company.missing_skills.length > 0 && (
+              <div className="mt-4 p-4 bg-red-50 border-2 border-red-300 rounded-xl">
+                <p className="mb-2 text-sm font-bold text-red-700">보완 필요 스킬</p>
+                <div className="flex flex-wrap gap-2">
+                  {company.missing_skills.map((skill, skillIdx) => (
+                    <span
+                      key={skillIdx}
+                      className="px-3 py-1 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

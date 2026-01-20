@@ -177,41 +177,26 @@ export default function MatchingPage({
       
       console.log("🔍 [DEBUG] AI Request (before sending):", aiRequest);
       
-      // 🛠️ 임시 해결책: 데이터가 비어있으면 더미 데이터 사용
-      if (!aiRequest.resume_content.skills.essential.length && 
-          !aiRequest.resume_content.professional_experience.length) {
-        console.warn("⚠️ [WARNING] Resume data is empty, using dummy data for testing");
-        
-        // 한글 직무명을 영어로 변환
-        const convertKoreanRole = (role: string): string => {
-          const lowerRole = role.toLowerCase();
-          if (lowerRole.includes("백엔드") || lowerRole === "backend") return "Backend Developer";
-          if (lowerRole.includes("프론트엔드") || lowerRole === "frontend") return "Frontend Developer";
-          if (lowerRole.includes("풀스택") || lowerRole === "fullstack") return "Fullstack Developer";
-          return role.includes("Developer") ? role : `${role} Developer`;
-        };
-        
-        const englishRole = convertKoreanRole(aiRequest.target_role || "백엔드");
-        aiRequest.target_role = englishRole;
-        
-        aiRequest.resume_content.skills.essential = ["Python", "FastAPI", "SQL", "Docker"];
-        aiRequest.resume_content.professional_experience = [
-          {
-            company: "테스트회사",
-            period: "24개월",
-            role: englishRole,
-            key_tasks: ["API 개발", "데이터베이스 설계", "성능 최적화"]
-          }
-        ];
-        aiRequest.resume_content.education = [
-          {
-            degree: "학사",
-            major: "컴퓨터공학",
-            status: "졸업"
-          }
-        ];
+      // 한글 직무명을 영어로 변환 (AI 서버는 영어를 기대함)
+      const convertKoreanRole = (role: string): string => {
+        const lowerRole = role.toLowerCase();
+        if (lowerRole.includes("백엔드") || lowerRole === "backend") return "Backend Developer";
+        if (lowerRole.includes("프론트엔드") || lowerRole === "frontend") return "Frontend Developer";
+        if (lowerRole.includes("풀스택") || lowerRole === "fullstack") return "Fullstack Developer";
+        if (lowerRole.includes("pm") || lowerRole.includes("프로젝트매니저")) return "Project Manager";
+        if (lowerRole.includes("ui") || lowerRole.includes("ux") || lowerRole.includes("디자인")) return "UI/UX Designer";
+        if (lowerRole.includes("ai") || lowerRole.includes("llm") || lowerRole.includes("ml")) return "AI/LLM Engineer";
+        return role.includes("Developer") ? role : `${role} Developer`;
+      };
+      
+      // target_role 영어로 변환 (한글이면 변환)
+      if (aiRequest.target_role && /[가-힣]/.test(aiRequest.target_role)) {
+        aiRequest.target_role = convertKoreanRole(aiRequest.target_role);
+        console.log("🔄 [DEBUG] Converted target_role to English:", aiRequest.target_role);
       }
       
+      // resumeMapper에서 이미 기본값 처리를 했으므로, 더미 데이터 로직 제거
+      // AI 서버가 빈 데이터를 허용하는지 확인 후, 필요시에만 추가 검증
       console.log("🚀 [DEBUG] Final AI Request (sending to backend):", aiRequest);
 
       // 4. AI 추천 API 호출

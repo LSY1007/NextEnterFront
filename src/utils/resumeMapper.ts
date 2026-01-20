@@ -13,6 +13,7 @@ export function mapResumeToAiFormat(
   if (resume.structuredData) {
     try {
       parsedData = JSON.parse(resume.structuredData);
+      console.log("🔍 [DEBUG] Parsed structuredData:", parsedData);
     } catch (error) {
       console.error("Failed to parse structuredData:", error);
     }
@@ -33,30 +34,46 @@ export function mapResumeToAiFormat(
     }
   }
 
-  // 이력서 컨텐츠 변환
+  // 백엔드 필드명 (educations, careers) → AI 서버 필드명 (education, professional_experience) 변환
+  // 1. education 변환 (educations → education)
+  const education = (parsedData.educations || [])
+    .filter((edu: any) => edu && (edu.school || edu.period)) // 빈 값 필터링
+    .map((edu: any) => ({
+      degree: edu.school || edu.degree || "N/A",
+      major: edu.period || edu.major || "전공 미상",
+      status: edu.status || "Graduated",
+    }));
+
+  // 2. professional_experience 변환 (careers → professional_experience)
+  const professional_experience = (parsedData.careers || [])
+    .filter((career: any) => career && (career.company || career.period)) // 빈 값 필터링
+    .map((career: any) => ({
+      company: career.company || "N/A",
+      period: career.period || "0개월",
+      role: career.role || resume.jobCategory || "Developer",
+      key_tasks: career.key_tasks || career.tasks || [],
+    }));
+
+  // 3. 빈 배열일 경우 기본값 설정 (AI 서버 스키마에 맞게)
+  const finalEducation = education.length > 0 ? education : [{
+    degree: "학력 정보 없음",
+    major: "N/A",
+    status: "N/A"
+  }];
+
+  // 이력서 컨텐츠 변환 (AI 서버 스키마에 맞게)
   const resumeContent: ResumeContent = {
-    education: parsedData.educations?.map((edu: any) => ({
-      degree: edu.school || "N/A",
-      major: edu.period || "전공 미상",
-      status: "Graduated",
-    })) || [{
-      degree: "학력 정보 없음",
-      major: "N/A",
-      status: "N/A"
-    }],
+    education: finalEducation,
     
     skills: {
-      essential: skillsArray,
+      essential: skillsArray.length > 0 ? skillsArray : [],
       additional: [],
     },
     
-    professional_experience: parsedData.careers?.map((career: any) => ({
-      company: career.company || "N/A",
-      period: career.period || "0개월",
-      role: resume.jobCategory || "Developer",
-      key_tasks: [],
-    })) || [],
+    professional_experience: professional_experience,
   };
+
+  console.log("🔍 [DEBUG] Mapped resumeContent:", resumeContent);
 
   // NextEnterAI 요청 형식으로 변환
   return {

@@ -34,8 +34,9 @@ export interface CompanyInfo {
   company_name: string;
   role: string;
   score: number;
-  match_level: "BEST" | "HIGH" | "LOW";
+  match_level: "BEST" | "HIGH" | "GAP";
   is_exact_match: boolean;
+  missing_skills?: string[];
 }
 
 export interface AiRecommendResponse {
