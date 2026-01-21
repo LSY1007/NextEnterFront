@@ -284,111 +284,117 @@ export default function JobManagementPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-4">
             {filteredJobs.map((job) => (
               <div
                 key={job.jobId}
                 onClick={() => handleJobClick(job.jobId)}
-                className="p-6 transition bg-white border border-gray-200 cursor-pointer rounded-xl hover:shadow-lg"
+                className="p-5 transition bg-white border border-gray-300 cursor-pointer rounded-lg shadow-sm hover:shadow-lg hover:border-purple-400"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-bold">{job.title}</h3>
-                  <span
-                    className={`px-3 py-1 text-sm font-medium rounded ${getStatusColor(
-                      job.status
-                    )}`}
-                  >
-                    {getStatusText(job.status)}
-                  </span>
-                </div>
-
-                <div className="mb-4 text-sm text-gray-500">
-                  등록일: {new Date(job.createdAt).toLocaleDateString("ko-KR")}
-                </div>
-
-                <div className="mb-4 space-y-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-red-500">●</span>
-                    <span className="text-gray-700">{job.location}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-500">📋</span>
-                    <span className="text-gray-700">
-                      {formatExperience(
-                        job.experienceMin,
-                        job.experienceMax
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-yellow-500">💰</span>
-                    <span className="text-gray-700">
-                      {formatSalary(job.salaryMin, job.salaryMax)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-4 mb-4 border-t border-gray-200">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <button
-                      onClick={(e) => handleApplicantsClick(e, job)}
-                      className="p-2 transition rounded-lg hover:bg-purple-50 group"
-                    >
-                      <div className="text-2xl font-bold text-purple-600 group-hover:text-purple-700">
-                        {job.applicantCount || 0}
+                <div className="flex items-center justify-between">
+                  {/* 왼쪽: 공고 정보 */}
+                  <div className="flex items-center flex-1 gap-6">
+                    {/* 제목 & 상태 */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-bold text-gray-900 truncate">
+                          {job.title}
+                        </h3>
+                        <span
+                          className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${getStatusColor(
+                            job.status
+                          )}`}
+                        >
+                          {getStatusText(job.status)}
+                        </span>
                       </div>
-                      <div className="text-sm text-gray-500 group-hover:text-purple-600">
-                        지원자 보기 →
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {job.location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          {formatExperience(job.experienceMin, job.experienceMax)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {formatSalary(job.salaryMin, job.salaryMax)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {new Date(job.createdAt).toLocaleDateString("ko-KR")}
+                        </span>
                       </div>
-                    </button>
-                    <div className="p-2">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {calculateAverageScore()}
+                    </div>
+
+                    {/* 통계 */}
+                    <div className="flex items-center gap-6 px-6 py-3 border-l border-r border-gray-200">
+                      <button
+                        onClick={(e) => handleApplicantsClick(e, job)}
+                        className="text-center transition group hover:scale-105"
+                      >
+                        <div className="text-2xl font-bold text-purple-600 group-hover:text-purple-700">
+                          {job.applicantCount || 0}
+                        </div>
+                        <div className="text-xs text-gray-500 group-hover:text-purple-600">
+                          지원자 →
+                        </div>
+                      </button>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-gray-700">
+                          {job.viewCount || 0}
+                        </div>
+                        <div className="text-xs text-gray-500">조회수</div>
                       </div>
-                      <div className="text-sm text-gray-500">평균 점수</div>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-gray-700">
+                          {job.bookmarkCount || 0}
+                        </div>
+                        <div className="text-xs text-gray-500">북마크</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex justify-around py-2 mb-4 text-xs text-gray-600 rounded-lg bg-gray-50">
-                  <div className="text-center">
-                    <div className="font-semibold">조회수</div>
-                    <div>{job.viewCount || 0}</div>
+                  {/* 오른쪽: 액션 버튼 */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(job.jobId);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose(job.jobId);
+                      }}
+                      disabled={
+                        job.status === "CLOSED" || job.status === "EXPIRED"
+                      }
+                      className={`px-4 py-2 text-sm font-medium text-white transition rounded-lg ${
+                        job.status === "CLOSED" || job.status === "EXPIRED"
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                    >
+                      {job.status === "CLOSED" || job.status === "EXPIRED"
+                        ? "마감됨"
+                        : "마감"}
+                    </button>
                   </div>
-                  <div className="text-center">
-                    <div className="font-semibold">북마크</div>
-                    <div>{job.bookmarkCount || 0}</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(job.jobId);
-                    }}
-                    className="px-4 py-2 text-gray-700 transition bg-gray-100 rounded-lg hover:bg-gray-200"
-                  >
-                    수정
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClose(job.jobId);
-                    }}
-                    disabled={
-                      job.status === "CLOSED" || job.status === "EXPIRED"
-                    }
-                    className={`px-4 py-2 text-white transition rounded-lg ${
-                      job.status === "CLOSED" || job.status === "EXPIRED"
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-red-500 hover:bg-red-600"
-                    }`}
-                  >
-                    {job.status === "CLOSED" || job.status === "EXPIRED"
-                      ? "마감됨"
-                      : "마감"}
-                  </button>
                 </div>
               </div>
             ))}
