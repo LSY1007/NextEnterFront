@@ -9,6 +9,7 @@ import {
 } from "../../api/user";
 import LeftSidebar from "../../components/LeftSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import ChangePasswordModal from "../../components/ChangePasswordModal";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 수정 가능한 필드
@@ -148,6 +150,9 @@ export default function ProfilePage() {
       </div>
     );
   }
+
+  // 소셜 로그인 사용자 여부 확인
+  const isSocialLogin = profile?.provider && profile.provider !== "LOCAL";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -409,12 +414,31 @@ export default function ProfilePage() {
                       </p>
                     )}
                   </div>
+
+                  {/* 비밀번호 변경 버튼 - 일반 가입 사용자만 */}
+                  {!isSocialLogin && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => setIsPasswordModalOpen(true)}
+                        className="px-6 py-2 text-white transition bg-orange-500 rounded-lg hover:bg-orange-600"
+                      >
+                        비밀번호 변경
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 비밀번호 변경 모달 */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        userEmail={profile?.email || ""}
+      />
     </div>
   );
 }
