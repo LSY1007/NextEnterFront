@@ -51,6 +51,7 @@ export default function ResumeFormPage({
   const [address, setAddress] = useState("");
   const [coverLetterTitle, setCoverLetterTitle] = useState("");
   const [coverLetterContent, setCoverLetterContent] = useState("");
+  const [visibility, setVisibility] = useState("PUBLIC"); // 공개 설정 추가
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -68,11 +69,17 @@ export default function ResumeFormPage({
 
     try {
       const resume = await getResumeDetail(id, userId);
-      console.log("불러온 이력서 데이터:", resume);
+      console.log("🔍 [디버그] 불러온 이력서 데이터:", resume);
+      console.log("🔍 [디버그] visibility:", resume.visibility);
 
       // 기본 정보
       setResumeTitle(resume.title);
       setSelectedJob(resume.jobCategory);
+      
+      // visibility 로드 - 기본값은 PUBLIC
+      const loadedVisibility = resume.visibility || "PUBLIC";
+      setVisibility(loadedVisibility);
+      console.log("🔍 [디버그] 설정된 visibility:", loadedVisibility);
 
       // structuredData 파싱
       if (resume.structuredData) {
@@ -282,6 +289,7 @@ export default function ResumeFormPage({
         title: resumeTitle,
         jobCategory: selectedJob,
         skills: selectedSkills,
+        visibility: visibility, // 공개 설정 추가
         sections: {
           personalInfo: {
             name,
@@ -324,6 +332,9 @@ export default function ResumeFormPage({
         },
         status: "COMPLETED",
       };
+
+      console.log("📤 [디버그] 전송할 데이터:", resumeData);
+      console.log("📤 [디버그] visibility 값:", visibility);
 
       let response;
       if (resumeId) {
@@ -445,8 +456,43 @@ export default function ResumeFormPage({
                 value={resumeTitle}
                 onChange={(e) => setResumeTitle(e.target.value)}
                 placeholder="예: 프론트엔드 개발자 이력서"
-                className="w-full p-4 border-2 border-gray-300 rounded-lg outline-none focus:border-blue-500"
+                className="w-full p-4 mb-6 border-2 border-gray-300 rounded-lg outline-none focus:border-blue-500"
               />
+
+              {/* 공개 설정 */}
+              <div>
+                <h3 className="mb-4 text-lg font-bold">공개 설정</h3>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setVisibility("PUBLIC")}
+                    className={`flex-1 p-4 text-center border-2 rounded-lg transition ${
+                      visibility === "PUBLIC"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="mb-2 text-2xl">🌐</div>
+                    <div className="font-bold">공개</div>
+                    <div className="mt-1 text-sm text-gray-600">
+                      기업 인재 검색에 표시됩니다
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setVisibility("PRIVATE")}
+                    className={`flex-1 p-4 text-center border-2 rounded-lg transition ${
+                      visibility === "PRIVATE"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="mb-2 text-2xl">🔒</div>
+                    <div className="font-bold">비공개</div>
+                    <div className="mt-1 text-sm text-gray-600">
+                      나만 볼 수 있습니다
+                    </div>
+                  </button>
+                </div>
+              </div>
             </section>
 
             {/* 섹션: 인적사항 */}

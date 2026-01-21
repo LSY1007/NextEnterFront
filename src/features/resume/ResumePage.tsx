@@ -239,9 +239,20 @@ export default function ResumePage() {
                           className="p-6 transition bg-white border-2 border-gray-300 rounded-lg hover:shadow-md"
                         >
                           <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold">
-                              {resume.title}
-                            </h3>
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-lg font-bold">
+                                {resume.title}
+                              </h3>
+                              {resume.visibility === "PUBLIC" ? (
+                                <span className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
+                                  공개
+                                </span>
+                              ) : (
+                                <span className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-full">
+                                  비공개
+                                </span>
+                              )}
+                            </div>
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleEdit(resume.resumeId)}

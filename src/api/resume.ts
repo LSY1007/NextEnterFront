@@ -63,6 +63,7 @@ export interface CreateResumeRequest {
   title: string;
   jobCategory: string;
   skills?: string[];
+  visibility?: string; // 공개 설정 추가 (PUBLIC, PRIVATE)
   sections: ResumeSections;
   status?: string;
 }
@@ -118,11 +119,21 @@ export interface AIRecommendResponse {
 export const getResumeList = async (
   userId: number
 ): Promise<ResumeListItem[]> => {
+  console.log("📄 [API] 이력서 목록 조회 요청 (userId:", userId, ")");
+  
   const response = await api.get<ResumeListItem[]>("/api/resume/list", {
     headers: {
       userId: userId.toString(),
     },
   });
+  
+  console.log("✅ [API] 이력서 목록:", response.data);
+  
+  // visibility 확인
+  response.data.forEach((resume, index) => {
+    console.log(`  이력서 ${index + 1}: ${resume.title} - visibility: ${resume.visibility}`);
+  });
+  
   return response.data;
 };
 
@@ -147,9 +158,13 @@ export const createResume = async (
   const payload = {
     title: request.title,
     jobCategory: request.jobCategory,
+    visibility: request.visibility || "PUBLIC", // 공개 설정 추가
     sections: JSON.stringify(request.sections),
     status: request.status || "DRAFT",
   };
+
+  console.log("🚀 [API] 이력서 생성 요청:", payload);
+  console.log("🚀 [API] visibility:", payload.visibility);
 
   const response = await api.post<{ resumeId: number }>(
     "/api/resume",
@@ -160,6 +175,8 @@ export const createResume = async (
       },
     }
   );
+  
+  console.log("✅ [API] 이력서 생성 응답:", response.data);
   return response.data;
 };
 
@@ -172,9 +189,13 @@ export const updateResume = async (
   const payload = {
     title: request.title,
     jobCategory: request.jobCategory,
+    visibility: request.visibility || "PUBLIC", // 공개 설정 추가
     sections: JSON.stringify(request.sections),
     status: request.status || "DRAFT",
   };
+
+  console.log("🔄 [API] 이력서 수정 요청 (ID:", resumeId, "):", payload);
+  console.log("🔄 [API] visibility:", payload.visibility);
 
   const response = await api.put<{ resumeId: number }>(
     `/api/resume/${resumeId}`,
@@ -185,6 +206,8 @@ export const updateResume = async (
       },
     }
   );
+  
+  console.log("✅ [API] 이력서 수정 응답:", response.data);
   return response.data;
 };
 
