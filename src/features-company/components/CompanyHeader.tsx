@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import CompanyHoverMenu from "../navigation-menu/components/CompanyHoverMenu";
 import CompanyDropdownMenu from "../navigation-menu/components/CompanyDropdownMenu";
 import { useAuth } from "../../context/AuthContext";
@@ -14,6 +14,7 @@ export default function CompanyHeader() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams(); // ✅ URL 파라미터 가져오기
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -104,6 +105,15 @@ export default function CompanyHeader() {
 
     const targetMenuId = menuId || defaultSubMenus[tabId];
     const targetPath = separateRoutes[targetMenuId] || baseRoutes[tabId];
+
+    // ✅ 같은 메뉴 클릭 감지
+    const currentMenu = searchParams.get("menu");
+    if (currentMenu === targetMenuId) {
+      // 같은 메뉴 클릭 시 reload 파라미터 추가
+      const timestamp = Date.now();
+      navigate(`${targetPath}?menu=${targetMenuId}&reload=${timestamp}`);
+      return;
+    }
 
     if (targetPath) {
       navigate(`${targetPath}?menu=${targetMenuId}`);
@@ -326,6 +336,7 @@ export default function CompanyHeader() {
                     onSubMenuClick={(tabId, subId) =>
                       handleMenuClick(tabId, subId)
                     }
+                    onClose={() => setHoveredTab(null)} // ✅ 호버 닫기
                   />
                 )}
               </div>

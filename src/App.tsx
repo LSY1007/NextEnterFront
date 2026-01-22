@@ -43,6 +43,7 @@ import ApplicantManagementPage from "./features-company/applicants/ApplicantMana
 import ApplicantDetailPage from "./features-company/applicants/ApplicantDetailPage";
 import ApplicantCompatibilityPage from "./features-company/applicants/ApplicantCompatibilityPage";
 import TalentSearchPage from "./features-company/talent-search/TalentSearchPage";
+import ScrapTalentPage from "./features-company/talent-search/ScrapTalentPage";
 import BusinessCreditPage from "./features-company/credit/BusinessCreditPage";
 import CompanyMyPage from "./features-company/company-mypage/CompanyMyPage";
 
@@ -281,6 +282,14 @@ function App() {
               element={
                 <ProtectedRoute allowedUserType="company">
                   <TalentSearchPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="scrap-talent"
+              element={
+                <ProtectedRoute allowedUserType="company">
+                  <ScrapTalentPage />
                 </ProtectedRoute>
               }
             />
