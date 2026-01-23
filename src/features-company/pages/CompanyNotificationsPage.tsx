@@ -10,6 +10,7 @@ import {
 } from '../../api/notification';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useNotificationWebSocket } from '../../hooks/useNotificationWebSocket';
 
 export default function CompanyNotificationsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -18,30 +19,54 @@ export default function CompanyNotificationsPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // 웹소켓 연결하여 실시간 알림 수신
+  useNotificationWebSocket({
+    userId: user?.userId ?? null,
+    userType: 'company',
+    onNotificationReceived: (notification) => {
+      console.log('기업 새 알림 수신:', notification);
+      setNotifications(prev => [notification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(notification.title, {
+          body: notification.content,
+          icon: '/favicon.ico',
+          tag: `notification-${notification.id}`
+        });
+      }
+    }
+  });
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/company/login');
       return;
     }
     loadNotifications();
+    
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        console.log('알림 권한:', permission);
+      });
+    }
   }, [isAuthenticated, navigate]);
 
   const loadNotifications = async () => {
-    if (!user?.id) {
+    if (!user?.userId) {
       setLoading(false);
       return;
     }
     
     setLoading(true);
     try {
-      // 5초 타임아웃 설정
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 5000)
       );
       
       const dataPromise = Promise.all([
-        getUnreadNotifications('company', user.id),
-        getUnreadCount('company', user.id)
+        getUnreadNotifications('company', user.userId),
+        getUnreadCount('company', user.userId)
       ]);
       
       const [unreadList, count] = await Promise.race([
@@ -177,8 +202,7 @@ export default function CompanyNotificationsPage() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="p-6 hover:bg-gray-50 transition cursor-pointer group"
-                  onClick={() => handleMarkAsRead(notification.id)}
+                  className="p-6 hover:bg-gray-50 transition group"
                 >
                   <div className="flex items-start space-x-4">
                     <span className="text-3xl flex-shrink-0">
@@ -189,7 +213,13 @@ export default function CompanyNotificationsPage() {
                         <h3 className="text-base font-semibold text-gray-900">
                           {notification.title}
                         </h3>
-                        <button className="text-sm text-purple-600 hover:text-purple-800 opacity-0 group-hover:opacity-100 transition whitespace-nowrap ml-4">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(notification.id);
+                          }}
+                          className="text-sm text-purple-600 hover:text-purple-800 opacity-0 group-hover:opacity-100 transition whitespace-nowrap ml-4"
+                        >
                           읽음 표시
                         </button>
                       </div>

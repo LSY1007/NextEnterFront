@@ -1,10 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import HoverMenu from "../features/navigation-menu/components/HoverMenu";
 import DropdownMenu from "../features/navigation-menu/components/DropdownMenu";
 import { useAuth } from "../context/AuthContext";
 import { logout as logoutApi } from "../api/auth";
 import { checkNavigationBlocked } from "../utils/navigationBlocker";
+import { getUnreadCount } from "../api/notification";
+import { websocketService, NotificationMessage } from "../services/websocket";
 
 const MENU_CLOSE_DELAY = 150;
 
@@ -26,11 +28,74 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-
-  // TODO: 알림 개수는 API로 가져와야 함
-  const unreadCount = 0; // 임시로 0으로 설정
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 알림 개수 가져오기 및 웹소켓 연결
+  useEffect(() => {
+    console.log('Header useEffect 실행 - isAuthenticated:', isAuthenticated, 'user:', user);
+    console.log('user.userId:', user?.userId); // ✅ 디버깅용
+    
+    const fetchUnreadCount = async () => {
+      if (isAuthenticated && user?.userId) {
+        try {
+          const count = await getUnreadCount('individual', user.userId);
+          console.log('알림 개수 로드 성공:', count);
+          setUnreadCount(count);
+        } catch (error) {
+          console.error('알림 개수 로드 실패:', error);
+          setUnreadCount(0);
+        }
+      } else {
+        setUnreadCount(0);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // 30초마다 알림 개수 업데이트 (백업용)
+    const interval = setInterval(fetchUnreadCount, 30000);
+    
+    // ✅ 알림 읽음 이벤트 리스너 추가
+    const handleNotificationRead = () => {
+      console.log('🔔 알림 읽음 이벤트 감지 - 알림 개수 다시 로드');
+      fetchUnreadCount();
+    };
+    window.addEventListener('notification-read', handleNotificationRead);
+    
+    // 웹소켓 연결
+    if (isAuthenticated && user?.userId) {
+      console.log('✅ 웹소켓 연결 조건 충족 - userId:', user.userId);
+      websocketService.connect(user.userId, 'individual', handleNewNotification);
+    } else {
+      console.log('❌ 웹소켓 연결 조건 미충족 - isAuthenticated:', isAuthenticated, 'userId:', user?.userId);
+    }
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('notification-read', handleNotificationRead);
+      // 컴포넌트 언마운트 시 웹소켓 연결 해제
+      console.log('Header 언마운트 - 웹소켓 연결 해제');
+      websocketService.disconnect();
+    };
+  }, [isAuthenticated, user]);
+
+  // 새 알림 수신 시 처리
+  const handleNewNotification = (notification: NotificationMessage) => {
+    console.log('새 알림 도착!', notification);
+    // 알림 개수 증가
+    setUnreadCount(prev => prev + 1);
+    
+    // 브라우저 알림 표시 (권한이 있는 경우)
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(notification.title, {
+        body: notification.content,
+        icon: '/favicon.ico',
+        tag: `notification-${notification.id}`
+      });
+    }
+  };
 
   const getActiveTab = () => {
     const path = location.pathname;
@@ -168,31 +233,6 @@ export default function Header() {
         <div className="px-4 py-4 mx-auto max-w-7xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* 알림 아이콘 */}
-              {isAuthenticated && (
-                <button
-                  onClick={() => navigate("/user/notifications")}
-                  className="relative p-2 text-gray-700 transition hover:text-blue-600 hover:bg-gray-100 rounded-full"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
-                  {/* 빨간 점 배지 - 읽지 않은 알림이 있을 때만 표시 */}
-                  {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                  )}
-                </button>
-              )}
               <button className="lg:hidden">
                 <svg
                   className="w-6 h-6"
@@ -245,7 +285,34 @@ export default function Header() {
 
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
-                <div className="relative">
+                <>
+                  {/* 알림 아이콘 */}
+                  <button
+                    onClick={() => {
+                      if (checkNavigationBlocked()) return;
+                      navigate('/user/notifications');
+                    }}
+                    className="relative p-2 text-gray-700 transition hover:text-blue-600 hover:bg-gray-100 rounded-full"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                      />
+                    </svg>
+                    {/* 빨간 점 배지 - 읽지 않은 알림이 있을 때만 표시 */}
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white"></span>
+                    )}
+                  </button>
+                  <div className="relative">
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center px-4 py-2 space-x-2 text-gray-700 transition hover:text-blue-600"
@@ -311,7 +378,8 @@ export default function Header() {
                       </button>
                     </div>
                   )}
-                </div>
+                  </div>
+                </>
               ) : (
                 <>
                   <button
@@ -403,7 +471,6 @@ export default function Header() {
         <DropdownMenu
           isOpen={isDropdownOpen}
           onMenuClick={(menuId) => {
-            // DropdownMenu 내부에서 클릭 시에도 handleMenuClick이 호출되므로 방어 로직 적용됨
             setIsDropdownOpen(false);
             const tabId = menuId.split("-sub-")[0];
             handleMenuClick(tabId, menuId);
