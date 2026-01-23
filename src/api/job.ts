@@ -44,12 +44,10 @@ export interface JobPostingResponse {
 
 // 공고 목록 응답 타입
 export interface JobPostingListResponse {
+  companyId: number | undefined;
   jobId: number;
-  companyId: number;
   title: string;
   companyName: string;
-  logoUrl?: string;
-  thumbnailUrl?: string;
   jobCategory: string;
   location: string;
   experienceMin?: number;
@@ -60,7 +58,6 @@ export interface JobPostingListResponse {
   status: string;
   viewCount: number;
   applicantCount: number;
-  bookmarkCount: number;
   createdAt: string;
   thumbnailUrl?: string; // 수정!!!!!!!!!!!!!!!!!!!!!!!!
   logoUrl?: string; // 수정!!!!!!!!!!!!!!!!!!!!!!!!
@@ -153,13 +150,5 @@ export const updateJobPostingStatus = async (
       },
     },
   );
-  return response.data;
-};
-
-// 기업의 모든 공고 조회 (상태 무관)
-export const getCompanyJobPostings = async (
-  companyId: number
-): Promise<JobPostingListResponse[]> => {
-  const response = await api.get(`${API_BASE_URL}/company/${companyId}`);
   return response.data;
 };
