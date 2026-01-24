@@ -29,6 +29,7 @@ import MatchingPage from "./features/matching/MatchingPage";
 import OfferPage from "./features/offer/OfferPage";
 import InterviewOfferPage from "./features/offer/InterViewOfferPage";
 import ApplicationStatusPage from "./features/application-status/ApplicationStatusPage";
+import ScrapStatusPage from "./features/scrap-status/ScrapStatusPage";
 import AllJobsPage from "./features/all-jobs/AllJobsPage";
 import AIRecommendedJobsPage from "./features/all-jobs/AIRecommendedJobsPage";
 import PositionJobsPage from "./features/all-jobs/PositionJobsPage";
@@ -219,10 +220,10 @@ function App() {
               }
             />
             <Route
-              path="notifications"
+              path="scrap-status"
               element={
                 <ProtectedRoute allowedUserType="personal">
-                  <UserNotificationsPage />
+                  <ScrapStatusPage />
                 </ProtectedRoute>
               }
             />
