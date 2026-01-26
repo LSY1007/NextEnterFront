@@ -107,15 +107,18 @@ export default function NotificationPopup({
       {/* 알림 팝업 */}
       <div className="fixed right-4 top-20 w-96 max-h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 z-[9999] overflow-hidden flex flex-col">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-white">
-          <h3 className="text-lg font-bold text-gray-900">
-            알림 <span className="text-purple-600">({unreadCount})</span>
-          </h3>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">알림</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              읽지 않은 알림 <span className="text-blue-600 font-semibold">{unreadCount}</span>개
+            </p>
+          </div>
           <div className="flex items-center space-x-2">
             {notifications.length > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
               >
                 모두 읽음
               </button>
@@ -135,14 +138,15 @@ export default function NotificationPopup({
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-              <svg className="w-16 h-16 mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+              <svg className="w-20 h-20 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
-              <p>새로운 알림이 없습니다</p>
+              <p className="text-base font-medium text-gray-500">새로운 알림이 없습니다</p>
+              <p className="text-sm text-gray-400 mt-1">알림이 오면 여기에 표시됩니다</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -161,7 +165,7 @@ export default function NotificationPopup({
                         <h4 className="text-sm font-semibold text-gray-900 truncate">
                           {notification.title}
                         </h4>
-                        <button className="text-xs text-purple-600 hover:text-purple-800 opacity-0 group-hover:opacity-100 transition whitespace-nowrap ml-2">
+                        <button className="text-xs text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition whitespace-nowrap ml-2">
                           읽음
                         </button>
                       </div>
@@ -190,7 +194,7 @@ export default function NotificationPopup({
                 onClose();
                 // 알림 목록 페이지로 이동 (필요시 구현)
               }}
-              className="w-full text-sm text-purple-600 hover:text-purple-800 font-medium"
+              className="w-full text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
               모든 알림 보기
             </button>
