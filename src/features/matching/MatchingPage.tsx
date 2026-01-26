@@ -19,7 +19,23 @@ import { CREDIT_COST } from "./data/sampleData";
 
 // ✅ [설정] 히스토리 자동 삭제 시간 (현재: 3분)
 // 테스트 성공 후 나중에 이 값을 늘리시면 됩니다. (예: 30일 = 30 * 24 * 60 * 60 * 1000)
-const HISTORY_EXPIRATION_MS = 3 * 60 * 1000; 
+const HISTORY_EXPIRATION_MS = 3 * 60 * 1000;
+
+/**
+ * 한글 직무명을 영어로 변환 (AI 서버 및 백엔드 매칭용)
+ */
+const convertKoreanRole = (role: string): string => {
+  const map: Record<string, string> = {
+    "백엔드 개발자": "Backend Developer",
+    "프론트엔드 개발자": "Frontend Developer",
+    "풀스택 개발자": "Fullstack Developer",
+    "UI/UX 디자이너": "UI/UX Designer",
+    "디자이너": "Designer",
+    "기획자": "Product Manager",
+    "PM": "Product Manager",
+  };
+  return map[role] || role;
+};
 
 interface MatchingPageProps {
   onEditResume?: () => void;
@@ -34,7 +50,7 @@ export default function MatchingPage({
 }: MatchingPageProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const { activeMenu, handleMenuClick, setActiveMenu } = usePageNavigation(
     "matching",
     initialMenu || "matching-sub-1",
@@ -50,16 +66,16 @@ export default function MatchingPage({
   const [isLoading, setIsLoading] = useState(false);
 
   // AppContext에서 히스토리 상태와 setter 가져오기
-  const { 
-    resumes, 
-    businessJobs, 
-    addMatchingHistory, 
+  const {
+    resumes,
+    businessJobs,
+    addMatchingHistory,
     // @ts-ignore
-    matchingHistory, 
+    matchingHistory,
     // @ts-ignore
     setMatchingHistory,
-    setResumes, 
-    setBusinessJobs 
+    setResumes,
+    setBusinessJobs
   } = useApp();
 
   // ========================================================================
@@ -95,7 +111,7 @@ export default function MatchingPage({
   // ========================================================================
   const handleDeleteHistory = (historyId: number) => {
     if (!matchingHistory || !setMatchingHistory) return;
-    
+
     if (window.confirm("정말 이 히스토리를 삭제하시겠습니까?")) {
       const updatedHistory = matchingHistory.filter((h: any) => h.id !== historyId);
       setMatchingHistory(updatedHistory);
@@ -104,11 +120,12 @@ export default function MatchingPage({
 
   // 1. 이력서 목록 로드
   useEffect(() => {
-    const loadResumesIfEmpty = async () => {
-      if (resumes.length === 0 && user?.userId) {
+    const loadResumes = async () => {
+      if (user?.userId) {
         try {
+          console.log('🔄 [MatchingPage] 이력서 목록 동기화 시작 (userId: ' + user.userId + ')');
           const data = await getResumeList(user.userId);
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             const contextResumes = data.map((resume) => ({
               id: resume.resumeId,
               title: resume.title,
@@ -116,14 +133,15 @@ export default function MatchingPage({
               applications: 0,
             }));
             setResumes(contextResumes);
+            console.log('✅ [MatchingPage] 이력서 목록 동기화 완료:', contextResumes.length + '개');
           }
         } catch (error) {
-          console.error('이력서 로드 오류:', error);
+          console.error('❌ [MatchingPage] 이력서 로드 오류:', error);
         }
       }
     };
-    loadResumesIfEmpty();
-  }, [user?.userId, resumes.length, setResumes]);
+    loadResumes();
+  }, [user?.userId, setResumes]);
 
   // 2. 공고 목록 로드
   useEffect(() => {
@@ -178,9 +196,20 @@ export default function MatchingPage({
 
     try {
       const resumeIdNum = parseInt(selectedResume);
-      const userIdNum = typeof user?.userId === 'string' ? parseInt(user.userId) : user?.userId || 1;
+
+      // ✅ [수정] userId가 없는 경우 1로 고정하는 대신 에러 처리 (500 에러 방지)
+      const userIdNum = user?.userId
+        ? (typeof user.userId === 'string' ? parseInt(user.userId) : user.userId)
+        : null;
+
+      if (!userIdNum) {
+        alert("로그인 정보가 올바르지 않습니다. 다시 로그인해주세요.");
+        setIsLoading(false);
+        return;
+      }
+
       const resumeDetail = await getResumeDetail(resumeIdNum, userIdNum);
-      
+
       console.log("🔍 [DEBUG] 백엔드 이력서 원본:", resumeDetail);
 
       // structuredData 파싱하여 필요한 정보 추출
@@ -198,7 +227,7 @@ export default function MatchingPage({
           }
         } catch {
           // JSON이 아니면 쉼표로 분리하거나 단일 문자열로 처리
-          skillsList = resumeDetail.skills.includes(',') 
+          skillsList = resumeDetail.skills.includes(',')
             ? resumeDetail.skills.split(',').map(s => s.trim())
             : [resumeDetail.skills];
         }
@@ -208,7 +237,7 @@ export default function MatchingPage({
       if (resumeDetail.structuredData) {
         try {
           const sections: ResumeSections = JSON.parse(resumeDetail.structuredData);
-          
+
           // 경력 계산 (careers에서 기간 합산)
           if (sections.careers && sections.careers.length > 0) {
             let totalMonths = 0;
@@ -222,7 +251,7 @@ export default function MatchingPage({
                   const end = parts[1].trim();
                   const startParts = start.split('.');
                   const endParts = end.split('.');
-                  
+
                   if (startParts.length === 2 && endParts.length === 2) {
                     const startYear = parseInt(startParts[0]);
                     const startMonth = parseInt(startParts[1]);
@@ -248,13 +277,13 @@ export default function MatchingPage({
             });
             experienceYears = Math.floor(totalMonths / 12);
           }
-          
+
           // 학력 추출 (educations에서 최고 학력)
           if (sections.educations && sections.educations.length > 0) {
             const highestEdu = sections.educations[0];
             education = highestEdu.school || "University";
           }
-          
+
           // 선호 지역 (personalInfo에서 추출)
           if (sections.personalInfo && sections.personalInfo.address) {
             preferredLocation = sections.personalInfo.address;
@@ -268,32 +297,22 @@ export default function MatchingPage({
         resumeId: resumeIdNum,
         userId: userIdNum,
         resumeText: generateResumeText(resumeDetail),  // ⭐ 추가: 이력서 텍스트 생성
-        jobCategory: resumeDetail.jobCategory || "Backend Developer",
+        jobCategory: convertKoreanRole(resumeDetail.jobCategory || "Backend Developer"), // ✅ 롤백 및 수정: 한글 직무 변환
         skills: skillsList,
-        experience: experienceYears, 
+        experience: experienceYears,
         education: education,
         preferredLocation: preferredLocation
       };
-      
-      // target_role 영어로 변환 (한글이면 변환)
-      if (aiRequest.target_role && /[가-힣]/.test(aiRequest.target_role)) {
-        aiRequest.target_role = convertKoreanRole(aiRequest.target_role);
-        console.log("🔄 [DEBUG] Converted target_role to English:", aiRequest.target_role);
-      }
-      
-      // resumeMapper에서 이미 기본값 처리를 했으므로, 더미 데이터 로직 제거
+
       // AI 서버가 빈 데이터를 허용하는지 확인 후, 필요시에만 추가 검증
       console.log("🚀 [DEBUG] Final AI Request (sending to backend):", aiRequest);
-
-
-      console.log("🚀 [DEBUG] AI 서버로 보낼 요청:", aiRequest);
 
       const aiResult = await getAiRecommendation(aiRequest);
 
       setRecommendedCompanies(aiResult.companies);
       setAiReport(aiResult.ai_report);
       setHasAnalysis(true);
-      
+
       if (currentCredit >= CREDIT_COST) {
         setCurrentCredit(currentCredit - CREDIT_COST);
       }
