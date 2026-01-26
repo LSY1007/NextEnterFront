@@ -5,7 +5,7 @@ import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
 import { getCreditBalance } from "../../api/credit";
 import { searchTalents, type TalentSearchResponse } from "../../api/talent";
-import { getCompanyJobPostings, type JobPostingListResponse } from "../../api/job";
+import { getJobPostings, type JobPostingListResponse } from "../../api/job";
 import { getApplies, type ApplyListResponse } from "../../api/apply";
 
 export default function BusinessCreditPage() {
