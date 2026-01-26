@@ -160,3 +160,11 @@ export const updateJobPostingStatus = async (
   );
   return response.data;
 };
+
+// 특정 기업의 모든 공고 조회 (상태 무관)
+export const getCompanyJobPostings = async (
+  companyId: number,
+): Promise<JobPostingListResponse[]> => {
+  const response = await api.get(`${API_BASE_URL}/company/${companyId}`);
+  return response.data;
+};

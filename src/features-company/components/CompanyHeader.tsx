@@ -13,7 +13,7 @@ const MENU_CLOSE_DELAY = 150;
 const LOGIN_REQUIRED_MENUS = ["jobs", "applicants", "talent", "ads", "credit"];
 
 export default function CompanyHeader() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth(); // ✅ isLoading 추가
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams(); // ✅ URL 파라미터 가져오기
@@ -28,6 +28,12 @@ export default function CompanyHeader() {
 
   // 알림 개수 가져오기 및 웹소켓 연결
   useEffect(() => {
+    // ✅ 인증 상태 로딩 중이면 대기
+    if (isLoading) {
+      console.log('⏳ AuthContext 로딩 중...');
+      return;
+    }
+    
     console.log('CompanyHeader useEffect 실행 - isAuthenticated:', isAuthenticated, 'user:', user);
     console.log('user.userId:', user?.userId);
     
@@ -59,12 +65,16 @@ export default function CompanyHeader() {
     window.addEventListener('notification-read', handleNotificationRead);
     
     // 웹소켓 연결
+    // ❗ 임시 비활성화 - 백엔드 웹소켓 설정 확인 후 활성화
+    console.log('⏸️ 웹소켓 연결 비활성화 (백엔드 설정 필요)');
+    /* 원래 코드 - 백엔드 웹소켓 설정 후 활성화
     if (isAuthenticated && user?.userId) {
       console.log('✅ 기업 웹소켓 연결 조건 충족 - userId:', user.userId);
       websocketService.connect(user.userId, 'company', handleNewNotification);
     } else {
       console.log('❌ 기업 웹소켓 연결 조건 미충족 - isAuthenticated:', isAuthenticated, 'userId:', user?.userId);
     }
+    */
     
     return () => {
       clearInterval(interval);
@@ -73,7 +83,7 @@ export default function CompanyHeader() {
       console.log('CompanyHeader 언마운트 - 웹소켓 연결 해제');
       websocketService.disconnect();
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isLoading]); // ✅ isLoading 의존성 추가
 
   // 새 알림 수신 시 처리
   const handleNewNotification = (notification: NotificationMessage) => {

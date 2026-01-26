@@ -14,9 +14,7 @@ interface JobSearchFilterProps {
 export default function JobSearchFilter({
   onFilterChange,
 }: JobSearchFilterProps) {
-  const [activeTab, setActiveTab] = useState<"job" | "region" | "search">(
-    "job",
-  );
+  const [activeTab, setActiveTab] = useState<"job" | "region">("job");
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -102,46 +100,68 @@ export default function JobSearchFilter({
 
   return (
     <div className="p-8 mb-8 bg-white shadow-lg rounded-2xl">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">공고 검색</h2>
       </div>
 
-      {/* 탭 네비게이션 */}
+      {/* 탭 + 검색창 한 줄 배치 - 동일한 너비 */}
       <div className="flex w-full border-b border-gray-200">
+        {/* 직업 선택 탭 */}
         <button
           onClick={() => setActiveTab("job")}
-          className={`flex-1 py-3 text-center font-semibold transition ${
+          // 👇 [수정] relative 추가, border-b-2 제거
+          className={`relative flex-1 py-3 text-center font-semibold transition ${
             activeTab === "job"
-              ? "text-blue-600 border-b-2 border-blue-600"
+              ? "text-blue-600"
               : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
           }`}
         >
           직업 선택
+          {/* 👇 [추가] 둥근 밑줄 div */}
+          {activeTab === "job" && (
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-blue-500 rounded-full" />
+          )}
         </button>
+
+        {/* 지역 선택 탭 */}
         <button
           onClick={() => setActiveTab("region")}
-          className={`flex-1 py-3 text-center font-semibold transition ${
+          // 👇 [수정] relative 추가, border-b-2 제거
+          className={`relative flex-1 py-3 text-center font-semibold transition ${
             activeTab === "region"
-              ? "text-blue-600 border-b-2 border-blue-600"
+              ? "text-blue-600"
               : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
           }`}
         >
           지역 선택
+          {/* 👇 [추가] 둥근 밑줄 div */}
+          {activeTab === "region" && (
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-blue-500 rounded-full" />
+          )}
         </button>
-        <button
-          onClick={() => setActiveTab("search")}
-          className={`flex-1 py-3 text-center font-semibold transition ${
-            activeTab === "search"
-              ? "text-blue-600 border-b-2 border-blue-600"
-              : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
-          }`}
-        >
-          검색어 입력
-        </button>
+
+        {/* 검색창 - 탭처럼 보이게 */}
+        <div className="relative flex-1">
+          <form onSubmit={handleSearchEnter} className="h-full">
+            <input
+              type="text"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              placeholder="직업(직무) 또는 전문분야 입력"
+              className="w-full h-full px-4 py-3 pr-24 text-sm text-left border border-blue-500 rounded-md focus:outline-none focus:border-blue-600"
+            />
+            <button
+              type="submit"
+              className="absolute px-5 py-2 text-sm font-semibold text-white transition -translate-y-1/2 bg-blue-600 rounded right-2 top-1/2 hover:bg-blue-700"
+            >
+              검색
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* 탭 컨텐츠 */}
-      <div className="mt-12">
+      <div className="mt-8">
         {/* 직업 선택 탭 */}
         {activeTab === "job" && (
           <div>
@@ -359,32 +379,6 @@ export default function JobSearchFilter({
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* 검색어 입력 탭 */}
-        {activeTab === "search" && (
-          <div>
-            <p className="mb-4 text-sm text-gray-600">
-              직무, 회사명, 키워드로 검색해보세요
-            </p>
-            <form onSubmit={handleSearchEnter}>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="직업(직무) 또는 전문분야 입력"
-                  className="w-full px-4 py-3 pr-24 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                />
-                <button
-                  type="submit"
-                  className="absolute px-6 py-2 text-sm font-semibold text-white transition -translate-y-1/2 bg-blue-600 rounded-lg right-2 top-1/2 hover:bg-blue-700"
-                >
-                  검색
-                </button>
-              </div>
-            </form>
           </div>
         )}
       </div>
