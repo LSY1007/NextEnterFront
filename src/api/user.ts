@@ -11,6 +11,8 @@ export interface UserProfile {
   bio?: string;
   provider?: string;
   createdAt?: string;
+  address?: string; // ✅ 추가
+  detailAddress?: string; // ✅ 추가
 }
 
 export interface UpdateUserRequest {
@@ -19,6 +21,8 @@ export interface UpdateUserRequest {
   age?: number;
   gender?: string;
   bio?: string;
+  address?: string; // ✅ 추가
+  detailAddress?: string; // ✅ 추가
 }
 
 export interface ApiResponse<T> {

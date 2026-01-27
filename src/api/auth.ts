@@ -19,6 +19,8 @@ export interface SignupRequest {
   phone: string;
   age?: number;
   gender?: string;
+  address?: string; // ✅ 추가
+  detailAddress?: string; // ✅ 추가
 }
 
 export interface SignupResponse {

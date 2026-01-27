@@ -5,13 +5,14 @@ import {
   createResume,
   updateResume,
   getResumeDetail,
-  createResumeWithFiles,  // ✅ 추가
-  updateResumeWithFiles,  // ✅ 추가
+  createResumeWithFiles, // ✅ 추가
+  updateResumeWithFiles, // ✅ 추가
   CreateResumeRequest,
   ResumeSections,
 } from "../../api/resume";
 import ResumeSidebar from "./components/ResumeSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import SchoolSearchInput from "./components/SchoolSearchInput";
 import { useKakaoAddress } from "../../hooks/useKakaoAddress";
 
 interface ResumeFormPageProps {
@@ -36,15 +37,15 @@ export default function ResumeFormPage({
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "resume",
     initialMenu,
-    onNavigate
+    onNavigate,
   );
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedJob, setSelectedJob] = useState<string>("");
-  
+
   // ✅ 학력: 객체 배열로 변경
-  const [educations, setEducations] = useState< 
+  const [educations, setEducations] = useState<
     {
       school: string;
       type: string; // 고등학교, 대학교, 대학원
@@ -53,8 +54,17 @@ export default function ResumeFormPage({
       startDate: string; // 입학일
       endDate: string; // 졸업일
     }[]
-  >([{ school: "", type: "", subType: "", major: "", startDate: "", endDate: "" }]);
-  
+  >([
+    {
+      school: "",
+      type: "",
+      subType: "",
+      major: "",
+      startDate: "",
+      endDate: "",
+    },
+  ]);
+
   // ✅ 경력: 객체 배열로 변경
   const [careers, setCareers] = useState<
     {
@@ -65,21 +75,21 @@ export default function ResumeFormPage({
       endDate: string;
     }[]
   >([{ company: "", position: "", role: "", startDate: "", endDate: "" }]);
-  
+
   // ✅ 포트폴리오: File 객체 배열로 변경
   const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
   const portfolioFileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // ✅ 경험/활동/교육: 객체 배열로 변경
   const [experiences, setExperiences] = useState<
     { title: string; startDate: string; endDate: string }[]
   >([{ title: "", startDate: "", endDate: "" }]);
-  
+
   // ✅ 자격증/어학/수상: 객체 배열로 변경
   const [certificates, setCertificates] = useState<
     { title: string; date: string }[]
   >([{ title: "", date: "" }]);
-  
+
   // ✅ 자기소개서: File 객체 배열로 변경
   const [coverLetterFiles, setCoverLetterFiles] = useState<File[]>([]);
   const coverLetterFileInputRef = useRef<HTMLInputElement>(null);
@@ -110,132 +120,132 @@ export default function ResumeFormPage({
   }, [resumeId, user?.userId]);
 
   // 이력서 데이터 로드 함수
-const loadResumeData = async (id: number, userId: number) => {
-  setIsLoading(true);
-  setError("");
+  const loadResumeData = async (id: number, userId: number) => {
+    setIsLoading(true);
+    setError("");
 
-  try {
-    const resume = await getResumeDetail(id, userId);
-    console.log("🔍 [디버그] 불러온 이력서 데이터:", resume);
-    console.log("🔍 [디버그] visibility:", resume.visibility);
+    try {
+      const resume = await getResumeDetail(id, userId);
+      console.log("🔍 [디버그] 불러온 이력서 데이터:", resume);
+      console.log("🔍 [디버그] visibility:", resume.visibility);
 
-    // 기본 정보
-    setResumeTitle(resume.title);
-    setSelectedJob(resume.jobCategory);
-    
-    // visibility 로드 - 기본값은 PUBLIC
-    const loadedVisibility = resume.visibility || "PUBLIC";
-    setVisibility(loadedVisibility);
-    console.log("🔍 [디버그] 설정된 visibility:", loadedVisibility);
+      // 기본 정보
+      setResumeTitle(resume.title);
+      setSelectedJob(resume.jobCategory);
 
-    // structuredData 파싱
-    if (resume.structuredData) {
-      try {
-        const sections: ResumeSections = JSON.parse(resume.structuredData);
-        console.log("파싱된 섹션 데이터:", sections);
+      // visibility 로드 - 기본값은 PUBLIC
+      const loadedVisibility = resume.visibility || "PUBLIC";
+      setVisibility(loadedVisibility);
+      console.log("🔍 [디버그] 설정된 visibility:", loadedVisibility);
 
-        // 인적사항
-        if (sections.personalInfo) {
-          setName(sections.personalInfo.name || "");
-          setSelectedGender(sections.personalInfo.gender || "");
-          setBirthDate(sections.personalInfo.birthDate || "");
-          setEmail(sections.personalInfo.email || "");
-          setAddress(sections.personalInfo.address || "");
-          setSelectedImage(sections.personalInfo.profileImage || null);
-        }
+      // structuredData 파싱
+      if (resume.structuredData) {
+        try {
+          const sections: ResumeSections = JSON.parse(resume.structuredData);
+          console.log("파싱된 섹션 데이터:", sections);
 
-        // 경험/활동/교육
-        if (sections.experiences && sections.experiences.length > 0) {
-          setExperiences(
-            sections.experiences.map((exp) => ({
-              title: exp.title || "",
-              startDate: exp.period?.split(" - ")[0] || "",
-              endDate: exp.period?.split(" - ")[1] || "",
-            }))
-          );
-        }
+          // 인적사항
+          if (sections.personalInfo) {
+            setName(sections.personalInfo.name || "");
+            setSelectedGender(sections.personalInfo.gender || "");
+            setBirthDate(sections.personalInfo.birthDate || "");
+            setEmail(sections.personalInfo.email || "");
+            setAddress(sections.personalInfo.address || "");
+            setSelectedImage(sections.personalInfo.profileImage || null);
+          }
 
-        // 자격증/어학/수상
-        if (sections.certificates && sections.certificates.length > 0) {
-          setCertificates(
-            sections.certificates.map((cert) => ({
-              title: cert.title || "",
-              date: cert.date || "",
-            }))
-          );
-        }
+          // 경험/활동/교육
+          if (sections.experiences && sections.experiences.length > 0) {
+            setExperiences(
+              sections.experiences.map((exp) => ({
+                title: exp.title || "",
+                startDate: exp.period?.split(" - ")[0] || "",
+                endDate: exp.period?.split(" - ")[1] || "",
+              })),
+            );
+          }
 
-        // 학력
-        if (sections.educations && sections.educations.length > 0) {
-          setEducations(
-            sections.educations.map((edu) => {
-              const periodParts = edu.period?.split(" ~ ") || ["", ""];
-              return {
-                school: edu.school || "",
-                type: "",
-                subType: "",
-                major: "",
-                startDate: periodParts[0] || "",
-                endDate: periodParts[1] || "",
-              };
-            })
-          );
-        }
+          // 자격증/어학/수상
+          if (sections.certificates && sections.certificates.length > 0) {
+            setCertificates(
+              sections.certificates.map((cert) => ({
+                title: cert.title || "",
+                date: cert.date || "",
+              })),
+            );
+          }
 
-        // 경력
-        if (sections.careers && sections.careers.length > 0) {
-          setCareers(
-            sections.careers.map((career) => {
-              const periodParts = career.period?.split(" ~ ") || ["", ""];
-              return {
-                company: career.company || "",
-                position: "",
-                role: "",
-                startDate: periodParts[0] || "",
-                endDate: periodParts[1] || "",
-              };
-            })
-          );
-        }
+          // 학력
+          if (sections.educations && sections.educations.length > 0) {
+            setEducations(
+              sections.educations.map((edu) => {
+                const periodParts = edu.period?.split(" ~ ") || ["", ""];
+                return {
+                  school: edu.school || "",
+                  type: "",
+                  subType: "",
+                  major: "",
+                  startDate: periodParts[0] || "",
+                  endDate: periodParts[1] || "",
+                };
+              }),
+            );
+          }
 
-        // ❌ 포트폴리오 - 수정 모드에서는 기존 파일을 불러올 수 없음 (파일명만 있음)
-        // 사용자가 다시 업로드해야 함
+          // 경력
+          if (sections.careers && sections.careers.length > 0) {
+            setCareers(
+              sections.careers.map((career) => {
+                const periodParts = career.period?.split(" ~ ") || ["", ""];
+                return {
+                  company: career.company || "",
+                  position: "",
+                  role: "",
+                  startDate: periodParts[0] || "",
+                  endDate: periodParts[1] || "",
+                };
+              }),
+            );
+          }
 
-        // 자기소개서
-        if (sections.coverLetter) {
-          setCoverLetterTitle(sections.coverLetter.title || "");
-          setCoverLetterContent(sections.coverLetter.content || "");
-          // ❌ 파일은 불러올 수 없음 - File 객체가 아닌 문자열 배열이므로
+          // ❌ 포트폴리오 - 수정 모드에서는 기존 파일을 불러올 수 없음 (파일명만 있음)
           // 사용자가 다시 업로드해야 함
-        }
-      } catch (parseError) {
-        console.error("섹션 데이터 파싱 오류:", parseError);
-      }
-    }
 
-    // 스킬
-    if (resume.skills) {
-      try {
-        console.log("🔍 [디버그] resume.skills 원본:", resume.skills);
-        const skillsArray = JSON.parse(resume.skills);
-        console.log("🔍 [디버그] 파싱된 skillsArray:", skillsArray);
-        if (Array.isArray(skillsArray)) {
-          setSelectedSkills(skillsArray);
-          console.log("✅ [디버그] 스킬 설정 성공:", skillsArray);
+          // 자기소개서
+          if (sections.coverLetter) {
+            setCoverLetterTitle(sections.coverLetter.title || "");
+            setCoverLetterContent(sections.coverLetter.content || "");
+            // ❌ 파일은 불러올 수 없음 - File 객체가 아닌 문자열 배열이므로
+            // 사용자가 다시 업로드해야 함
+          }
+        } catch (parseError) {
+          console.error("섹션 데이터 파싱 오류:", parseError);
         }
-      } catch (error) {
-        console.error("❌ [디버그] 스킬 파싱 오류:", error);
       }
-    } else {
-      console.log("⚠️ [디버그] resume.skills가 비어있음");
+
+      // 스킬
+      if (resume.skills) {
+        try {
+          console.log("🔍 [디버그] resume.skills 원본:", resume.skills);
+          const skillsArray = JSON.parse(resume.skills);
+          console.log("🔍 [디버그] 파싱된 skillsArray:", skillsArray);
+          if (Array.isArray(skillsArray)) {
+            setSelectedSkills(skillsArray);
+            console.log("✅ [디버그] 스킬 설정 성공:", skillsArray);
+          }
+        } catch (error) {
+          console.error("❌ [디버그] 스킬 파싱 오류:", error);
+        }
+      } else {
+        console.log("⚠️ [디버그] resume.skills가 비어있음");
+      }
+    } catch (err: any) {
+      console.error("이력서 데이터 로드 오류:", err);
+      setError("이력서 데이터를 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err: any) {
-    console.error("이력서 데이터 로드 오류:", err);
-    setError("이력서 데이터를 불러오는 중 오류가 발생했습니다.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -269,7 +279,17 @@ const loadResumeData = async (id: number, userId: number) => {
 
   // 학력 추가/삭제
   const addEducation = () => {
-    setEducations([...educations, { school: "", type: "", subType: "", major: "", startDate: "", endDate: "" }]);
+    setEducations([
+      ...educations,
+      {
+        school: "",
+        type: "",
+        subType: "",
+        major: "",
+        startDate: "",
+        endDate: "",
+      },
+    ]);
   };
 
   const removeEducation = (index: number) => {
@@ -278,7 +298,10 @@ const loadResumeData = async (id: number, userId: number) => {
 
   // 경력 추가/삭제
   const addCareer = () => {
-    setCareers([...careers, { company: "", position: "", role: "", startDate: "", endDate: "" }]);
+    setCareers([
+      ...careers,
+      { company: "", position: "", role: "", startDate: "", endDate: "" },
+    ]);
   };
 
   const removeCareer = (index: number) => {
@@ -308,20 +331,22 @@ const loadResumeData = async (id: number, userId: number) => {
     portfolioFileInputRef.current?.click();
   };
 
-  const handlePortfolioFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePortfolioFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
       // PDF와 Word 파일만 허용
-      const validFiles = newFiles.filter(file => {
-        const ext = file.name.split('.').pop()?.toLowerCase();
-        return ['pdf', 'doc', 'docx'].includes(ext || '');
+      const validFiles = newFiles.filter((file) => {
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        return ["pdf", "doc", "docx"].includes(ext || "");
       });
-      
+
       if (validFiles.length !== newFiles.length) {
-        alert('PDF, Word 파일만 업로드 가능합니다.');
+        alert("PDF, Word 파일만 업로드 가능합니다.");
       }
-      
+
       setPortfolioFiles([...portfolioFiles, ...validFiles]);
     }
   };
@@ -336,21 +361,21 @@ const loadResumeData = async (id: number, userId: number) => {
   };
 
   const handleCoverLetterFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
       // PDF와 Word 파일만 허용
-      const validFiles = newFiles.filter(file => {
-        const ext = file.name.split('.').pop()?.toLowerCase();
-        return ['pdf', 'doc', 'docx'].includes(ext || '');
+      const validFiles = newFiles.filter((file) => {
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        return ["pdf", "doc", "docx"].includes(ext || "");
       });
-      
+
       if (validFiles.length !== newFiles.length) {
-        alert('PDF, Word 파일만 업로드 가능합니다.');
+        alert("PDF, Word 파일만 업로드 가능합니다.");
       }
-      
+
       setCoverLetterFiles([...coverLetterFiles, ...validFiles]);
     }
   };
@@ -365,37 +390,38 @@ const loadResumeData = async (id: number, userId: number) => {
       alert("이력서 제목을 입력해주세요.");
       return;
     }
-  
+
     if (!name) {
       alert("이름을 입력해주세요.");
       return;
     }
-  
+
     if (!selectedJob) {
       alert("직무를 선택해주세요.");
       return;
     }
-  
+
     if (!user?.userId) {
       alert("로그인이 필요합니다.");
       return;
     }
-  
+
     setIsLoading(true);
-  
+
     try {
       // ✅ 1. 경험/활동/교육 데이터 준비 (날짜가 없어도 title만 있으면 포함)
       const experiencesData = experiences
         .filter((e) => e.title && e.title.trim() !== "")
         .map((e) => ({
           title: e.title,
-          period: e.startDate && e.endDate ? `${e.startDate} - ${e.endDate}` : "",
+          period:
+            e.startDate && e.endDate ? `${e.startDate} - ${e.endDate}` : "",
         }));
-  
+
       console.log("📤 [디버그] experiences 원본:", experiences);
       console.log("📤 [디버그] experiences 필터링 후:", experiencesData);
       console.log("📤 [디버그] experiences 개수:", experiencesData.length);
-  
+
       // ✅ 2. 자격증/어학/수상 데이터 준비
       const certificatesData = certificates
         .filter((c) => c.title && c.title.trim() !== "")
@@ -403,11 +429,11 @@ const loadResumeData = async (id: number, userId: number) => {
           title: c.title,
           date: c.date || "",
         }));
-  
+
       console.log("📤 [디버그] certificates 원본:", certificates);
       console.log("📤 [디버그] certificates 필터링 후:", certificatesData);
       console.log("📤 [디버그] certificates 개수:", certificatesData.length);
-  
+
       // ✅ 3. 학력 데이터 준비
       const educationsData = educations
         .filter((e) => e.school && e.school.trim() !== "")
@@ -418,14 +444,15 @@ const loadResumeData = async (id: number, userId: number) => {
           if (e.major) schoolText += ` ${e.major}`;
           return {
             school: schoolText,
-            period: e.startDate && e.endDate ? `${e.startDate} ~ ${e.endDate}` : "",
+            period:
+              e.startDate && e.endDate ? `${e.startDate} ~ ${e.endDate}` : "",
           };
         });
-  
+
       console.log("📤 [디버그] educations 원본:", educations);
       console.log("📤 [디버그] educations 필터링 후:", educationsData);
       console.log("📤 [디버그] educations 개수:", educationsData.length);
-  
+
       // ✅ 4. 경력 데이터 준비
       const careersData = careers
         .filter((c) => c.company && c.company.trim() !== "")
@@ -433,13 +460,14 @@ const loadResumeData = async (id: number, userId: number) => {
           company: c.company,
           position: c.position || "",
           role: c.role || "",
-          period: c.startDate && c.endDate ? `${c.startDate} ~ ${c.endDate}` : "",
+          period:
+            c.startDate && c.endDate ? `${c.startDate} ~ ${c.endDate}` : "",
         }));
-  
+
       console.log("📤 [디버그] careers 원본:", careers);
       console.log("📤 [디버그] careers 필터링 후:", careersData);
       console.log("📤 [디버그] careers 개수:", careersData.length);
-  
+
       // ✅ 5. 요청 데이터 생성 (빈 배열이라도 "[]"로 전송)
       const resumeData: CreateResumeRequest = {
         title: resumeTitle,
@@ -447,19 +475,21 @@ const loadResumeData = async (id: number, userId: number) => {
         skills: selectedSkills.join(", "),
         visibility: visibility,
         // ⚠️ 중요: 빈 배열이어도 "[]"로 전송 (undefined 대신)
-        experiences: experiencesData.length > 0 ? JSON.stringify(experiencesData) : "[]",
-        certificates: certificatesData.length > 0 ? JSON.stringify(certificatesData) : "[]",
-        educations: educationsData.length > 0 ? JSON.stringify(educationsData) : "[]",
+        experiences:
+          experiencesData.length > 0 ? JSON.stringify(experiencesData) : "[]",
+        certificates:
+          certificatesData.length > 0 ? JSON.stringify(certificatesData) : "[]",
+        educations:
+          educationsData.length > 0 ? JSON.stringify(educationsData) : "[]",
         careers: careersData.length > 0 ? JSON.stringify(careersData) : "[]",
         status: "COMPLETED",
       };
-  
+
       console.log("📤 [디버그] 최종 전송 데이터:", resumeData);
       console.log("📤 [디버그] 포트폴리오 파일:", portfolioFiles);
       console.log("📤 [디버그] 자기소개서 파일:", coverLetterFiles);
-  
+
       let response;
-  
       // ✅ 파일이 있으면 파일 포함 API, 없으면 일반 API
       if (portfolioFiles.length > 0 || coverLetterFiles.length > 0) {
         if (resumeId) {
@@ -468,14 +498,14 @@ const loadResumeData = async (id: number, userId: number) => {
             resumeData,
             user.userId,
             portfolioFiles,
-            coverLetterFiles
+            coverLetterFiles,
           );
         } else {
           response = await createResumeWithFiles(
             resumeData,
             user.userId,
             portfolioFiles,
-            coverLetterFiles
+            coverLetterFiles,
           );
         }
       } else {
@@ -485,7 +515,7 @@ const loadResumeData = async (id: number, userId: number) => {
           response = await createResume(resumeData, user.userId);
         }
       }
-  
+
       if (response.resumeId) {
         alert(`이력서가 ${resumeId ? "수정" : "등록"}되었습니다!`);
         navigate("/user/resume");
@@ -497,7 +527,7 @@ const loadResumeData = async (id: number, userId: number) => {
       console.error("❌ [디버그] 에러 상세:", err.response?.data);
       setError(
         err.response?.data?.message ||
-          `이력서 ${resumeId ? "수정" : "등록"} 중 오류가 발생했습니다.`
+          `이력서 ${resumeId ? "수정" : "등록"} 중 오류가 발생했습니다.`,
       );
     } finally {
       setIsLoading(false);
@@ -507,7 +537,7 @@ const loadResumeData = async (id: number, userId: number) => {
   // 취소 처리
   const handleCancel = () => {
     if (window.confirm("정말 취소하시겠습니까?")) {
-      navigate("/user/resume");
+      navigate("/user/resume?menu=resume-sub-1");
     }
   };
 
@@ -908,7 +938,7 @@ const loadResumeData = async (id: number, userId: number) => {
                           className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
                         />
                       </div>
-                      
+
                       {/* 기간 선택 */}
                       <div className="grid grid-cols-2 gap-4 mb-3">
                         <div>
@@ -991,7 +1021,7 @@ const loadResumeData = async (id: number, userId: number) => {
                           className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
                         />
                       </div>
-                      
+
                       {/* 취득일 선택 */}
                       <div className="mb-3">
                         <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -1045,31 +1075,38 @@ const loadResumeData = async (id: number, userId: number) => {
                     >
                       {/* 학교 이름, 학교 종류, 세부 종류 - ✅ 한 줄로 배치 */}
                       <div className="grid grid-cols-3 gap-4 mb-3">
-                       {/* 학교 이름 */}
-<div>
-  <label className="block mb-2 text-sm font-medium text-gray-700">
-    학교 이름
-  </label>
-  <input
-    type="text"
-    value={education.school}
-    onChange={(e) => {
-      const newEducations = [...educations];
-      newEducations[index].school = e.target.value;
-      setEducations(newEducations);
-    }}
-    placeholder={`예: ${
-      education.type === "고등학교"
-        ? "서울고등학교"
-        : education.type === "대학교"
-        ? "서울대학교"
-        : education.type === "대학원"
-        ? "서울대학교 대학원"
-        : "학교 이름을 입력하세요"
-    }`}
-    className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
-  />
-</div>
+                        {/* 학교 이름 */}
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">
+                            학교 이름
+                          </label>
+                          <SchoolSearchInput
+                            value={education.school}
+                            onChange={(value) => {
+                              const newEducations = [...educations];
+                              newEducations[index].school = value;
+                              setEducations(newEducations);
+                            }}
+                            schoolLevel={
+                              education.type === "고등학교"
+                                ? "high"
+                                : education.type === "대학교"
+                                  ? "college"
+                                  : education.type === "대학원"
+                                    ? "graduate"
+                                    : undefined
+                            }
+                            placeholder={`예: ${
+                              education.type === "고등학교"
+                                ? "서울고등학교"
+                                : education.type === "대학교"
+                                  ? "서울대학교"
+                                  : education.type === "대학원"
+                                    ? "서울대학교 대학원"
+                                    : "학교 이름을 입력하세요"
+                            }`}
+                          />
+                        </div>
 
                         {/* 학교 종류 */}
                         <div>
@@ -1092,7 +1129,7 @@ const loadResumeData = async (id: number, userId: number) => {
                             <option value="대학원">대학원</option>
                           </select>
                         </div>
-                        
+
                         {/* 세부 종류 */}
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -1352,7 +1389,7 @@ const loadResumeData = async (id: number, userId: number) => {
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">
-                            {file.name.endsWith('.pdf') ? '📄' : '📃'}
+                            {file.name.endsWith(".pdf") ? "📄" : "📃"}
                           </span>
                           <div>
                             <p className="font-medium">{file.name}</p>
@@ -1398,7 +1435,7 @@ const loadResumeData = async (id: number, userId: number) => {
                   multiple
                   className="hidden"
                 />
-                
+
                 {/* 업로드된 파일 목록 */}
                 {coverLetterFiles.length > 0 && (
                   <div className="mb-4 space-y-3">
@@ -1409,7 +1446,7 @@ const loadResumeData = async (id: number, userId: number) => {
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">
-                            {file.name.endsWith('.pdf') ? '📄' : '📃'}
+                            {file.name.endsWith(".pdf") ? "📄" : "📃"}
                           </span>
                           <div>
                             <p className="font-medium">{file.name}</p>
@@ -1428,7 +1465,7 @@ const loadResumeData = async (id: number, userId: number) => {
                     ))}
                   </div>
                 )}
-                
+
                 {/* 텍스트 작성 영역 */}
                 <div className="space-y-4">
                   <div className="p-4 border-2 border-gray-300 rounded-lg">
@@ -1468,8 +1505,8 @@ const loadResumeData = async (id: number, userId: number) => {
                       ? "수정 중..."
                       : "등록 중..."
                     : resumeId
-                    ? "수정"
-                    : "등록"}
+                      ? "수정"
+                      : "등록"}
                 </button>
               </div>
             </section>
