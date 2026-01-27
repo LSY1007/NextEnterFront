@@ -4,6 +4,22 @@ import axios from "./axios";
 // 1. 타입 정의 (Interfaces)
 // ==========================================
 
+// ✅ 기업 회원가입 요청 타입
+export interface CompanyRegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+  phone?: string;
+  businessNumber: string;
+  companyName: string;
+  industry?: string;
+  employeeCount?: number;
+  website?: string;
+  description?: string;
+  address?: string;
+  detailAddress?: string;
+}
+
 export interface CompanyProfile {
   companyId: number;
   companyName: string;
@@ -35,7 +51,7 @@ export const loginCompany = async (data: any) => {
   return response.data;
 };
 
-export const registerCompany = async (data: any) => {
+export const registerCompany = async (data: CompanyRegisterRequest) => {
   const response = await axios.post("/api/company/register", data);
   return response.data;
 };

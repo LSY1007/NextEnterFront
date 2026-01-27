@@ -10,6 +10,7 @@ import {
 import LeftSidebar from "../components/LeftSidebar";
 import { usePageNavigation } from "../hooks/usePageNavigation";
 import ChangePasswordModal from "../components/ChangePasswordModal"; // ✅ 추가
+import { useKakaoAddress } from "../hooks/useKakaoAddress"; // ✅ 추가
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -35,6 +36,13 @@ export default function ProfilePage() {
     age: "",
     gender: "",
     bio: "",
+    address: "", // ✅ 추가
+    detailAddress: "", // ✅ 추가
+  });
+
+  // ✅ 카카오 주소 API 훅 사용
+  const { openPostcode } = useKakaoAddress((data) => {
+    setFormData(prev => ({ ...prev, address: data.address }));
   });
 
   // 프로필 정보 불러오기
@@ -58,6 +66,8 @@ export default function ProfilePage() {
           age: response.data.age?.toString() || "",
           gender: response.data.gender || "",
           bio: response.data.bio || "",
+          address: response.data.address || "", // ✅ 추가
+          detailAddress: response.data.detailAddress || "", // ✅ 추가
         });
       }
     } catch (err: any) {
@@ -114,6 +124,8 @@ export default function ProfilePage() {
         age: formData.age ? parseInt(formData.age) : undefined,
         gender: formData.gender || undefined,
         bio: formData.bio || undefined,
+        address: formData.address || undefined, // ✅ 추가
+        detailAddress: formData.detailAddress || undefined, // ✅ 추가
       };
 
       const response = await updateUserProfile(user.userId, updateData);
@@ -139,6 +151,8 @@ export default function ProfilePage() {
         age: profile.age?.toString() || "",
         gender: profile.gender || "",
         bio: profile.bio || "",
+        address: profile.address || "", // ✅ 추가
+        detailAddress: profile.detailAddress || "", // ✅ 추가
       });
     }
     setIsEditing(false);
@@ -389,6 +403,47 @@ export default function ProfilePage() {
                     rows={4}
                     placeholder="자기소개를 입력하세요"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
+
+                {/* ✅ 주소 */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    주소
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={formData.address}
+                      readOnly
+                      placeholder="주소 찾기 버튼을 클릭하세요"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg cursor-not-allowed bg-gray-50 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={openPostcode}
+                      disabled={!isEditing || isLoading}
+                      className="px-4 py-3 text-sm font-medium text-white transition bg-gray-600 rounded-lg hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      주소 찾기
+                    </button>
+                  </div>
+                </div>
+
+                {/* ✅ 상세 주소 */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    상세 주소
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.detailAddress}
+                    onChange={(e) =>
+                      setFormData({ ...formData, detailAddress: e.target.value })
+                    }
+                    disabled={!isEditing || isLoading}
+                    placeholder="상세 주소를 입력하세요 (예: 3층)"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   />
                 </div>
 

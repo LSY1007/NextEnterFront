@@ -31,6 +31,7 @@ type JobListing = {
   deadline: string;
   daysLeft: number;
   thumbnailUrl?: string;
+  logoUrl?: string; // 회사 로고 URL 추가
 };
 
 export default function AllJobsPage() {
@@ -137,6 +138,7 @@ export default function AllJobsPage() {
               deadline: job.deadline,
               daysLeft: daysLeft > 0 ? daysLeft : 0,
               thumbnailUrl: job.thumbnailUrl,
+              logoUrl: job.logoUrl, // 로고 URL 추가
             };
           },
         );
@@ -444,12 +446,12 @@ export default function AllJobsPage() {
                           className="flex flex-col overflow-hidden transition bg-white border border-gray-300 shadow-sm rounded-xl hover:shadow-xl hover:border-purple-400"
                         >
                           {/* 로고 영역 */}
-                          <div className="flex items-center justify-center h-20 bg-gradient-to-br from-gray-50 to-gray-100">
-                            {job.thumbnailUrl ? (
+                          <div className="flex items-center justify-center h-12 bg-gradient-to-br from-gray-50 to-gray-100">
+                            {job.logoUrl ? (
                               <img
-                                src={job.thumbnailUrl}
+                                src={job.logoUrl}
                                 alt={job.company}
-                                className="object-contain w-full h-full"
+                                className="object-contain w-16 h-16"
                                 onError={(e) => {
                                   e.currentTarget.src =
                                     "https://via.placeholder.com/150?text=No+Logo";
@@ -476,6 +478,37 @@ export default function AllJobsPage() {
                             <p className="mb-3 text-sm font-medium text-gray-600">
                               {job.company}
                             </p>
+
+                            {/* 썸네일 이미지 */}
+                            <div className="mb-3 overflow-hidden rounded-lg">
+                              {job.thumbnailUrl ? (
+                                <img
+                                  src={job.thumbnailUrl}
+                                  alt={`${job.title} 썸네일`}
+                                  className="object-cover w-full h-40"
+                                  onError={(e) => {
+                                    e.currentTarget.src =
+                                      "https://via.placeholder.com/400x200?text=No+Image";
+                                  }}
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center w-full h-40 bg-gradient-to-br from-purple-50 to-blue-50">
+                                  <svg
+                                    className="w-12 h-12 text-gray-300"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={1.5}
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
 
                             {/* 정보 태그 */}
                             <div className="flex flex-wrap gap-2 mb-4">

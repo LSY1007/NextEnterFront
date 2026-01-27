@@ -265,7 +265,7 @@ export default function AllJobPostingsPage() {
                             <img
                               src={job.thumbnailUrl}
                               alt={`${job.title} 썸네일`}
-                              className="object-cover w-full h-50"
+                              className="object-cover w-full h-40"
                               onError={(e) => {
                                 e.currentTarget.src =
                                   "https://via.placeholder.com/400x200?text=No+Image";

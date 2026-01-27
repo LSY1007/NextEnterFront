@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 // Footer 임포트 제거됨
 import { signup } from "../api/auth";
 import { registerCompany } from "../api/company";
+import { useKakaoAddress } from "../hooks/useKakaoAddress";
 
 interface SignupPageProps {
   onLogoClick?: () => void;
@@ -34,11 +35,18 @@ export default function SignupPage({
   const [employeeCount, setEmployeeCount] = useState("");
   const [companyUrl, setCompanyUrl] = useState("");
   const [companyDescription, setCompanyDescription] = useState("");
+  const [address, setAddress] = useState("");
+  const [detailAddress, setDetailAddress] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+
+  // ✅ 카카오 주소 API 훅 사용
+  const { openPostcode } = useKakaoAddress((data) => {
+    setAddress(data.address);
+  });
 
   const passwordsMatch =
     password && passwordConfirm && password === passwordConfirm;
@@ -164,6 +172,8 @@ export default function SignupPage({
           phone: phone.trim(),
           age: age ? parseInt(age) : undefined,
           gender: genderValue,
+          address: address.trim() || undefined,
+          detailAddress: detailAddress.trim() || undefined,
         };
 
         const response = await signup(signupData);
@@ -186,6 +196,8 @@ export default function SignupPage({
           employeeCount: parseEmployeeCount(employeeCount),
           website: companyUrl.trim() || undefined,
           description: companyDescription.trim() || undefined,
+          address: address.trim() || undefined,
+          detailAddress: detailAddress.trim() || undefined,
         };
 
         const response = await registerCompany(companyData);
@@ -381,6 +393,35 @@ export default function SignupPage({
                     <option value="other">기타</option>
                   </select>
                 </div>
+                <div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="주소 (선택사항)"
+                      value={address}
+                      readOnly
+                      className="flex-1 px-4 py-3 text-sm border border-gray-300 rounded cursor-not-allowed bg-gray-50 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={openPostcode}
+                      disabled={isLoading}
+                      className="px-4 py-3 text-sm font-medium text-white transition bg-gray-600 rounded hover:bg-gray-700 disabled:bg-gray-400"
+                    >
+                      주소 찾기
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="상세 주소 (선택사항)"
+                    value={detailAddress}
+                    onChange={(e) => setDetailAddress(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
               </>
             )}
             {accountType === "business" && (
@@ -466,6 +507,35 @@ export default function SignupPage({
                     disabled={isLoading}
                     rows={4}
                     className="w-full px-4 py-3 text-sm border border-gray-300 rounded resize-none focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="회사 주소 (선택사항)"
+                      value={address}
+                      readOnly
+                      className="flex-1 px-4 py-3 text-sm border border-gray-300 rounded cursor-not-allowed bg-gray-50 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={openPostcode}
+                      disabled={isLoading}
+                      className="px-4 py-3 text-sm font-medium text-white transition bg-gray-600 rounded hover:bg-gray-700 disabled:bg-gray-400"
+                    >
+                      주소 찾기
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="상세 주소 (선택사항)"
+                    value={detailAddress}
+                    onChange={(e) => setDetailAddress(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full px-4 py-3 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                   />
                 </div>
               </>

@@ -10,6 +10,8 @@ import {
 } from "../../api/resume";
 import ResumeSidebar from "./components/ResumeSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
+import SchoolSearchInput from "./components/SchoolSearchInput";
+import { useKakaoAddress } from "../../hooks/useKakaoAddress";
 
 interface ResumeFormPageProps {
   onBack?: () => void; // 옵션널로 변경
@@ -87,11 +89,17 @@ export default function ResumeFormPage({
   const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [detailAddress, setDetailAddress] = useState(""); // ✅ 상세 주소 추가
   const [coverLetterTitle, setCoverLetterTitle] = useState("");
   const [coverLetterContent, setCoverLetterContent] = useState("");
   const [visibility, setVisibility] = useState("PUBLIC"); // 공개 설정 추가
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ✅ 카카오 주소 API 훅 사용
+  const { openPostcode } = useKakaoAddress((data) => {
+    setAddress(data.address);
+  });
 
   // 수정 모드일 때 데이터 로드
   useEffect(() => {
@@ -409,10 +417,30 @@ export default function ResumeFormPage({
             })),
           educations: educations
             .filter((e) => e.school)
-            .map((e) => ({
-              school: `${e.school} (${e.type}${e.subType ? ` - ${e.subType}` : ""})${e.major ? ` ${e.major}` : ""}`,
-              period: `${e.startDate} ~ ${e.endDate}`,
-            })),
+            .map((e) => {
+              // ✅ 학교 종류 항상 포함: "서울대학교 대학교 - 4년제 컴퓨터공학과"
+              let schoolText = e.school;
+              
+              // 학교 종류를 항상 추가
+              if (e.type) {
+                schoolText += ` ${e.type}`;
+              }
+              
+              // 세부 종류 추가
+              if (e.subType) {
+                schoolText += ` - ${e.subType}`;
+              }
+              
+              // 학과 추가
+              if (e.major) {
+                schoolText += ` ${e.major}`;
+              }
+              
+              return {
+                school: schoolText,
+                period: `${e.startDate} ~ ${e.endDate}`,
+              };
+            }),
           careers: careers
             .filter((c) => c.company)
             .map((c) => ({
@@ -440,7 +468,7 @@ export default function ResumeFormPage({
         response = await updateResume(resumeId, resumeData, user.userId);
         if (response.resumeId) {
           alert("이력서가 수정되었습니다!");
-          navigate("/user/resume");
+          navigate("/user/resume?menu=resume-sub-1");
         } else {
           setError("이력서 수정에 실패했습니다.");
         }
@@ -449,7 +477,7 @@ export default function ResumeFormPage({
         response = await createResume(resumeData, user.userId);
         if (response.resumeId) {
           alert("이력서가 등록되었습니다!");
-          navigate("/user/resume");
+          navigate("/user/resume?menu=resume-sub-1");
         } else {
           setError("이력서 등록에 실패했습니다.");
         }
@@ -468,7 +496,7 @@ export default function ResumeFormPage({
   // 취소 처리
   const handleCancel = () => {
     if (window.confirm("정말 취소하시겠습니까?")) {
-      navigate("/user/resume");
+      navigate("/user/resume?menu=resume-sub-1");
     }
   };
 
@@ -690,18 +718,36 @@ export default function ResumeFormPage({
                       />
                     </div>
 
-                    {/* 주소 */}
+                    {/* 주소 - ✅ 카카오 도로명 주소 API 적용 + UI 개선 */}
                     <div className="grid grid-cols-4 gap-0 overflow-hidden border-2 border-gray-300 rounded-lg">
-                      <div className="p-3 font-medium text-center border-r border-gray-300 bg-gray-50">
+                      <div className="flex items-center justify-center p-3 font-medium text-center border-r border-gray-300 bg-gray-50">
                         주소
                       </div>
-                      <input
-                        type="text"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className="col-span-3 p-3 outline-none"
-                        placeholder=""
-                      />
+                      <div className="col-span-3 p-3">
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={address}
+                            readOnly
+                            placeholder="주소 찾기 버튼을 클릭하세요"
+                            className="flex-1 outline-none cursor-not-allowed bg-gray-50"
+                          />
+                          <button
+                            type="button"
+                            onClick={openPostcode}
+                            className="px-4 py-1 text-sm text-white transition bg-blue-600 rounded hover:bg-blue-700"
+                          >
+                            주소 찾기
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={detailAddress}
+                          onChange={(e) => setDetailAddress(e.target.value)}
+                          placeholder="상세 주소를 입력하세요 (예: 3층)"
+                          className="w-full pt-2 mt-2 outline-none border-t border-gray-200"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -986,26 +1032,42 @@ export default function ResumeFormPage({
                       key={index}
                       className="p-4 border-2 border-gray-300 rounded-lg"
                     >
-                      {/* 학교 이름 */}
-                      <div className="mb-3">
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          학교 이름
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="예: 서울대학교"
-                          value={education.school}
-                          onChange={(e) => {
-                            const newEducations = [...educations];
-                            newEducations[index].school = e.target.value;
-                            setEducations(newEducations);
-                          }}
-                          className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                        />
-                      </div>
+                      {/* 학교 이름, 학교 종류, 세부 종류 - ✅ 한 줄로 배치 */}
+                      <div className="grid grid-cols-3 gap-4 mb-3">
+                        {/* 학교 이름 */}
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">
+                            학교 이름
+                          </label>
+                          <SchoolSearchInput
+                            value={education.school}
+                            onChange={(value) => {
+                              const newEducations = [...educations];
+                              newEducations[index].school = value;
+                              setEducations(newEducations);
+                            }}
+                            schoolLevel={
+                              education.type === "고등학교"
+                                ? "high"
+                                : education.type === "대학교"
+                                ? "college"
+                                : education.type === "대학원"
+                                ? "graduate"
+                                : undefined
+                            }
+                            placeholder={`예: ${
+                              education.type === "고등학교"
+                                ? "서울고등학교"
+                                : education.type === "대학교"
+                                ? "서울대학교"
+                                : education.type === "대학원"
+                                ? "서울대학교 대학원"
+                                : "학교 이름을 입력하세요"
+                            }`}
+                          />
+                        </div>
 
-                      {/* 학교 종류 & 세부 종류 */}
-                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        {/* 학교 종류 */}
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700">
                             학교 종류
@@ -1027,6 +1089,7 @@ export default function ResumeFormPage({
                           </select>
                         </div>
                         
+                        {/* 세부 종류 */}
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700">
                             세부 종류
@@ -1186,40 +1249,43 @@ export default function ResumeFormPage({
                         </div>
                       </div>
 
-                      {/* 회사명 */}
-                      <div className="mb-3">
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          회사명
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="예: 네이버"
-                          value={career.company}
-                          onChange={(e) => {
-                            const newCareers = [...careers];
-                            newCareers[index].company = e.target.value;
-                            setCareers(newCareers);
-                          }}
-                          className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                        />
-                      </div>
+                      {/* 회사명, 직책 - ✅ 한 줄로 배치 */}
+                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        {/* 회사명 */}
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">
+                            회사명
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="예: 네이버"
+                            value={career.company}
+                            onChange={(e) => {
+                              const newCareers = [...careers];
+                              newCareers[index].company = e.target.value;
+                              setCareers(newCareers);
+                            }}
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
+                          />
+                        </div>
 
-                      {/* 직책 */}
-                      <div className="mb-3">
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
-                          직책
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="예: 대리, 팀장"
-                          value={career.position}
-                          onChange={(e) => {
-                            const newCareers = [...careers];
-                            newCareers[index].position = e.target.value;
-                            setCareers(newCareers);
-                          }}
-                          className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
-                        />
+                        {/* 직책 */}
+                        <div>
+                          <label className="block mb-2 text-sm font-medium text-gray-700">
+                            직책
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="예: 대리, 팀장"
+                            value={career.position}
+                            onChange={(e) => {
+                              const newCareers = [...careers];
+                              newCareers[index].position = e.target.value;
+                              setCareers(newCareers);
+                            }}
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
+                          />
+                        </div>
                       </div>
 
                       {/* 직무 */}

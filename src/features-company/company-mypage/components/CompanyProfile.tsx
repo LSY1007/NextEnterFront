@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useKakaoAddress } from "../../../hooks/useKakaoAddress";
 
 interface CompanyProfileProps {
   loading: boolean;
@@ -21,6 +22,7 @@ interface CompanyProfileProps {
   companySize: string;
   setCompanySize: (value: string) => void;
   address: string;
+  setAddress: (value: string) => void;
   detailAddress: string;
   setDetailAddress: (value: string) => void;
   onSave: () => void;
@@ -47,10 +49,16 @@ export default function CompanyProfile({
   companySize,
   setCompanySize,
   address,
+  setAddress,
   detailAddress,
   setDetailAddress,
   onSave,
 }: CompanyProfileProps) {
+  // 카카오 주소 API 훅 사용
+  const { openPostcode } = useKakaoAddress((data) => {
+    setAddress(data.address);
+  });
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -263,8 +271,9 @@ export default function CompanyProfile({
             className="flex-1 px-4 py-3 border border-gray-300 rounded-lg cursor-not-allowed bg-gray-50"
           />
           <button
-            onClick={() => alert("주소 찾기 API 연동 예정")}
-            className="px-6 py-3 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+            onClick={openPostcode}
+            type="button"
+            className="px-6 py-3 text-white transition bg-purple-600 rounded-lg hover:bg-purple-700"
           >
             주소 찾기
           </button>

@@ -254,6 +254,7 @@ export default function CompanyMyPage({
                   companySize={companySize}
                   setCompanySize={setCompanySize}
                   address={address}
+                  setAddress={setAddress}
                   detailAddress={detailAddress}
                   setDetailAddress={setDetailAddress}
                   onSave={handleSaveCompanyProfile}
