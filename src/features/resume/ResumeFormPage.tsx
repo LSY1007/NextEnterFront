@@ -468,7 +468,8 @@ export default function ResumeFormPage({
         response = await updateResume(resumeId, resumeData, user.userId);
         if (response.resumeId) {
           alert("이력서가 수정되었습니다!");
-          navigate("/user/resume?menu=resume-sub-1");
+          // 페이지 이동 - 확실하게 이동
+          window.location.href = "/user/resume?menu=resume-sub-1";
         } else {
           setError("이력서 수정에 실패했습니다.");
         }
@@ -477,7 +478,8 @@ export default function ResumeFormPage({
         response = await createResume(resumeData, user.userId);
         if (response.resumeId) {
           alert("이력서가 등록되었습니다!");
-          navigate("/user/resume?menu=resume-sub-1");
+          // 페이지 이동 - 확실하게 이동
+          window.location.href = "/user/resume?menu=resume-sub-1";
         } else {
           setError("이력서 등록에 실패했습니다.");
         }
