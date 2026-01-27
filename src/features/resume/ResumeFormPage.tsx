@@ -44,7 +44,7 @@ export default function ResumeFormPage({
   const [selectedJob, setSelectedJob] = useState<string>("");
   
   // ✅ 학력: 객체 배열로 변경
-  const [educations, setEducations] = useState<
+  const [educations, setEducations] = useState< 
     {
       school: string;
       type: string; // 고등학교, 대학교, 대학원
@@ -359,131 +359,142 @@ const loadResumeData = async (id: number, userId: number) => {
     setCoverLetterFiles(coverLetterFiles.filter((_, i) => i !== index));
   };
 
-  // ✅ 등록/수정 처리 - 파일 포함
   const handleSubmit = async () => {
     // 필수 필드 검증
     if (!resumeTitle) {
       alert("이력서 제목을 입력해주세요.");
       return;
     }
-
+  
     if (!name) {
       alert("이름을 입력해주세요.");
       return;
     }
-
+  
     if (!selectedJob) {
       alert("직무를 선택해주세요.");
       return;
     }
-
+  
     if (!user?.userId) {
       alert("로그인이 필요합니다.");
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
+      // ✅ 1. 경험/활동/교육 데이터 준비 (날짜가 없어도 title만 있으면 포함)
+      const experiencesData = experiences
+        .filter((e) => e.title && e.title.trim() !== "")
+        .map((e) => ({
+          title: e.title,
+          period: e.startDate && e.endDate ? `${e.startDate} - ${e.endDate}` : "",
+        }));
+  
+      console.log("📤 [디버그] experiences 원본:", experiences);
+      console.log("📤 [디버그] experiences 필터링 후:", experiencesData);
+      console.log("📤 [디버그] experiences 개수:", experiencesData.length);
+  
+      // ✅ 2. 자격증/어학/수상 데이터 준비
+      const certificatesData = certificates
+        .filter((c) => c.title && c.title.trim() !== "")
+        .map((c) => ({
+          title: c.title,
+          date: c.date || "",
+        }));
+  
+      console.log("📤 [디버그] certificates 원본:", certificates);
+      console.log("📤 [디버그] certificates 필터링 후:", certificatesData);
+      console.log("📤 [디버그] certificates 개수:", certificatesData.length);
+  
+      // ✅ 3. 학력 데이터 준비
+      const educationsData = educations
+        .filter((e) => e.school && e.school.trim() !== "")
+        .map((e) => {
+          let schoolText = e.school;
+          if (e.type) schoolText += ` ${e.type}`;
+          if (e.subType) schoolText += ` - ${e.subType}`;
+          if (e.major) schoolText += ` ${e.major}`;
+          return {
+            school: schoolText,
+            period: e.startDate && e.endDate ? `${e.startDate} ~ ${e.endDate}` : "",
+          };
+        });
+  
+      console.log("📤 [디버그] educations 원본:", educations);
+      console.log("📤 [디버그] educations 필터링 후:", educationsData);
+      console.log("📤 [디버그] educations 개수:", educationsData.length);
+  
+      // ✅ 4. 경력 데이터 준비
+      const careersData = careers
+        .filter((c) => c.company && c.company.trim() !== "")
+        .map((c) => ({
+          company: c.company,
+          position: c.position || "",
+          role: c.role || "",
+          period: c.startDate && c.endDate ? `${c.startDate} ~ ${c.endDate}` : "",
+        }));
+  
+      console.log("📤 [디버그] careers 원본:", careers);
+      console.log("📤 [디버그] careers 필터링 후:", careersData);
+      console.log("📤 [디버그] careers 개수:", careersData.length);
+  
+      // ✅ 5. 요청 데이터 생성 (빈 배열이라도 "[]"로 전송)
       const resumeData: CreateResumeRequest = {
         title: resumeTitle,
         jobCategory: selectedJob,
-        skills: selectedSkills,
+        skills: selectedSkills.join(", "),
         visibility: visibility,
-        sections: {
-          personalInfo: {
-            name,
-            gender: selectedGender,
-            birthDate,
-            email,
-            address,
-            profileImage: selectedImage || undefined,
-          },
-          experiences: experiences
-            .filter((e) => e.title)
-            .map((e) => ({
-              title: e.title,
-              period: `${e.startDate} - ${e.endDate}`,
-            })),
-          certificates: certificates
-            .filter((c) => c.title)
-            .map((c) => ({
-              title: c.title,
-              date: c.date,
-            })),
-          educations: educations
-            .filter((e) => e.school)
-            .map((e) => {
-              let schoolText = e.school;
-              if (e.type) {
-                schoolText += ` ${e.type}`;
-              }
-              if (e.subType) {
-                schoolText += ` - ${e.subType}`;
-              }
-              if (e.major) {
-                schoolText += ` ${e.major}`;
-              }
-              return {
-                school: schoolText,
-                period: `${e.startDate} ~ ${e.endDate}`,
-              };
-            }),
-          careers: careers
-            .filter((c) => c.company)
-            .map((c) => ({
-              company: c.company,
-              position: c.position,
-              role: c.role,
-              period: `${c.startDate} ~ ${c.endDate}`,
-            })),
-          portfolios: portfolioFiles.map((file) => ({ filename: file.name })),
-          coverLetter: {
-            title: coverLetterTitle,
-            content: coverLetterContent,
-            files: coverLetterFiles.map((file) => file.name),
-          },
-        },
+        // ⚠️ 중요: 빈 배열이어도 "[]"로 전송 (undefined 대신)
+        experiences: experiencesData.length > 0 ? JSON.stringify(experiencesData) : "[]",
+        certificates: certificatesData.length > 0 ? JSON.stringify(certificatesData) : "[]",
+        educations: educationsData.length > 0 ? JSON.stringify(educationsData) : "[]",
+        careers: careersData.length > 0 ? JSON.stringify(careersData) : "[]",
         status: "COMPLETED",
       };
-
-      console.log("📤 [디버그] 전송할 데이터:", resumeData);
+  
+      console.log("📤 [디버그] 최종 전송 데이터:", resumeData);
       console.log("📤 [디버그] 포트폴리오 파일:", portfolioFiles);
       console.log("📤 [디버그] 자기소개서 파일:", coverLetterFiles);
-
+  
       let response;
-      if (resumeId) {
-        // ✅ 수정 모드 - 파일 포함
-        response = await updateResumeWithFiles(
-          resumeId,
-          resumeData,
-          user.userId,
-          portfolioFiles,
-          coverLetterFiles
-        );
-        if (response.resumeId) {
-          alert("이력서가 수정되었습니다!");
-          navigate("/user/resume");
+  
+      // ✅ 파일이 있으면 파일 포함 API, 없으면 일반 API
+      if (portfolioFiles.length > 0 || coverLetterFiles.length > 0) {
+        if (resumeId) {
+          response = await updateResumeWithFiles(
+            resumeId,
+            resumeData,
+            user.userId,
+            portfolioFiles,
+            coverLetterFiles
+          );
         } else {
-          setError("이력서 수정에 실패했습니다.");
+          response = await createResumeWithFiles(
+            resumeData,
+            user.userId,
+            portfolioFiles,
+            coverLetterFiles
+          );
         }
       } else {
-        // ✅ 등록 모드 - 파일 포함
-        response = await createResumeWithFiles(
-          resumeData,
-          user.userId,
-          portfolioFiles,
-          coverLetterFiles
-        );
-        if (response.resumeId) {
-          alert("이력서가 등록되었습니다!");
-          navigate("/user/resume");
+        if (resumeId) {
+          response = await updateResume(resumeId, resumeData, user.userId);
         } else {
-          setError("이력서 등록에 실패했습니다.");
+          response = await createResume(resumeData, user.userId);
         }
       }
+  
+      if (response.resumeId) {
+        alert(`이력서가 ${resumeId ? "수정" : "등록"}되었습니다!`);
+        navigate("/user/resume");
+      } else {
+        setError(`이력서 ${resumeId ? "수정" : "등록"}에 실패했습니다.`);
+      }
     } catch (err: any) {
-      console.error("이력서 저장 오류:", err);
+      console.error("❌ [디버그] 이력서 저장 오류:", err);
+      console.error("❌ [디버그] 에러 상세:", err.response?.data);
       setError(
         err.response?.data?.message ||
           `이력서 ${resumeId ? "수정" : "등록"} 중 오류가 발생했습니다.`

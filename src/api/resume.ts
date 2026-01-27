@@ -1,70 +1,19 @@
+// C:\NextEnterFront\src\api\resume.ts
 import api from "./axios";
 
-// 인적사항 인터페이스
-export interface PersonalInfo {
-  name: string;
-  gender: string;
-  birthDate: string;
-  email: string;
-  address: string;
-  profileImage?: string;
-}
-
-// 경험/활동/교육 인터페이스
-export interface Experience {
-  title: string;
-  period: string;
-}
-
-// 자격증/어학/수상 인터페이스
-export interface Certificate {
-  title: string;
-  date: string;
-}
-
-// 학력 인터페이스
-export interface Education {
-  school: string;
-  period: string;
-}
-
-// 경력 인터페이스
-export interface Career {
-  company: string;
-  period: string;
-}
-
-// 포트폴리오 인터페이스
-export interface Portfolio {
-  filename: string;
-  url?: string;
-}
-
-// 자기소개서 인터페이스
-export interface CoverLetter {
-  title: string;
-  content: string;
-  files?: string[];
-}
-
-// 이력서 섹션 데이터
-export interface ResumeSections {
-  personalInfo: PersonalInfo;
-  experiences: Experience[];
-  certificates: Certificate[];
-  educations: Education[];
-  careers: Career[];
-  portfolios: Portfolio[];
-  coverLetter: CoverLetter;
-}
-
-// 이력서 생성 요청
+// ===== 백엔드 리팩토링 후 새로운 요청 구조 =====
 export interface CreateResumeRequest {
   title: string;
   jobCategory: string;
-  skills?: string[];
-  visibility?: string; // 공개 설정 추가 (PUBLIC, PRIVATE)
-  sections: ResumeSections;
+  skills?: string; // 쉼표로 구분된 문자열
+  visibility?: string;
+  
+  // ✅ 각 섹션별로 분리된 필드 (JSON 문자열로 전송)
+  experiences?: string;   // JSON 문자열: [{"title":"...", "period":"..."}]
+  certificates?: string;  // JSON 문자열: [{"title":"...", "date":"..."}]
+  educations?: string;    // JSON 문자열: [{"school":"...", "period":"..."}]
+  careers?: string;       // JSON 문자열: [{"company":"...", "position":"...", "role":"...", "period":"..."}]
+  
   status?: string;
 }
 
@@ -73,8 +22,23 @@ export interface ResumeResponse {
   resumeId: number;
   title: string;
   jobCategory: string;
+  
+  // ===== User 테이블에서 가져온 정보 =====
+  userName?: string;
+  userEmail?: string;
+  userGender?: string;
+  userPhone?: string;
+  userAge?: number;
+  userBio?: string;
+  
+  // ===== 분리된 섹션들 (JSON 문자열) =====
+  experiences?: string;
+  certificates?: string;
+  educations?: string;
+  careers?: string;
+  
+  // ===== 기존 필드들 =====
   skills?: string;
-  structuredData?: string;
   filePath?: string;
   fileType?: string;
   isMain: boolean;
@@ -83,6 +47,9 @@ export interface ResumeResponse {
   status: string;
   createdAt: string;
   updatedAt: string;
+  
+  // 하위 호환성을 위해 유지
+  structuredData?: string;
 }
 
 // 이력서 목록 응답
@@ -115,7 +82,8 @@ export interface AIRecommendResponse {
   ai_report: string;
 }
 
-// ✅ 이력서 목록 조회 (배열을 직접 받음)
+// ===== API 함수들 =====
+
 export const getResumeList = async (
   userId: number
 ): Promise<ResumeListItem[]> => {
@@ -128,16 +96,9 @@ export const getResumeList = async (
   });
   
   console.log("✅ [API] 이력서 목록:", response.data);
-  
-  // visibility 확인
-  response.data.forEach((resume, index) => {
-    console.log(`  이력서 ${index + 1}: ${resume.title} - visibility: ${resume.visibility}`);
-  });
-  
   return response.data;
 };
 
-// ✅ 이력서 상세 조회 (ResumeResponse를 직접 받음)
 export const getResumeDetail = async (
   resumeId: number,
   userId: number
@@ -150,7 +111,6 @@ export const getResumeDetail = async (
   return response.data;
 };
 
-// ✅ 공개 이력서 조회 (기업회원용)
 export const getPublicResumeDetail = async (
   resumeId: number,
   viewerId: number
@@ -163,7 +123,7 @@ export const getPublicResumeDetail = async (
   return response.data;
 };
 
-// ✅ 이력서 생성 (백엔드 응답: {resumeId: number})
+// ✅ 이력서 생성 (새로운 구조)
 export const createResume = async (
   request: CreateResumeRequest,
   userId: number
@@ -171,16 +131,17 @@ export const createResume = async (
   const payload = {
     title: request.title,
     jobCategory: request.jobCategory,
-    skills: JSON.stringify(request.skills || []), // 스킬 추가
-    visibility: request.visibility || "PUBLIC", // 공개 설정 추가
-    sections: JSON.stringify(request.sections),
+    skills: request.skills,
+    visibility: request.visibility || "PUBLIC",
+    // ✅ 각 섹션별 필드 전송
+    experiences: request.experiences,
+    certificates: request.certificates,
+    educations: request.educations,
+    careers: request.careers,
     status: request.status || "DRAFT",
   };
 
   console.log("🚀 [API] 이력서 생성 요청:", payload);
-  console.log("🚀 [API] skills:", request.skills);
-  console.log("🚀 [API] visibility:", payload.visibility);
-  console.log("🚀 [API] skills:", payload.skills);
 
   const response = await api.post<{ resumeId: number }>(
     "/api/resume",
@@ -196,7 +157,7 @@ export const createResume = async (
   return response.data;
 };
 
-// ✅ 이력서 수정 (백엔드 응답: {resumeId: number})
+// ✅ 이력서 수정 (새로운 구조)
 export const updateResume = async (
   resumeId: number,
   request: CreateResumeRequest,
@@ -205,16 +166,17 @@ export const updateResume = async (
   const payload = {
     title: request.title,
     jobCategory: request.jobCategory,
-    skills: JSON.stringify(request.skills || []), // 스킬 추가
-    visibility: request.visibility || "PUBLIC", // 공개 설정 추가
-    sections: JSON.stringify(request.sections),
+    skills: request.skills,
+    visibility: request.visibility || "PUBLIC",
+    // ✅ 각 섹션별 필드 전송
+    experiences: request.experiences,
+    certificates: request.certificates,
+    educations: request.educations,
+    careers: request.careers,
     status: request.status || "DRAFT",
   };
 
   console.log("🔄 [API] 이력서 수정 요청 (ID:", resumeId, "):", payload);
-  console.log("🔄 [API] skills:", request.skills);
-  console.log("🔄 [API] visibility:", payload.visibility);
-  console.log("🔄 [API] skills:", payload.skills);
 
   const response = await api.put<{ resumeId: number }>(
     `/api/resume/${resumeId}`,
@@ -230,7 +192,7 @@ export const updateResume = async (
   return response.data;
 };
 
-// ✅ 파일 포함 이력서 생성
+// ✅ 파일 포함 이력서 생성 (수정)
 export const createResumeWithFiles = async (
   data: CreateResumeRequest,
   userId: number,
@@ -239,13 +201,21 @@ export const createResumeWithFiles = async (
 ): Promise<ResumeResponse> => {
   const formData = new FormData();
   
+  // ✅ skills가 배열이면 문자열로 변환
+  const skillsString = Array.isArray(data.skills) 
+    ? data.skills.join(", ") 
+    : data.skills;
+  
   // JSON 데이터를 Blob으로 추가
   const jsonBlob = new Blob([JSON.stringify({
     title: data.title,
     jobCategory: data.jobCategory,
-    skills: JSON.stringify(data.skills || []),
+    skills: skillsString, // ✅ 문자열로 전송
     visibility: data.visibility || "PUBLIC",
-    sections: JSON.stringify(data.sections),
+    experiences: data.experiences,
+    certificates: data.certificates,
+    educations: data.educations,
+    careers: data.careers,
     status: data.status || "COMPLETED"
   })], { type: 'application/json' });
   
@@ -262,6 +232,7 @@ export const createResumeWithFiles = async (
   });
   
   console.log("🚀 [API] 파일 포함 이력서 생성 요청");
+  console.log("📤 skills (변환됨):", skillsString);
   console.log("📤 포트폴리오 파일 개수:", portfolioFiles.length);
   console.log("📤 자기소개서 파일 개수:", coverLetterFiles.length);
   
@@ -280,7 +251,7 @@ export const createResumeWithFiles = async (
   return response.data;
 };
 
-// ✅ 파일 포함 이력서 수정
+// ✅ 파일 포함 이력서 수정 (수정)
 export const updateResumeWithFiles = async (
   resumeId: number,
   data: CreateResumeRequest,
@@ -290,13 +261,21 @@ export const updateResumeWithFiles = async (
 ): Promise<ResumeResponse> => {
   const formData = new FormData();
   
+  // ✅ skills가 배열이면 문자열로 변환
+  const skillsString = Array.isArray(data.skills) 
+    ? data.skills.join(", ") 
+    : data.skills;
+  
   // JSON 데이터를 Blob으로 추가
   const jsonBlob = new Blob([JSON.stringify({
     title: data.title,
     jobCategory: data.jobCategory,
-    skills: JSON.stringify(data.skills || []),
+    skills: skillsString, // ✅ 문자열로 전송
     visibility: data.visibility || "PUBLIC",
-    sections: JSON.stringify(data.sections),
+    experiences: data.experiences,
+    certificates: data.certificates,
+    educations: data.educations,
+    careers: data.careers,
     status: data.status || "COMPLETED"
   })], { type: 'application/json' });
   
@@ -313,6 +292,7 @@ export const updateResumeWithFiles = async (
   });
   
   console.log("🔄 [API] 파일 포함 이력서 수정 요청 (ID:", resumeId, ")");
+  console.log("📤 skills (변환됨):", skillsString);
   console.log("📤 포트폴리오 파일 개수:", portfolioFiles.length);
   console.log("📤 자기소개서 파일 개수:", coverLetterFiles.length);
   
@@ -331,7 +311,7 @@ export const updateResumeWithFiles = async (
   return response.data;
 };
 
-// ✅ 이력서 삭제 (백엔드 응답: {message: string})
+
 export const deleteResume = async (
   resumeId: number,
   userId: number
@@ -347,7 +327,6 @@ export const deleteResume = async (
   return response.data;
 };
 
-// ✅ 파일 업로드
 export const uploadResumeFile = async (
   file: File,
   userId: number
@@ -368,7 +347,6 @@ export const uploadResumeFile = async (
   return response.data;
 };
 
-// ✅ AI 추천 기능
 export const getAIRecommendation = async (
   request: AIRecommendRequest
 ): Promise<AIRecommendResponse> => {
@@ -379,9 +357,7 @@ export const getAIRecommendation = async (
   return response.data;
 };
 
-/**
- * 포트폴리오 목록 조회
- */
+// 포트폴리오 목록 조회
 export interface PortfolioDto {
   portfolioId: number;
   resumeId: number;
@@ -414,9 +390,6 @@ export const getPortfolioList = async (
   return response.data;
 };
 
-/**
- * 포트폴리오 파일 다운로드
- */
 export const downloadPortfolio = async (
   userId: number,
   resumeId: number,
@@ -433,7 +406,6 @@ export const downloadPortfolio = async (
     }
   );
 
-  // Blob을 다운로드
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement("a");
   link.href = url;
