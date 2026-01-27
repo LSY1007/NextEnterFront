@@ -136,6 +136,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # IDE 및 에디터
+.cursor/
 .vscode/
 .idea/
 *.swp
