@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
@@ -14,22 +14,22 @@ export default function ApplicantDetailPage() {
   const navigate = useNavigate();
   const { applicantId } = useParams();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  const reloadParam = searchParams.get('reload');
 
   const [loading, setLoading] = useState(true);
   const [applicant, setApplicant] = useState<ApplyDetailResponse | null>(null);
 
-  // 사이드바 훅 사용
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "applicants",
     "applicants-sub-1",
   );
 
-  // 화면 맨 위로 올림
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // 지원자 상세 정보 로드
   useEffect(() => {
     const loadApplicantDetail = async () => {
       if (!applicantId || !user?.companyId) {
@@ -58,7 +58,7 @@ export default function ApplicantDetailPage() {
     };
 
     loadApplicantDetail();
-  }, [applicantId, user, navigate]);
+  }, [applicantId, user, navigate, reloadParam]);
 
   const handleBackClick = () => {
     navigate("/company/applicants");
@@ -78,7 +78,6 @@ export default function ApplicantDetailPage() {
         });
         alert("합격 처리되었습니다.");
 
-        // 상태 업데이트
         const updatedData = await getApplyDetail(
           applicant.applyId,
           user.companyId,
@@ -101,7 +100,6 @@ export default function ApplicantDetailPage() {
         });
         alert("불합격 처리되었습니다.");
 
-        // 상태 업데이트
         const updatedData = await getApplyDetail(
           applicant.applyId,
           user.companyId,
@@ -114,9 +112,14 @@ export default function ApplicantDetailPage() {
     }
   };
 
-  // ✅ 면접 제안 (새 API 사용)
   const handleInterviewOffer = async () => {
     if (!applicant || !user?.companyId) return;
+
+    // ✅ 합격 상태일 때 면접 제안 불가
+    if (applicant.status === "ACCEPTED") {
+      alert("이미 합격 처리된 지원자입니다.");
+      return;
+    }
 
     if (
       window.confirm(`${applicant.userName}님에게 면접 제안을 하시겠습니까?`)
@@ -125,7 +128,7 @@ export default function ApplicantDetailPage() {
         await createInterviewOffer(user.companyId, {
           userId: applicant.userId,
           jobId: applicant.jobId,
-          applyId: applicant.applyId, // 일반 지원과 연결
+          applyId: applicant.applyId,
         });
 
         alert(
@@ -488,14 +491,21 @@ export default function ApplicantDetailPage() {
                 )}
               <button
                 onClick={handleInterviewOffer}
-                disabled={applicant.status === "REJECTED"}
+                disabled={
+                  applicant.status === "REJECTED" || 
+                  applicant.status === "ACCEPTED" // ✅ 합격 상태일 때도 비활성화
+                }
                 className={`flex-1 px-6 py-3 font-semibold transition rounded-lg ${
-                  applicant.status === "REJECTED"
+                  applicant.status === "REJECTED" || applicant.status === "ACCEPTED"
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
               >
-                면접 제안
+                {applicant.status === "ACCEPTED" 
+                  ? "합격 처리됨" 
+                  : applicant.status === "REJECTED"
+                  ? "면접 제안"
+                  : "면접 제안"}
               </button>
               <button
                 onClick={handleCompatibilityClick}

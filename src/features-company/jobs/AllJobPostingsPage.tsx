@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom"; 
 import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
 import { getJobPostings, type JobPostingListResponse } from "../../api/job";
@@ -10,10 +10,14 @@ import JobSearchFilter, {
 
 export default function AllJobPostingsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "jobs",
     "jobs-sub-1",
   );
+
+  const reloadParam = searchParams.get('reload');
+
 
   // 데이터 상태
   const [jobPostings, setJobPostings] = useState<JobPostingListResponse[]>([]);
@@ -77,7 +81,7 @@ export default function AllJobPostingsPage() {
     };
 
     loadJobPostings();
-  }, [currentPage, filters, itemsPerPage]);
+  }, [currentPage, filters, itemsPerPage, reloadParam]);
 
   // D-Day 계산 함수
   const getDaysLeft = (deadline: string) => {

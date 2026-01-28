@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom"; 
 import {
   Notification as NotificationData,
   markAsRead,
@@ -15,6 +15,10 @@ import { useNotificationWebSocket } from '../../hooks/useNotificationWebSocket';
 export default function CompanyNotificationsPage() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const reloadParam = searchParams.get('reload');
+
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -50,7 +54,7 @@ export default function CompanyNotificationsPage() {
         console.log('알림 권한:', permission);
       });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, reloadParam]);
 
   const loadNotifications = async () => {
     if (!user?.userId) {

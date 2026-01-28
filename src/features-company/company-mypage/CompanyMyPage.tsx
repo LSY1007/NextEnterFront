@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
   getCompanyProfile,
   updateCompanyProfile,
   changeCompanyPassword,
 } from "../../api/company";
+import { getCreditBalance } from "../../api/credit"; // ✅ 크레딧 API import 추가
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
 import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import CompanyProfile from "./components/CompanyProfile";
@@ -22,58 +23,23 @@ export default function CompanyMyPage({
 }: CompanyMyPageProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [searchParams] = useSearchParams();
 
-  // 1. 네비게이션 훅 사용
+  const reloadParam = searchParams.get('reload');
+
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "companyMy",
     initialMenu,
   );
 
-  // 2. [수정완료] 크레딧 및 히스토리 정보 (setCurrentCredit 경고 해결을 위해 사용하지 않는 변수 제거)
-  const [currentCredit] = useState<number>(0);
-  const [creditHistory] = useState([
-    {
-      id: 1,
-      date: "2025.01.20 14:30",
-      type: "충전",
-      content: "크레딧 충전",
-      amount: "+1000",
-    },
-    {
-      id: 2,
-      date: "2025.01.19 10:15",
-      type: "사용",
-      content: "공고 등록 차감",
-      amount: "-100",
-    },
-    {
-      id: 3,
-      date: "2025.01.18 16:45",
-      type: "사용",
-      content: "인재 검색 차감",
-      amount: "-50",
-    },
-    {
-      id: 4,
-      date: "2025.01.17 09:20",
-      type: "충전",
-      content: "크레딧 충전",
-      amount: "+500",
-    },
-    {
-      id: 5,
-      date: "2025.01.16 11:30",
-      type: "사용",
-      content: "공고 등록 차감",
-      amount: "-100",
-    },
-  ]);
+  // ✅ 크레딧 상태 - 실제 API에서 불러오기
+  const [currentCredit, setCurrentCredit] = useState<number>(0);
+  const [creditHistory] = useState([]); // ✅ 빈 배열로 초기화 (API 추가 전까지)
+  const [creditLoading, setCreditLoading] = useState(false); // ✅ 크레딧 로딩 상태 추가
 
-  // 3. 로딩/에러 상태
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 4. 기업 정보 상태
   const [companyLogo, setCompanyLogo] = useState<string>("");
   const [companyName, setCompanyName] = useState<string>("");
   const [businessNumber, setBusinessNumber] = useState<string>("");
@@ -89,12 +55,32 @@ export default function CompanyMyPage({
   const [detailAddress, setDetailAddress] = useState<string>("");
   const [managerDepartment, setManagerDepartment] = useState<string>("");
 
-  // 5. 계정 및 보안 상태
   const [managerName, setManagerName] = useState<string>("");
   const [managerPhone, setManagerPhone] = useState<string>("");
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+
+  // ✅ 크레딧 정보 로드
+  useEffect(() => {
+    const loadCreditInfo = async () => {
+      if (!user?.companyId) return;
+      
+      setCreditLoading(true);
+      try {
+        const creditBalance = await getCreditBalance(user.companyId);
+        console.log('✅ 크레딧 잔액 조회 성공:', creditBalance.balance);
+        setCurrentCredit(creditBalance.balance);
+      } catch (error) {
+        console.error('❌ 크레딧 잔액 조회 실패:', error);
+        setCurrentCredit(0);
+      } finally {
+        setCreditLoading(false);
+      }
+    };
+
+    loadCreditInfo();
+  }, [user?.companyId, reloadParam]); // ✅ reloadParam 의존성 추가
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -128,7 +114,7 @@ export default function CompanyMyPage({
       }
     };
     loadCompanyProfile();
-  }, [user?.companyId]);
+  }, [user?.companyId, reloadParam]);
 
   // 기업 정보 저장
   const handleSaveCompanyProfile = async () => {
@@ -282,6 +268,7 @@ export default function CompanyMyPage({
                 <PaymentCredits
                   currentCredit={currentCredit}
                   creditHistory={creditHistory}
+                  creditLoading={creditLoading} // ✅ 로딩 상태 전달
                 />
               )}
               {activeMenu === "companyMy-sub-4" && user?.companyId && (

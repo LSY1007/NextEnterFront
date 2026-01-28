@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ useNavigate 추가
 import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
 import {
@@ -9,21 +10,22 @@ import {
 } from "../../api/talent";
 import { createInterviewOffer } from "../../api/interviewOffer";
 import { getCompanyJobPostings, JobPostingListResponse } from "../../api/job";
-import TalentResumeDetailPage from "./TalentResumeDetailPage";
+// import TalentResumeDetailPage from "./TalentResumeDetailPage"; // ✅ 제거
 import JobSelectionModal from "./components/JobSelectionModal";
 import { useAuth } from "../../context/AuthContext";
 import { useSearchParams } from "react-router-dom";
 
 export default function TalentSearchPage() {
   const { user } = useAuth();
+  const navigate = useNavigate(); // ✅ navigate 추가
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "talent",
     "talent-sub-1",
   );
-  const [searchParams] = useSearchParams(); // ✅ URL 파라미터 감지
+  const [searchParams] = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchInput, setSearchInput] = useState(""); // ✅ 검색 입력창 별도 관리
+  const [searchInput, setSearchInput] = useState("");
   const [selectedPosition, setSelectedPosition] = useState("전체");
   const [selectedExperience, setSelectedExperience] = useState("전체");
   const [talents, setTalents] = useState<TalentSearchResponse[]>([]);
@@ -31,73 +33,47 @@ export default function TalentSearchPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  // ✅ 기업 공고 목록
   const [myJobs, setMyJobs] = useState<JobPostingListResponse[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [showJobModal, setShowJobModal] = useState(false);
   const [pendingTalent, setPendingTalent] =
     useState<TalentSearchResponse | null>(null);
 
-  // ✅ 상세보기 상태 추가
-  const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
+  // ✅ selectedResumeId 상태 제거
+  // const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
 
   // 이력서 데이터 로드
   useEffect(() => {
     loadTalents();
-  }, [selectedPosition, selectedExperience, searchQuery, currentPage]); // searchQuery로 변경
+  }, [selectedPosition, selectedExperience, searchQuery, currentPage]);
 
-  // ✅ 기업 공고 로드
   useEffect(() => {
     const loadMyJobs = async () => {
       if (!user?.userId) return;
 
       try {
-        console.log("=== 공고 로드 시작 ===");
-        console.log("회사 ID:", user.userId);
-
         const jobs = await getCompanyJobPostings(user.userId);
-        console.log("로드된 전체 공고:", jobs);
-        console.log("공고 수:", jobs.length);
 
-        if (jobs.length > 0) {
-          jobs.forEach((job, idx) => {
-            console.log(`공고 ${idx + 1}:`, {
-              jobId: job.jobId,
-              title: job.title,
-              status: job.status,
-              deadline: job.deadline,
-            });
-          });
-        }
-
-        // 활성화된 공고 + 마감일이 지나지 않은 공고
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const availableJobs = jobs.filter((job) => {
-          // CLOSED나 EXPIRED가 아닌 공고
           if (job.status === "CLOSED" || job.status === "EXPIRED") {
             return false;
           }
 
-          // 마감일이 있는 경우 마감일 확인
           if (job.deadline) {
             const deadline = new Date(job.deadline);
             deadline.setHours(0, 0, 0, 0);
             return deadline >= today;
           }
 
-          // 마감일이 없으면 포함
           return true;
         });
-
-        console.log("사용 가능한 공고:", availableJobs);
-        console.log("사용 가능한 공고 수:", availableJobs.length);
 
         setMyJobs(availableJobs);
         if (availableJobs.length > 0) {
           setSelectedJobId(availableJobs[0].jobId);
-          console.log("선택된 기본 공고 ID:", availableJobs[0].jobId);
         }
       } catch (error) {
         console.error("공고 로드 실패:", error);
@@ -107,7 +83,6 @@ export default function TalentSearchPage() {
     loadMyJobs();
   }, [user?.userId]);
 
-  // ✅ URL reload 파라미터 변경 감지 - 같은 메뉴 클릭 시 새로고침
   useEffect(() => {
     const reloadParam = searchParams.get("reload");
     if (reloadParam) {
@@ -115,13 +90,11 @@ export default function TalentSearchPage() {
     }
   }, [searchParams.get("reload")]);
 
-  // ✅ 검색 실행 함수
   const handleSearch = () => {
     setSearchQuery(searchInput);
-    setCurrentPage(0); // 검색 시 페이지 초기화
+    setCurrentPage(0);
   };
 
-  // ✅ Enter 키 처리
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
@@ -136,17 +109,14 @@ export default function TalentSearchPage() {
         size: 20,
       };
 
-      // ✅ 기업 ID 추가
       if (user?.userId) {
         params.companyUserId = user.userId;
       }
 
-      // 포지션 필터
       if (selectedPosition !== "전체") {
         params.jobCategory = selectedPosition;
       }
 
-      // 검색어 필터
       if (searchQuery.trim()) {
         params.keyword = searchQuery.trim();
       }
@@ -162,7 +132,6 @@ export default function TalentSearchPage() {
     }
   };
 
-  // 경력 필터링 (프론트엔드에서 처리)
   const filteredTalents = talents.filter((talent) => {
     if (selectedExperience === "전체") return true;
     const years = talent.experienceYears;
@@ -187,14 +156,12 @@ export default function TalentSearchPage() {
       return;
     }
 
-    // 면접 요청 할 인재 정보 찾기
     const talent = talents.find((t) => t.resumeId === resumeId);
     if (!talent) {
       alert("인재 정보를 찾을 수 없습니다.");
       return;
     }
 
-    // 사용 가능한 공고가 없는 경우
     if (myJobs.length === 0) {
       alert(
         "사용 가능한 공고가 없습니다.\n채용공고를 등록하거나 마감일이 지나지 않은 공고를 확인해주세요.",
@@ -202,19 +169,16 @@ export default function TalentSearchPage() {
       return;
     }
 
-    // 모달 열기
     setPendingTalent(talent);
     setShowJobModal(true);
   };
 
-  // 공고 선택 후 면접 요청 실행
   const handleJobSelect = async (jobId: number) => {
     if (!user?.userId || !pendingTalent) return;
 
     setShowJobModal(false);
 
     try {
-      // ✅ 새 API 사용
       await createInterviewOffer(user.userId, {
         userId: pendingTalent.userId,
         jobId: jobId,
@@ -230,7 +194,7 @@ export default function TalentSearchPage() {
   };
 
   const handleSave = async (talentId: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // ✅ 카드 클릭 이벤트 방지
+    e.stopPropagation();
 
     if (!user?.userId) {
       alert("로그인이 필요합니다.");
@@ -250,38 +214,21 @@ export default function TalentSearchPage() {
     }
   };
 
-  // ✅ 인재 클릭 시 상세보기
+  // ✅ 인재 클릭 시 별도 페이지로 이동
   const handleTalentClick = (resumeId: number) => {
-    setSelectedResumeId(resumeId);
+    navigate(`/company/talent-search/${resumeId}`);
   };
 
-  // ✅ 상세보기에서 돌아오기
-  const handleBackToList = () => {
-    setSelectedResumeId(null);
-    loadTalents(); // 목록 새로고침
-  };
-
-  // ✅ 상세보기 페이지 표시
-  if (selectedResumeId) {
-    return (
-      <TalentResumeDetailPage
-        resumeId={selectedResumeId}
-        onBack={handleBackToList}
-      />
-    );
-  }
-
+  // ✅ 조건부 렌더링 제거 - 항상 메인 리스트만 표시
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex px-4 py-8 mx-auto max-w-7xl">
-        {/* 왼쪽 사이드바 */}
+      <div className="flex gap-6 px-4 py-8 mx-auto max-w-7xl">
         <CompanyLeftSidebar
           activeMenu={activeMenu}
           onMenuClick={handleMenuClick}
         />
 
-        {/* 메인 컨텐츠 */}
-        <div className="flex-1 pl-6">
+        <div className="flex-1">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">인재 검색</h1>
             <p className="mt-2 text-gray-600">최적의 인재를 찾아보세요</p>
@@ -376,6 +323,7 @@ export default function TalentSearchPage() {
                     onClick={() => handleTalentClick(talent.resumeId)}
                     className="p-6 transition bg-white border border-gray-200 cursor-pointer rounded-xl hover:shadow-lg hover:border-purple-300"
                   >
+                    {/* 인재 카드 내용은 동일 */}
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
@@ -456,10 +404,8 @@ export default function TalentSearchPage() {
                         </div>
 
                         <div className="flex flex-col w-32 gap-2">
-                          {/* ✅ 연락 상태에 따라 버튼 표시/비활성화 */}
                           {!talent.contactStatus ||
                           talent.contactStatus === "" ? (
-                            // 연락하지 않은 경우 - 면접 요청 버튼 표시
                             <button
                               onClick={(e) =>
                                 handleInterviewRequest(talent.resumeId, e)
@@ -469,7 +415,6 @@ export default function TalentSearchPage() {
                               면접 요청
                             </button>
                           ) : talent.contactStatus === "ACCEPTED" ? (
-                            // 수락된 경우 - 비활성화된 버튼
                             <button
                               disabled
                               className="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed"
@@ -477,7 +422,6 @@ export default function TalentSearchPage() {
                               수락됨
                             </button>
                           ) : talent.contactStatus === "PENDING" ? (
-                            // 대기중인 경우 - 비활성화된 버튼
                             <button
                               disabled
                               className="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed"
@@ -485,7 +429,6 @@ export default function TalentSearchPage() {
                               대기중
                             </button>
                           ) : talent.contactStatus === "REJECTED" ? (
-                            // 거절된 경우 - 비활성화된 버튼
                             <button
                               disabled
                               className="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed"

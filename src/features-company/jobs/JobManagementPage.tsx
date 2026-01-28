@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
@@ -12,10 +12,13 @@ import {
 export default function JobManagementPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "jobs",
     "jobs-sub-2",
   );
+
+  const reloadParam = searchParams.get('reload');
 
   const [selectedStatus, setSelectedStatus] = useState("전체");
   const [selectedRegion, setSelectedRegion] = useState("전체");
@@ -60,7 +63,7 @@ export default function JobManagementPage() {
     };
 
     loadJobPostings();
-  }, [user, navigate]);
+  }, [user, navigate, reloadParam]);
 
   const handleNewJob = () => {
     navigate("/company/jobs/create");
