@@ -17,7 +17,7 @@ export default function JobPostingCreatePage() {
   
   const [formData, setFormData] = useState({
     title: "",
-    jobCategory: "",
+    jobCategories: [] as string[], // 배열로 변경
     experienceMin: "",
     experienceMax: "",
     salaryMin: "",
@@ -157,7 +157,7 @@ export default function JobPostingCreatePage() {
       return;
     }
 
-    if (!formData.jobCategory) {
+    if (formData.jobCategories.length === 0) {
       alert("직무 분류를 선택해주세요.");
       return;
     }
@@ -210,7 +210,7 @@ export default function JobPostingCreatePage() {
       // API 요청 데이터 구성
       const requestData: JobPostingRequest = {
         title: formData.title,
-        jobCategory: formData.jobCategory,
+        jobCategory: formData.jobCategories.join(', '), // 배열을 문자열로 변환
         requiredSkills: requiredSkillsStr,
         preferredSkills: preferredSkillsStr,
         experienceMin: formData.experienceMin ? parseInt(formData.experienceMin) : undefined,
@@ -282,26 +282,83 @@ export default function JobPostingCreatePage() {
                   </p>
                 </div>
 
-                {/* 직무 분류 */}
+                {/* 직무 분류 - 다중 선택 */}
                 <div>
-                  <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  <label className="block mb-3 text-sm font-semibold text-gray-700">
                     직무 분류 <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    name="jobCategory"
-                    value={formData.jobCategory}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 transition-colors border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
-                    required
-                  >
-                    <option value="">선택하세요</option>
-                    <option value="프론트엔드 개발자">프론트엔드 개발자</option>
-                    <option value="백엔드 개발자">백엔드 개발자</option>
-                    <option value="풀스택 개발자">풀스택 개발자</option>
-                    <option value="PM">PM</option>
-                    <option value="데이터 분석가">데이터 분석가</option>
-                    <option value="디자이너">디자이너</option>
-                  </select>
+                  
+                  {/* 직무 버튼 그리드 */}
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {[
+                      "프론트엔드 개발자",
+                      "백엔드 개발자",
+                      "풀스택 개발자",
+                      "PM",
+                      "데이터 분석가",
+                      "디자이너",
+                    ].map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => {
+                            const isSelected = prev.jobCategories.includes(category);
+                            return {
+                              ...prev,
+                              jobCategories: isSelected
+                                ? prev.jobCategories.filter(c => c !== category)
+                                : [...prev.jobCategories, category]
+                            };
+                          });
+                        }}
+                        className={`px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+                          formData.jobCategories.includes(category)
+                            ? "bg-blue-600 text-white border-2 border-blue-600 shadow-md"
+                            : "bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400"
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 선택된 필터 */}
+                  {formData.jobCategories.length > 0 && (
+                    <div>
+                      <h4 className="mb-2 text-sm font-medium text-gray-700">선택된 필터</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.jobCategories.map((category) => (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                jobCategories: prev.jobCategories.filter(c => c !== category)
+                              }));
+                            }}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 transition-colors bg-blue-100 rounded-full hover:bg-blue-200"
+                          >
+                            <span>{category}</span>
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 근무지 */}

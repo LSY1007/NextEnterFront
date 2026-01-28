@@ -5,8 +5,8 @@ import {
   createResume,
   updateResume,
   getResumeDetail,
-  createResumeWithFiles, // ✅ 추가
-  updateResumeWithFiles, // ✅ 추가
+  createResumeWithFiles, // ✅ 파일 업로드 API 추가
+  updateResumeWithFiles, // ✅ 파일 업로드 API 추가
   CreateResumeRequest,
   ResumeSections,
 } from "../../api/resume";
@@ -14,6 +14,7 @@ import ResumeSidebar from "./components/ResumeSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import SchoolSearchInput from "./components/SchoolSearchInput";
 import { useKakaoAddress } from "../../hooks/useKakaoAddress";
+import { setNavigationBlocker } from "../../utils/navigationBlocker"; // navigationBlocker import
 
 interface ResumeFormPageProps {
   onBack?: () => void; // 옵션널로 변경
@@ -118,6 +119,17 @@ export default function ResumeFormPage({
       loadResumeData(resumeId, user.userId);
     }
   }, [resumeId, user?.userId]);
+
+  // 네비게이션 차단 설정
+  useEffect(() => {
+    // 컴포넌트 마운트 시 차단 활성화
+    setNavigationBlocker(true, "작성 중인 내용이 사라집니다. 정말 이동하시겠습니까?");
+
+    // 컴포넌트 언마운트 시 차단 해제
+    return () => {
+      setNavigationBlocker(false, "");
+    };
+  }, []);
 
   // 이력서 데이터 로드 함수
   const loadResumeData = async (id: number, userId: number) => {
@@ -490,8 +502,9 @@ export default function ResumeFormPage({
       console.log("📤 [디버그] 자기소개서 파일:", coverLetterFiles);
 
       let response;
-      // ✅ 파일이 있으면 파일 포함 API, 없으면 일반 API
+      // ✅ 파일이 있으면 파일 포함 API 사용
       if (portfolioFiles.length > 0 || coverLetterFiles.length > 0) {
+        console.log("💾 [디버그] 파일 포함 API 호출");
         if (resumeId) {
           response = await updateResumeWithFiles(
             resumeId,
@@ -509,6 +522,7 @@ export default function ResumeFormPage({
           );
         }
       } else {
+        console.log("📝 [디버그] 일반 API 호출 (파일 없음)");
         if (resumeId) {
           response = await updateResume(resumeId, resumeData, user.userId);
         } else {
@@ -518,7 +532,9 @@ export default function ResumeFormPage({
 
       if (response.resumeId) {
         alert(`이력서가 ${resumeId ? "수정" : "등록"}되었습니다!`);
-        navigate("/user/resume");
+        // 차단 해제 후 이동
+        setNavigationBlocker(false, "");
+        window.location.href = "/user/resume?menu=resume-sub-1";
       } else {
         setError(`이력서 ${resumeId ? "수정" : "등록"}에 실패했습니다.`);
       }
@@ -537,7 +553,9 @@ export default function ResumeFormPage({
   // 취소 처리
   const handleCancel = () => {
     if (window.confirm("정말 취소하시겠습니까?")) {
-      navigate("/user/resume?menu=resume-sub-1");
+      // 차단 해제 후 이동
+      setNavigationBlocker(false, "");
+      window.location.href = "/user/resume?menu=resume-sub-1";
     }
   };
 

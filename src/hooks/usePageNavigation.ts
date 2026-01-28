@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 // ✅ 1. useLocation 추가 (현재 내 위치 확인용)
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { navigationMenuData } from "../features/navigation-menu/data/menuData";
+import { checkNavigationBlocked } from "../utils/navigationBlocker"; // navigationBlocker import
 
 export const usePageNavigation = (
   currentPageId: string,
@@ -36,6 +37,9 @@ export const usePageNavigation = (
     menuId: string,
     navigateCallback?: (page: string, subMenu: string) => void
   ) => {
+    // ✅ 네비게이션 차단 체크
+    if (checkNavigationBlocked()) return;
+
     // 3. 별도 페이지로 가야 하는 메뉴들
     const separateRoutes: { [key: string]: string } = {
       "job-sub-1": "/user/jobs/all",

@@ -53,6 +53,26 @@ export interface ResumeSections {
   };
 }
 
+// 포트폴리오 정보 인터페이스
+export interface PortfolioInfo {
+  portfolioId: number;
+  filename: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  description?: string;
+  displayOrder: number;
+}
+
+// 자기소개서 정보 인터페이스
+export interface CoverLetterInfo {
+  coverLetterId: number;
+  title: string;
+  content?: string;
+  filePath?: string;
+  fileType?: string;
+}
+
 // 이력서 응답
 export interface ResumeResponse {
   resumeId: number;
@@ -83,6 +103,10 @@ export interface ResumeResponse {
   status: string;
   createdAt: string;
   updatedAt: string;
+
+  // ✅ 포트폴리오와 자기소개서 목록
+  portfolios?: PortfolioInfo[];
+  coverLetters?: CoverLetterInfo[];
 
   // 하위 호환성을 위해 유지
   structuredData?: string;
