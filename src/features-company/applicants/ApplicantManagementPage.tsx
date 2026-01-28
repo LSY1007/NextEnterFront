@@ -18,6 +18,7 @@ export default function ApplicantManagementPage() {
   // URL에서 jobId와 jobTitle 가져오기
   const urlJobId = searchParams.get("jobId");
   const urlJobTitle = searchParams.get("jobTitle");
+  const reloadParam = searchParams.get('reload'); 
 
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "applicants",
@@ -63,7 +64,7 @@ export default function ApplicantManagementPage() {
     };
 
     loadJobPostings();
-  }, [user?.companyId]);
+  }, [user?.companyId, reloadParam]);
 
   // 지원자 목록 로드
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function ApplicantManagementPage() {
     if (user?.companyId) {
       loadApplicants();
     }
-  }, [currentPage, user, navigate, selectedJobPosting, jobPostings]);
+  }, [currentPage, user, navigate, selectedJobPosting, jobPostings, reloadParam]);
 
   const handleAccept = async (applyId: number) => {
     if (!user?.companyId) return;

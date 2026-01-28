@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import CompanyLeftSidebar from "../components/CompanyLeftSidebar";
 import { useCompanyPageNavigation } from "../hooks/useCompanyPageNavigation";
@@ -11,10 +11,13 @@ import { getApplies, type ApplyListResponse } from "../../api/apply";
 export default function BusinessCreditPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const { activeMenu, handleMenuClick } = useCompanyPageNavigation(
     "credit",
     "credit-sub-1",
   );
+
+  const reloadParam = searchParams.get('reload');
 
   const [currentCredit, setCurrentCredit] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +52,7 @@ export default function BusinessCreditPage() {
     };
 
     fetchCreditBalance();
-  }, [user?.companyId]);
+  }, [user?.companyId, reloadParam]);
 
   // 추천 지원자 조회 (인재 검색 API 사용)
   useEffect(() => {
@@ -69,7 +72,7 @@ export default function BusinessCreditPage() {
     };
 
     fetchRecommendedApplicants();
-  }, [user?.companyId]);
+  }, [user?.companyId, reloadParam]);
 
   // 내가 올린 공고 조회
   useEffect(() => {
@@ -94,7 +97,7 @@ export default function BusinessCreditPage() {
     // test
 
     fetchMyJobPostings();
-  }, [user?.companyId]);
+  }, [user?.companyId, reloadParam]);
 
   // 지원한 인재 조회
   useEffect(() => {
@@ -113,7 +116,7 @@ export default function BusinessCreditPage() {
     };
 
     fetchAppliedCandidates();
-  }, [user?.companyId]);
+  }, [user?.companyId, reloadParam]);
 
   const handleChargeClick = () => {
     navigate("/company/credit/charge");

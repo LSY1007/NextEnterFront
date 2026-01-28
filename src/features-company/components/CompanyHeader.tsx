@@ -147,14 +147,14 @@ export default function CompanyHeader() {
 
   const handleMenuClick = (tabId: string, menuId?: string) => {
     if (checkNavigationBlocked()) return;
-
+  
     const checkTabId = menuId ? menuId.split("-sub-")[0] : tabId;
     if (LOGIN_REQUIRED_MENUS.includes(checkTabId) && !isAuthenticated) {
       alert("로그인이 필요한 기능입니다.");
       navigate("/company/login");
       return;
     }
-
+  
     const defaultSubMenus: { [key: string]: string } = {
       jobs: "jobs-sub-1",
       applicants: "applicants-sub-1",
@@ -162,7 +162,7 @@ export default function CompanyHeader() {
       companyMy: "companyMy-sub-1",
       credit: "credit-sub-1",
     };
-
+  
     const baseRoutes: { [key: string]: string } = {
       jobs: "/company/jobs/all",
       applicants: "/company/applicants",
@@ -170,17 +170,18 @@ export default function CompanyHeader() {
       companyMy: "/company/mypage",
       credit: "/company/credit",
     };
-
+  
     const separateRoutes: { [key: string]: string } = {
       "jobs-sub-2": "/company/jobs",
       "credit-sub-2": "/company/credit/charge",
       "applicants-sub-2": "/company/applicants/1/compatibility",
+      "talent-sub-2": "/company/scrap-talent", // ✅ 스크랩 인재 라우트 추가
     };
-
+  
     const targetMenuId = menuId || defaultSubMenus[tabId];
     const targetPath = separateRoutes[targetMenuId] || baseRoutes[tabId];
-
-    // ✅ 같은 메뉴 클릭 감지
+  
+    // 같은 메뉴 클릭 감지
     const currentMenu = searchParams.get("menu");
     if (currentMenu === targetMenuId) {
       // 같은 메뉴 클릭 시 reload 파라미터 추가
@@ -188,7 +189,7 @@ export default function CompanyHeader() {
       navigate(`${targetPath}?menu=${targetMenuId}&reload=${timestamp}`);
       return;
     }
-
+  
     if (targetPath) {
       navigate(`${targetPath}?menu=${targetMenuId}`);
     }
