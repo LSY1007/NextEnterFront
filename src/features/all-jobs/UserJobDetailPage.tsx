@@ -31,7 +31,6 @@ export default function UserJobDetailPage() {
   useEffect(() => {
     const loadJobPosting = async () => {
       if (!jobId) {
-        console.error("jobId가 없습니다:", jobId);
         alert("잘못된 접근입니다.");
         navigate("/user/jobs/all");
         return;
@@ -39,61 +38,28 @@ export default function UserJobDetailPage() {
 
       try {
         setLoading(true);
-        console.log("공고 조회 시작 - jobId:", jobId);
-        console.log("백엔드 URL:", "http://localhost:8080/api/jobs/" + jobId);
-
         const jobData = await getJobPosting(parseInt(jobId));
-        console.log("공고 조회 성공:", jobData);
         setJob(jobData);
 
         // 로그인한 경우에만 지원 여부와 북마크 확인
         if (user?.userId) {
           try {
-            console.log("지원 내역 조회 시작 - userId:", user.userId);
             const applies = await getMyApplies(user.userId);
-            console.log("지원 내역 조회 성공:", applies);
             const appliedJobIds = new Set(applies.map((apply) => apply.jobId));
             setIsApplied(appliedJobIds.has(jobData.jobId));
 
-            // 북마크 여부 확인
-            console.log("북마크 상태 조회 시작");
             const bookmarkStatus = await checkBookmark(
               user.userId,
               jobData.jobId,
             );
-            console.log("북마크 상태 조회 성공:", bookmarkStatus);
             setIsBookmarked(bookmarkStatus.isBookmarked);
           } catch (subError: any) {
-            console.error("지원/북마크 조회 실패 (무시할 수 있음):", subError);
-            // 지원/북마크 조회 실패는 전체 로딩을 멈추지 않음
+            console.error("지원/북마크 조회 실패:", subError);
           }
         }
       } catch (error: any) {
-        console.error("공고 조회 실패 상세:", {
-          message: error.message,
-          response: error.response,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          config: {
-            url: error.config?.url,
-            method: error.config?.method,
-            baseURL: error.config?.baseURL,
-          },
-        });
-
-        let errorMessage = "공고를 불러오는데 실패했습니다.";
-
-        if (error.code === "ERR_NETWORK") {
-          errorMessage =
-            "백엔드 서버에 연결할 수 없습니다. \n백엔드 서버(http://localhost:8080)가 실행 중인지 확인해주세요.";
-        } else if (error.response?.status === 404) {
-          errorMessage = "해당 공고를 찾을 수 없습니다.";
-        } else if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        }
-
-        alert(errorMessage);
+        console.error("공고 조회 실패:", error);
+        alert("공고를 불러오는데 실패했습니다.");
         navigate("/user/jobs/all");
       } finally {
         setLoading(false);
@@ -109,21 +75,16 @@ export default function UserJobDetailPage() {
       const fetchResumes = () => {
         setResumesLoading(true);
         try {
-          // localStorage에서 이력서 데이터 로드
           const savedResumes = localStorage.getItem("nextenter_resumes");
           if (savedResumes) {
-            const parsedResumes = JSON.parse(savedResumes);
-            console.log("이력서 로드 성공:", parsedResumes);
-            setLocalResumes(parsedResumes);
+            setLocalResumes(JSON.parse(savedResumes));
           } else {
-            console.log("저장된 이력서 없음");
             setLocalResumes([]);
           }
         } catch (error) {
           console.error("이력서 로드 실패:", error);
           setLocalResumes([]);
         } finally {
-          // 로딩 상태를 약간의 딸레이로 해제 (사용자 경험 개선)
           setTimeout(() => {
             setResumesLoading(false);
           }, 300);
@@ -166,7 +127,6 @@ export default function UserJobDetailPage() {
     try {
       setSubmitting(true);
 
-      // 백엔드 API 호출
       const applyRequest: ApplyCreateRequest = {
         jobId: job.jobId,
         resumeId: selectedResumeId,
@@ -174,7 +134,6 @@ export default function UserJobDetailPage() {
 
       await createApply(user.userId, applyRequest);
 
-      // localStorage에도 저장 (화면 표시용)
       const today = new Date();
       const applicationId = Date.now();
 
@@ -196,7 +155,7 @@ export default function UserJobDetailPage() {
       alert("지원이 완료되었습니다!");
       setShowResumeModal(false);
       setSelectedResumeId(null);
-      setIsApplied(true); // 지원 완료 상태로 변경
+      setIsApplied(true);
     } catch (error: any) {
       console.error("지원 실패:", error);
       if (
@@ -228,7 +187,7 @@ export default function UserJobDetailPage() {
       const result = await toggleBookmark(user.userId, job.jobId);
       setIsBookmarked(result.isBookmarked);
 
-      // 공고 데이터 새로고침하여 북마크 수 업데이트
+      // 공고 데이터 새로고침
       const updatedJob = await getJobPosting(job.jobId);
       setJob(updatedJob);
 
@@ -239,14 +198,7 @@ export default function UserJobDetailPage() {
       }
     } catch (error: any) {
       console.error("북마크 토글 실패:", error);
-      if (
-        error.response?.status === 409 ||
-        error.response?.data?.message?.includes("이미")
-      ) {
-        alert("이미 북마크한 공고입니다.");
-      } else {
-        alert(error.response?.data?.message || "북마크 처리에 실패했습니다.");
-      }
+      alert(error.response?.data?.message || "북마크 처리에 실패했습니다.");
     }
   };
 
@@ -274,6 +226,13 @@ export default function UserJobDetailPage() {
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  // ✅ [추가] 날짜 포맷팅 함수 (깨짐 방지)
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
+    // T를 기준으로 자르고 . 으로 연결 (예: 2026-01-29T... -> 2026. 01. 29)
+    return dateString.split("T")[0].replace(/-/g, ". ");
   };
 
   const formatExperience = (min?: number, max?: number) => {
@@ -309,7 +268,7 @@ export default function UserJobDetailPage() {
 
   return (
     <>
-      {/* 이력서 선택 모달 - 기존과 동일 */}
+      {/* 이력서 선택 모달 */}
       {showResumeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
@@ -732,8 +691,9 @@ export default function UserJobDetailPage() {
                   <div className="mb-1 text-sm font-medium text-gray-500">
                     등록일 / 마감일
                   </div>
+                  {/* ✅ [수정됨] 날짜 포맷팅 함수 적용 */}
                   <div className="text-lg font-semibold text-gray-900">
-                    {job.createdAt} ~ {job.deadline}
+                    {formatDate(job.createdAt)} ~ {job.deadline}
                   </div>
                 </div>
               </div>
@@ -774,11 +734,23 @@ export default function UserJobDetailPage() {
             <div className="p-8 mb-6 bg-white shadow-xl rounded-3xl">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 bg-purple-100 rounded-xl">
-                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg
+                    className="w-6 h-6 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">채용 포스터</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  채용 포스터
+                </h2>
               </div>
               <div className="overflow-hidden rounded-xl">
                 <img
@@ -786,7 +758,8 @@ export default function UserJobDetailPage() {
                   alt="채용 포스터"
                   className="object-contain w-full"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/800x1200?text=Image+Not+Available';
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/800x1200?text=Image+Not+Available";
                   }}
                 />
               </div>

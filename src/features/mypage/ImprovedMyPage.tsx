@@ -308,50 +308,6 @@ export default function ImprovedMyPage({
               </div>
             </div>
 
-            {/* 추천 공고 섹션 - 4~8 */}
-            <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🎓</span>
-                  <h2 className="text-lg font-bold text-gray-900">추천 교육/강의</h2>
-                </div>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                  더보기 &gt;
-                </button>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
-                {recommendedJobs.slice(4, 8).map((job) => (
-                  <div
-                    key={job.jobId}
-                    onClick={() => handleJobClick(job.jobId)}
-                    className="p-4 transition-all duration-200 bg-white border border-gray-300 rounded-lg cursor-pointer hover:shadow-md hover:border-blue-500 hover:-translate-y-1"
-                  >
-                    <div className="mb-3 overflow-hidden rounded-lg">
-                      {job.thumbnailUrl ? (
-                        <img
-                          src={job.thumbnailUrl}
-                          alt={job.title}
-                          className="object-cover w-full h-40 transition-transform duration-200 hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-40 bg-gray-100 rounded-lg">
-                          <span className="text-4xl">📚</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="mb-2 font-bold text-gray-900 line-clamp-2">{job.title}</h3>
-                    <p className="mb-2 text-sm text-gray-600">{job.companyName}</p>
-                    <div className="text-sm font-bold text-blue-600">
-                      {job.salaryMin && job.salaryMax
-                        ? `${job.salaryMin.toLocaleString()}원 ~ ${job.salaryMax.toLocaleString()}원`
-                        : "협의 가능"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* 스크랩한 공고 섹션 */}
             <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
               <div className="flex items-center justify-between mb-5">
