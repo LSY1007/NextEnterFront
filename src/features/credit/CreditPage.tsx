@@ -145,7 +145,7 @@ useEffect(() => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         <div className="px-4 py-5 mx-auto max-w-7xl">
           <div className="flex items-end justify-between mb-6">
             <div className="flex items-center gap-3">

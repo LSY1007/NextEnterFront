@@ -392,7 +392,7 @@ export default function CreditChargePage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-5xl px-4 py-8 mx-auto">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">

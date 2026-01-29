@@ -107,7 +107,7 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
 
   return (
     <>
-      <main className="px-6 py-8 mx-auto max-w-[1600px]">
+      <main className="px-6 py-8 mx-auto max-w-[1600px] bg-white">
         <div className="flex gap-8">
           {/* 왼쪽: 일자리 빠르게 찾기 */}
           <aside className="w-80">
