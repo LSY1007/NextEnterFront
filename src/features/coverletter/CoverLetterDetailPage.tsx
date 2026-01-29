@@ -93,7 +93,7 @@ export default function CoverLetterDetailPage({
   };
 
   return (
-    <div className="px-4 py-8 mx-auto max-w-7xl">
+    <div className="px-4 py-8 mx-auto max-w-7xl bg-white">
       <h2 className="inline-block mb-6 text-2xl font-bold">자소서 상세</h2>
       <div className="flex gap-6">
         {/* 사이드바 */}
