@@ -12,7 +12,7 @@ import {
   ResumeSections,
 } from "../../api/resume";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import SchoolSearchInput from "./components/SchoolSearchInput";
+
 import { useKakaoAddress } from "../../hooks/useKakaoAddress";
 import { setNavigationBlocker } from "../../utils/navigationBlocker";
 import LeftSidebar from "../../components/LeftSidebar";
@@ -1087,22 +1087,14 @@ export default function ResumeFormPage({
                         <label className="block mb-2 text-sm font-medium text-gray-700">
                           학교 이름
                         </label>
-                        <SchoolSearchInput
+                        <input
+                          type="text"
                           value={education.school}
-                          onChange={(value) => {
+                          onChange={(e) => {
                             const newEducations = [...educations];
-                            newEducations[index].school = value;
+                            newEducations[index].school = e.target.value;
                             setEducations(newEducations);
                           }}
-                          schoolLevel={
-                            education.type === "고등학교"
-                              ? "high"
-                              : education.type === "대학교"
-                                ? "college"
-                                : education.type === "대학원"
-                                  ? "graduate"
-                                  : undefined
-                          }
                           placeholder={`예: ${
                             education.type === "고등학교"
                               ? "서울고등학교"
@@ -1112,6 +1104,7 @@ export default function ResumeFormPage({
                                   ? "서울대학교 대학원"
                                   : "학교 이름을 입력하세요"
                           }`}
+                          className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500"
                         />
                       </div>
 
