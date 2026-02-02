@@ -5,7 +5,7 @@ import { getResumeList } from "../../api/resume";
 import { getJobPostings } from "../../api/job";
 import { getAiRecommendation, CompanyInfo, AiRecommendRequest } from "../../api/ai";
 
-import MatchingSidebar from "./components/MatchingSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import MatchingHistoryPage from "./components/MatchingHistoryPage";
 import ConfirmDialog from "./components/ConfirmDialog";
 import MatchingHeader from "./components/MatchingHeader";
@@ -286,7 +286,7 @@ export default function MatchingPage({
         <div className="px-4 py-8 mx-auto max-w-7xl">
           <h2 className="inline-block mb-6 text-2xl font-bold">매칭현황</h2>
           <div className="flex gap-6">
-            <MatchingSidebar
+            <LeftSidebar
               activeMenu={activeMenu}
               onMenuClick={handleMenuClick}
             />

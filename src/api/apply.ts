@@ -46,7 +46,9 @@ export interface ApplyDetailResponse {
   // 자기소개서 정보
   coverLetterTitle?: string;
   coverLetterContent?: string;
-  status: string;
+  status: string; // 레거시 호환용
+  documentStatus?: string; // 서류 상태 (PENDING, REVIEWING, PASSED, REJECTED, CANCELED)
+  finalStatus?: string; // 최종 결과 (PASSED, REJECTED, CANCELED)
   aiScore: number;
   notes: string;
   appliedAt: string;

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
-import JobsSidebar from "./components/JobsSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { getJobPostings, JobPostingListResponse } from "../../api/job";
 import { getResumeList } from "../../api/resume";
 import {
@@ -207,7 +207,8 @@ export default function AllJobsPage() {
     }
   };
 
-  const handleResumeSelect = (resumeId: number) => setSelectedResumeId(resumeId);
+  const handleResumeSelect = (resumeId: number) =>
+    setSelectedResumeId(resumeId);
 
   const handleCancelResume = () => {
     setShowResumeModal(false);
@@ -381,9 +382,14 @@ export default function AllJobsPage() {
 
       <div className="min-h-screen bg-white">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          <h1 className="mb-6 text-2xl font-bold">채용정보</h1>
-          <div className="flex gap-6">
-            <JobsSidebar activeMenu={activeMenu} onMenuClick={handleMenuClick} />
+          {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] title prop은 이미 있으므로 유지 */}
+            <LeftSidebar
+              title="채용정보"
+              activeMenu={activeMenu}
+              onMenuClick={handleMenuClick}
+            />
 
             <div className="flex-1 space-y-8">
               <JobSearchFilter onFilterChange={handleFilterChange} />
@@ -471,7 +477,7 @@ export default function AllJobsPage() {
                               handleCardClick(job.id);
                             }
                           }}
-                          className="flex flex-col overflow-hidden transition bg-white border border-gray-300 shadow-sm rounded-xl hover:shadow-xl hover:border-purple-400 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          className="flex flex-col overflow-hidden transition bg-white border border-gray-300 shadow-sm cursor-pointer rounded-xl hover:shadow-xl hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         >
                           <div className="flex items-center justify-center h-12 bg-gradient-to-br from-gray-50 to-gray-100">
                             {job.logoUrl ? (
@@ -552,7 +558,9 @@ export default function AllJobsPage() {
                               </div>
                               <span
                                 className={`text-sm font-bold ${
-                                  job.daysLeft <= 7 ? "text-red-600" : "text-blue-600"
+                                  job.daysLeft <= 7
+                                    ? "text-red-600"
+                                    : "text-blue-600"
                                 }`}
                               >
                                 D-{job.daysLeft}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AISidebar from "./components/AISidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 
 interface AIRecommendationPageProps {
@@ -98,7 +98,7 @@ export default function AIRecommendationPage({
       <div className="px-4 py-8 mx-auto max-w-7xl bg-white">
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
-          <AISidebar activeMenu={activeMenu} onMenuClick={handleMenuClick} />
+          <LeftSidebar activeMenu={activeMenu} onMenuClick={handleMenuClick} />
 
           {/* 메인 컨텐츠 */}
           <div className="flex-1">

@@ -1,9 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
-import CreditSidebar from "./components/CreditSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import { getActiveAdvertisements, Advertisement } from "../../api/advertisement";
+import {
+  getActiveAdvertisements,
+  Advertisement,
+} from "../../api/advertisement";
 import { getCreditBalance } from "../../api/credit";
 
 interface CreditPageProps {
@@ -19,21 +22,21 @@ export default function CreditPage({
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "credit",
     initialMenu || "credit-sub-1",
-    onNavigate
+    onNavigate,
   );
 
   // ✅ AppContext에서 실제 데이터 가져오기
-  const { 
-    creditBalance, 
+  const {
+    creditBalance,
     setCreditBalance, // ✅ 추가
-    creditTransactions, 
-    coupons, 
+    creditTransactions,
+    coupons,
     useCoupon,
-    businessJobs 
+    businessJobs,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<"coupon" | "usage" | "mileage">(
-    "coupon"
+    "coupon",
   );
 
   // ✅ 광고 데이터 상태
@@ -59,56 +62,61 @@ export default function CreditPage({
     fetchAdvertisements();
   }, []);
 
-// ✅ 크레딧 잔액 조회 (백엔드에서 가져오기)
-useEffect(() => {
-  const fetchCreditBalance = async () => {
-    if (user?.userId) {
-      try {
-        console.log("📡 크레딧 잔액 조회 시작:", user.userId);
-        const balance = await getCreditBalance(user.userId);
-        console.log("✅ 크레딧 잔액 조회 성공:", balance);
-        setCreditBalance(balance.balance);
-        localStorage.setItem('nextenter_credit_balance', balance.balance.toString());
-      } catch (error: any) {
-        console.error("❌ 크레딧 잔액 조회 실패:", error);
-        
-        // ⚠️ 401 에러가 아니면 기존 값 유지
-        if (error.response?.status !== 401) {
-          const savedBalance = localStorage.getItem('nextenter_credit_balance');
-          if (savedBalance) {
-            console.log("💾 저장된 크레딧 사용:", savedBalance);
-            setCreditBalance(parseInt(savedBalance));
-          } else {
-            setCreditBalance(0);
-            localStorage.setItem('nextenter_credit_balance', '0');
-          }
-        }
-        // 401 에러는 axios 인터셉터가 처리
-      }
-    }
-  };
+  // ✅ 크레딧 잔액 조회 (백엔드에서 가져오기)
+  useEffect(() => {
+    const fetchCreditBalance = async () => {
+      if (user?.userId) {
+        try {
+          console.log("📡 크레딧 잔액 조회 시작:", user.userId);
+          const balance = await getCreditBalance(user.userId);
+          console.log("✅ 크레딧 잔액 조회 성공:", balance);
+          setCreditBalance(balance.balance);
+          localStorage.setItem(
+            "nextenter_credit_balance",
+            balance.balance.toString(),
+          );
+        } catch (error: any) {
+          console.error("❌ 크레딧 잔액 조회 실패:", error);
 
-  fetchCreditBalance();
-}, [user?.userId, setCreditBalance]);
+          // ⚠️ 401 에러가 아니면 기존 값 유지
+          if (error.response?.status !== 401) {
+            const savedBalance = localStorage.getItem(
+              "nextenter_credit_balance",
+            );
+            if (savedBalance) {
+              console.log("💾 저장된 크레딧 사용:", savedBalance);
+              setCreditBalance(parseInt(savedBalance));
+            } else {
+              setCreditBalance(0);
+              localStorage.setItem("nextenter_credit_balance", "0");
+            }
+          }
+          // 401 에러는 axios 인터셉터가 처리
+        }
+      }
+    };
+
+    fetchCreditBalance();
+  }, [user?.userId, setCreditBalance]);
 
   // ✅ 사용 가능한 쿠폰만 필터링
   const availableCoupons = useMemo(() => {
-    return coupons.filter(c => !c.isUsed);
+    return coupons.filter((c) => !c.isUsed);
   }, [coupons]);
 
   // ✅ 사용한 쿠폰만 필터링
   const usedCoupons = useMemo(() => {
-    return coupons.filter(c => c.isUsed);
+    return coupons.filter((c) => c.isUsed);
   }, [coupons]);
 
   // ✅ 충전 내역만 필터링
   const chargeTransactions = useMemo(() => {
-    return creditTransactions.filter(t => t.type === "충전");
+    return creditTransactions.filter((t) => t.type === "충전");
   }, [creditTransactions]);
 
   // ✅ 사용 내역만 필터링
   const usageTransactions = useMemo(() => {
-    return creditTransactions.filter(t => t.type === "사용");
+    return creditTransactions.filter((t) => t.type === "사용");
   }, [creditTransactions]);
 
   // ✅ 추천 공고 (businessJobs 중 하나를 랜덤 또는 최신 것 표시)
@@ -147,28 +155,30 @@ useEffect(() => {
     <>
       <div className="min-h-screen bg-white">
         <div className="px-4 py-5 mx-auto max-w-7xl">
-          <div className="flex items-end justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">보유 크레딧</h1>
-            </div>
-            <button
-              onClick={handlePromote}
-              className="flex items-center gap-2 px-6 py-2 font-bold text-blue-600 transition border-2 border-blue-500 rounded-lg hover:bg-blue-50"
-            >
-              <span>+</span>
-              <span>충전하기</span>
-            </button>
-          </div>
+          {/* ✅ [수정] 상단 헤더(h1, button) 제거 후 구조 변경 */}
 
-          <div className="flex gap-6">
-            {/* 왼쪽 사이드바 */}
-            <CreditSidebar
+          {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] 왼쪽 사이드바 Title 적용 */}
+            <LeftSidebar
+              title="보유 크레딧"
               activeMenu={activeMenu}
               onMenuClick={handleMenuClick}
             />
 
             {/* 메인 컨텐츠 */}
             <div className="flex-1">
+              {/* ✅ [수정] 충전하기 버튼을 메인 컨텐츠 상단으로 이동 */}
+              <div className="flex justify-end mb-6">
+                <button
+                  onClick={handlePromote}
+                  className="flex items-center gap-2 px-6 py-2 font-bold text-blue-600 transition border-2 border-blue-500 rounded-lg hover:bg-blue-50"
+                >
+                  <span>+</span>
+                  <span>충전하기</span>
+                </button>
+              </div>
+
               {/* 크레딧 카드 */}
               <div className="p-8 mb-6 text-white bg-gradient-to-r from-purple-500 via-purple-400 to-cyan-400 rounded-2xl">
                 <h2 className="mb-6 text-xl">
@@ -229,7 +239,9 @@ useEffect(() => {
                             key={ad.id}
                             className={`${ad.backgroundColor} text-white rounded-xl p-6 shadow-lg cursor-pointer transition hover:shadow-xl hover:scale-[1.02]`}
                           >
-                            <h3 className="mb-3 text-2xl font-bold">{ad.title}</h3>
+                            <h3 className="mb-3 text-2xl font-bold">
+                              {ad.title}
+                            </h3>
                             <p className="mb-4 text-lg opacity-90">
                               {ad.description}
                             </p>
@@ -286,7 +298,10 @@ useEffect(() => {
                           <div className="p-4 mb-4 text-center rounded-lg bg-blue-50">
                             <span className="text-gray-600">총 충전</span>
                             <span className="mx-2 text-2xl font-bold text-blue-600">
-                              {chargeTransactions.reduce((sum, t) => sum + t.amount, 0)}
+                              {chargeTransactions.reduce(
+                                (sum, t) => sum + t.amount,
+                                0,
+                              )}
                             </span>
                             <span className="text-gray-600">크레딧</span>
                           </div>

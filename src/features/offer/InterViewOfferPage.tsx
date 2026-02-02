@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import OfferSidebar from "./components/OfferSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios"; // ✅ 기존 경로 유지 (건드리지 않음)
@@ -307,9 +307,12 @@ export default function InterviewOfferPage({
 
   return (
     <div className="px-4 py-8 mx-auto max-w-7xl">
-      <h2 className="inline-block mb-6 text-2xl font-bold">제안 현황</h2>
       <div className="flex gap-6">
-        <OfferSidebar activeMenu={activeMenu} onMenuClick={handleMenuClick} />
+        <LeftSidebar
+          title="제안 현황"
+          activeMenu={activeMenu}
+          onMenuClick={handleMenuClick}
+        />
         <div className="flex-1">
           {selectedOfferId && selectedOffer ? (
             // 🟦 상세 화면

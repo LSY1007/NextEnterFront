@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import { useApp } from "../../context/AppContext";
-import JobsSidebar from "./components/JobsSidebar";
+// ✅ [수정] LeftSidebar 사용
+import LeftSidebar from "../../components/LeftSidebar";
 
 // ✅ 인터페이스는 유지 (App.tsx 에러 방지용)
 interface AIRecommendedJobsPageProps {
@@ -37,14 +38,14 @@ export default function AIRecommendedJobsPage() {
 
   // AppContext에서 데이터 가져오기
   const { resumes, jobListings, businessJobs } = useApp();
-  
+
   // businessJobs를 JobListing 형식으로 변환
-  const convertedBusinessJobs: JobListing[] = businessJobs.map(job => {
+  const convertedBusinessJobs: JobListing[] = businessJobs.map((job) => {
     const deadline = new Date(job.deadline);
     const today = new Date();
     const diffTime = deadline.getTime() - today.getTime();
     const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return {
       id: job.id,
       company: "등록 기업",
@@ -57,7 +58,7 @@ export default function AIRecommendedJobsPage() {
       matchScore: Math.floor(Math.random() * 30) + 70, // 70-100 사이 랜덤 점수
     };
   });
-  
+
   // 기업 공고와 일반 공고 통합
   const combinedJobListings = [...jobListings, ...convertedBusinessJobs];
 
@@ -94,7 +95,7 @@ export default function AIRecommendedJobsPage() {
     const selectedResume = resumes.find((r) => r.id === selectedResumeId);
     if (confirm(`"${selectedResume?.title}"로 지원하시겠습니까?`)) {
       console.log(
-        `공고 ${selectedJobId}에 이력서 ${selectedResumeId}로 지원하기`
+        `공고 ${selectedJobId}에 이력서 ${selectedResumeId}로 지원하기`,
       );
       alert("완료되었습니다");
       setShowResumeModal(false);
@@ -145,10 +146,13 @@ export default function AIRecommendedJobsPage() {
 
         <div className="min-h-screen bg-white">
           <div className="px-4 py-8 mx-auto max-w-7xl">
-            <h1 className="mb-6 text-2xl font-bold">채용정보</h1>
-            <div className="flex gap-6">
-              {/* 왼쪽 사이드바 */}
-              <JobsSidebar
+            {/* ✅ [수정] 제목(h1) 제거 (사이드바 title로 이동) */}
+
+            {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+            <div className="flex items-start gap-6">
+              {/* ✅ [수정] JobsSidebar -> LeftSidebar 교체 & Title 적용 */}
+              <LeftSidebar
+                title="채용정보"
                 activeMenu={activeMenu}
                 onMenuClick={handleMenuClick}
               />
@@ -258,10 +262,13 @@ export default function AIRecommendedJobsPage() {
 
       <div className="min-h-screen bg-gray-50">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          <h1 className="mb-6 text-2xl font-bold">채용정보</h1>
-          <div className="flex gap-6">
-            {/* 왼쪽 사이드바 */}
-            <JobsSidebar
+          {/* ✅ [수정] 제목(h1) 제거 (사이드바 title로 이동) */}
+
+          {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] JobsSidebar -> LeftSidebar 교체 & Title 적용 */}
+            <LeftSidebar
+              title="채용정보"
               activeMenu={activeMenu}
               onMenuClick={handleMenuClick}
             />

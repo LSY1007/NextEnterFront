@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-// 통일성을 위해 기존 이력서 사이드바를 재사용합니다.
-import ResumeSidebar from "../resume/components/ResumeSidebar";
+import LeftSidebar from "../../components/LeftSidebar"; // [수정] LeftSidebar 사용
 
 // 초기 데이터 타입 (수정 모드에서 사용)
 interface InitialData {
@@ -38,7 +37,7 @@ export default function CoverLetterFormPage({
 
   // 3. 파일 업로드 관리 - 수정 모드일 경우 기존 파일 목록 설정
   const [coverLetterFiles, setCoverLetterFiles] = useState<string[]>(
-    initialData?.files || []
+    initialData?.files || [],
   );
   const coverLetterFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -56,7 +55,7 @@ export default function CoverLetterFormPage({
   };
 
   const handleCoverLetterFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -92,7 +91,7 @@ export default function CoverLetterFormPage({
   const handleSidebarClick = (menuId: string) => {
     if (
       window.confirm(
-        "페이지를 이동하면 작성 중인 내용이 사라집니다. 이동하시겠습니까?"
+        "페이지를 이동하면 작성 중인 내용이 사라집니다. 이동하시겠습니까?",
       )
     ) {
       onMenuClick(menuId); // 확인 누르면 부모에게 이동 요청
@@ -100,13 +99,12 @@ export default function CoverLetterFormPage({
   };
 
   return (
-    <div className="px-4 py-8 mx-auto max-w-7xl bg-white">
-      <h2 className="inline-block mb-6 text-2xl font-bold">
-        {isEditMode ? "자소서 수정" : "자소서 작성"}
-      </h2>
-      <div className="flex gap-6">
-        {/* 사이드바 */}
-        <ResumeSidebar
+    <div className="px-4 py-8 mx-auto bg-white max-w-7xl">
+      {/* ✅ [수정] 레이아웃 변경: items-start */}
+      <div className="flex items-start gap-6">
+        {/* ✅ [수정] LeftSidebar + Title 적용 */}
+        <LeftSidebar
+          title={isEditMode ? "자소서 수정" : "자소서 작성"}
           activeMenu={activeMenu}
           onMenuClick={handleSidebarClick}
         />
