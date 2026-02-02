@@ -19,16 +19,19 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { creditBalance } = useApp();
-  
-  const { activeMenu, handleMenuClick } = usePageNavigation("mypage", "mypage-sub-2");
-  
+
+  const { activeMenu, handleMenuClick } = usePageNavigation(
+    "mypage",
+    "mypage-sub-2",
+  );
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  
+
   // 회원 탈퇴 관련 상태
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const [withdrawalStep, setWithdrawalStep] = useState<1 | 2>(1);
@@ -36,7 +39,7 @@ export default function ProfilePage() {
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 수정 가능한 필드
@@ -107,7 +110,7 @@ export default function ProfilePage() {
       const response = await uploadProfileImage(user.userId, file);
       if (response.success && response.data) {
         setProfile((prev) =>
-          prev ? { ...prev, profileImage: response.data!.profileImage } : null
+          prev ? { ...prev, profileImage: response.data!.profileImage } : null,
         );
         setSuccessMessage("프로필 이미지가 업데이트되었습니다.");
         setTimeout(() => setSuccessMessage(""), 3000);
@@ -206,9 +209,9 @@ export default function ProfilePage() {
 
     try {
       const result = await withdrawUser(user.userId, verificationCode);
-      
+
       alert("회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.");
-      
+
       // 로그아웃 처리
       logout();
       navigate("/");
@@ -243,11 +246,13 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="px-4 py-8 mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-bold">내 정보</h1>
-        
-        <div className="flex gap-6">
-          {/* 왼쪽 사이드바 */}
+        {/* ✅ [수정] h1 태그 삭제 (사이드바 title로 이동) */}
+
+        {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+        <div className="flex items-start gap-6">
+          {/* ✅ [수정] LeftSidebar Title 적용 */}
           <LeftSidebar
+            title="내 정보"
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />
@@ -505,7 +510,10 @@ export default function ProfilePage() {
                     type="text"
                     value={formData.detailAddress}
                     onChange={(e) =>
-                      setFormData({ ...formData, detailAddress: e.target.value })
+                      setFormData({
+                        ...formData,
+                        detailAddress: e.target.value,
+                      })
                     }
                     disabled={!isEditing || isLoading}
                     placeholder="상세 주소를 입력하세요 (예: 3층)"
@@ -530,7 +538,9 @@ export default function ProfilePage() {
                     {profile?.createdAt && (
                       <p>
                         <span className="font-medium">가입일:</span>{" "}
-                        {new Date(profile.createdAt).toLocaleDateString("ko-KR")}
+                        {new Date(profile.createdAt).toLocaleDateString(
+                          "ko-KR",
+                        )}
                       </p>
                     )}
                   </div>
@@ -575,7 +585,9 @@ export default function ProfilePage() {
               <>
                 <div className="mb-6 space-y-4">
                   <div className="p-4 border-2 border-red-200 rounded-lg bg-red-50">
-                    <p className="mb-2 font-semibold text-red-900">⚠️ 주의사항</p>
+                    <p className="mb-2 font-semibold text-red-900">
+                      ⚠️ 주의사항
+                    </p>
                     <ul className="space-y-1 text-sm text-red-800 list-disc list-inside">
                       <li>모든 개인정보가 삭제됩니다</li>
                       <li>작성한 이력서가 모두 삭제됩니다</li>
@@ -587,9 +599,15 @@ export default function ProfilePage() {
                   {/* 크레딧 경고 */}
                   {creditBalance > 0 && (
                     <div className="p-4 border-2 border-orange-200 rounded-lg bg-orange-50">
-                      <p className="mb-2 font-semibold text-orange-900">💳 크레딧 잔액</p>
+                      <p className="mb-2 font-semibold text-orange-900">
+                        💳 크레딧 잔액
+                      </p>
                       <p className="text-sm text-orange-800">
-                        현재 <span className="font-bold">{creditBalance} 크레딧</span>이 남아있습니다.
+                        현재{" "}
+                        <span className="font-bold">
+                          {creditBalance} 크레딧
+                        </span>
+                        이 남아있습니다.
                         <br />
                         탈퇴 시 모든 크레딧이 소멸됩니다.
                       </p>

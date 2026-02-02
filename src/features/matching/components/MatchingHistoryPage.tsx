@@ -1,5 +1,5 @@
 import { useState } from "react";
-import MatchingSidebar from "./MatchingSidebar";
+import LeftSidebar from "../../../components/LeftSidebar";
 import { useApp } from "../../../context/AppContext";
 
 interface MatchingHistoryPageProps {
@@ -43,7 +43,7 @@ export default function MatchingHistoryPage({
 
           <div className="flex gap-6">
             {/* 왼쪽 사이드바 */}
-            <MatchingSidebar
+            <LeftSidebar
               activeMenu={activeMenu}
               onMenuClick={onMenuClick}
             />

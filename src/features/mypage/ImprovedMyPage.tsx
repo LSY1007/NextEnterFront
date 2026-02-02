@@ -7,7 +7,7 @@ import { getMyApplies, ApplyListResponse } from "../../api/apply";
 import { getBookmarkedJobs, BookmarkedJobDto } from "../../api/bookmark";
 import { getJobPostings, JobPostingListResponse } from "../../api/job";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import MyPageSidebar from "./components/MyPageSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 
 interface MyPageProps {
   onNavigate?: (page: string, subMenu?: string) => void;
@@ -179,15 +179,13 @@ export default function ImprovedMyPage({
   return (
     <div className="min-h-screen bg-white">
       <div className="px-4 py-8 mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">{user?.name || "이상연"}님</h1>
         <div className="flex gap-6">
-          {/* 왼쪽 사이드바 - sticky */}
-          <div className="sticky top-6 h-fit">
-            <MyPageSidebar
-              activeMenu={activeMenu}
-              onMenuClick={handleMenuClick}
-            />
-          </div>
+          {/* 왼쪽 사이드바 */}
+          <LeftSidebar
+            title={`${user?.name || "이상연"}님`}
+            activeMenu={activeMenu}
+            onMenuClick={handleMenuClick}
+          />
 
           {/* 메인 컨텐츠 영역 - 전체 너비 */}
           <main className="flex-1 space-y-6">

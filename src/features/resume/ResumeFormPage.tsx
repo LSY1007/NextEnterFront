@@ -10,7 +10,6 @@ import {
   CreateResumeRequest,
   ResumeSections,
 } from "../../api/resume";
-import ResumeSidebar from "./components/ResumeSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import SchoolSearchInput from "./components/SchoolSearchInput";
 import { useKakaoAddress } from "../../hooks/useKakaoAddress";

@@ -248,15 +248,12 @@ export default function CreditChargePage({
       <div className="px-4 py-8 mx-auto max-w-7xl">
         {/* ✅ [레이아웃 핵심] flex items-start gap-6 */}
         <div className="flex items-start gap-6">
-          {/* ✅ [왼쪽 고정 영역] 제목 + 사이드바 */}
-          <div className="sticky flex flex-col gap-6 top-10 shrink-0">
-            <h2 className="px-2 text-2xl font-bold">크레딧 충전</h2>
-            {/* 사이드바 사용 (activeMenu 등은 hook에서 가져온 값 사용) */}
-            <LeftSidebar
-              activeMenu={activeMenu}
-              onMenuClick={handleMenuClick}
-            />
-          </div>
+          {/* ✅ [수정] 래퍼 제거 및 title 속성 적용 */}
+          <LeftSidebar
+            title="크레딧 충전"
+            activeMenu={activeMenu}
+            onMenuClick={handleMenuClick}
+          />
 
           {/* ✅ [오른쪽 컨텐츠 영역] */}
           <div className="flex-1 pb-20 space-y-8">

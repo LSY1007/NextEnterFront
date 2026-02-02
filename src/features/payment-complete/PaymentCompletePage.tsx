@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import PaymentCompleteSidebar from "./components/PaymentCompleteSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { getCreditBalance } from "../../api/credit";
 
 interface LocationState {
@@ -74,7 +74,7 @@ export default function PaymentCompletePage() {
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
-          <PaymentCompleteSidebar
+          <LeftSidebar
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />

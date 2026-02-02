@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import ResumeSidebar from "./components/ResumeSidebar";
 import LeftSidebar from "../../components/LeftSidebar";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import {
@@ -441,7 +440,7 @@ export default function ResumeDetailPage() {
               <h2 className="px-2 text-2xl font-bold">이력서 상세</h2>
 
               {/* 사이드바 컴포넌트 */}
-              <ResumeSidebar
+              <LeftSidebar
                 activeMenu={activeMenu}
                 onMenuClick={handleMenuClick}
               />

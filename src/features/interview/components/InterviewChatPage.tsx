@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import InterviewSidebar from "./InterviewSidebar";
+import LeftSidebar from "../../../components/LeftSidebar"; // [수정] LeftSidebar 사용
 import InterviewSetup from "./InterviewSetup";
 import { useApp } from "../../../context/AppContext";
 import { useAuth } from "../../../context/AuthContext";
@@ -465,13 +465,12 @@ export default function InterviewChatPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="inline-block mb-6 text-2xl font-bold">
-          모의면접 진행 (AI Real-time)
-        </h2>
-
-        <div className="flex gap-6">
-          <InterviewSidebar
+      <div className="px-4 py-8 mx-auto max-w-7xl">
+        {/* ✅ [수정] 레이아웃 변경 (Sticky 적용: items-start) */}
+        <div className="flex items-start gap-6">
+          {/* ✅ [수정] LeftSidebar + Title 적용 */}
+          <LeftSidebar
+            title="실전 모의 면접"
             activeMenu={activeMenu}
             onMenuClick={(menuId) => {
               if (step === "chat") {
@@ -495,12 +494,12 @@ export default function InterviewChatPage({
               />
             ) : (
               <>
-                <div className="bg-white border-2 border-blue-400 rounded-2xl p-6">
+                <div className="p-6 bg-white border-2 border-blue-400 rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <button
                         onClick={onBack}
-                        className="text-blue-600 hover:scale-105 transition font-semibold flex items-center gap-2"
+                        className="flex items-center gap-2 font-semibold text-blue-600 transition hover:scale-105"
                       >
                         <svg
                           className="w-5 h-5"
@@ -518,7 +517,7 @@ export default function InterviewChatPage({
                         나가기
                       </button>
                       <div>
-                        <h2 className="font-bold text-lg">
+                        <h2 className="text-lg font-bold">
                           AI 면접관{" "}
                           {level === "junior" ? "(Junior)" : "(Senior)"}
                         </h2>
@@ -527,7 +526,7 @@ export default function InterviewChatPage({
                         </p>
                       </div>
                     </div>
-                    <div className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-bold">
+                    <div className="px-4 py-2 font-bold text-blue-700 bg-blue-100 rounded-lg">
                       Q. {turnCount}/{totalQuestions}
                     </div>
                   </div>
@@ -562,10 +561,10 @@ export default function InterviewChatPage({
                   ))}
                   {loading && (
                     <div className="flex gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
                         🤖
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-2xl text-gray-500 animate-pulse">
+                      <div className="p-4 text-gray-500 bg-gray-50 rounded-2xl animate-pulse">
                         답변을 분석하고 다음 질문을 생각하는 중입니다...
                       </div>
                     </div>
@@ -573,20 +572,20 @@ export default function InterviewChatPage({
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className="bg-white border-2 border-blue-400 rounded-2xl p-4 flex gap-4">
+                <div className="flex gap-4 p-4 bg-white border-2 border-blue-400 rounded-2xl">
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="답변을 입력하세요..."
-                    className="flex-1 resize-none border-none outline-none p-2 text-lg"
+                    className="flex-1 p-2 text-lg border-none outline-none resize-none"
                     rows={2}
                     disabled={loading}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!inputText.trim() || loading}
-                    className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold hover:bg-blue-700 disabled:bg-gray-300 transition"
+                    className="px-8 py-2 font-bold text-white transition bg-blue-600 rounded-xl hover:bg-blue-700 disabled:bg-gray-300"
                   >
                     전송
                   </button>

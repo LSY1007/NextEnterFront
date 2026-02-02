@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 import { getResumeList, deleteResume } from "../../api/resume";
-import ResumeSidebar from "./components/ResumeSidebar";
+// ✅ [수정] LeftSidebar만 사용 (ResumeSidebar 제거)
+import LeftSidebar from "../../components/LeftSidebar";
 import ResumeFormPage from "./ResumeFormPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 
@@ -186,19 +187,17 @@ export default function ResumePage() {
 
   return (
     <div className="px-4 py-8 mx-auto bg-white max-w-7xl">
-      {/* ❌ 여기에 있던 <h2 className="mb-6...">이력서</h2> 삭제함 */}
-
+      {/* ✅ 1. 부모 Flex 컨테이너: items-start (Sticky 필수 조건) */}
       <div className="flex items-start gap-6">
-        {/* ✅ [수정] 제목 + 사이드바를 하나로 묶고 Sticky 적용 */}
-        <div className="sticky flex flex-col gap-6 top-10 shrink-0">
-          <h2 className="px-2 text-2xl font-bold">이력서</h2>
-          <ResumeSidebar
-            activeMenu={activeMenu}
-            onMenuClick={handleMenuClick}
-          />
-        </div>
+        {/* ✅ 2. 왼쪽 사이드바 (자동 Sticky & 제목 적용) */}
+        {/* 기존의 sticky wrapper div와 h2를 제거하고 LeftSidebar에 title을 넘깁니다. */}
+        <LeftSidebar
+          title="이력서"
+          activeMenu={activeMenu}
+          onMenuClick={handleMenuClick}
+        />
 
-        {/* 메인 컨텐츠 */}
+        {/* ✅ 3. 메인 컨텐츠 */}
         <div className="flex-1 space-y-8">
           {/* 1. 파일 업로드 영역 */}
           <div className="px-6 py-5 border-2 border-blue-300 border-dashed rounded-2xl bg-blue-50">
@@ -376,7 +375,7 @@ export default function ResumePage() {
                         />
                       </div>
 
-                      <div className="flex-shrink-0 w-20">
+                      <div className="flex-shrink-0 w-24">
                         <span
                           className={`inline-flex items-center justify-center w-full px-2.5 py-1 text-xs font-medium rounded-md border whitespace-nowrap ${
                             isPublic

@@ -6,7 +6,7 @@ import {
   getMyApplications,
   ApplicationSummaryResponse,
 } from "../../api/application";
-import ApplicationStautsSidebar from "./components/ApplicationStatusPageSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { cancelApply } from "../../api/apply";
 
 interface ApplicationStatusPageProps {
@@ -178,9 +178,9 @@ export default function ApplicationStatusPage({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-8 mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-bold">지원 현황</h1>
         <div className="flex gap-6">
-          <ApplicationStautsSidebar
+          <LeftSidebar
+            title="지원 현황"
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />

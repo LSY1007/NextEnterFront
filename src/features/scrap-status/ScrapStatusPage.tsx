@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import MyPageSidebar from "../mypage/components/MyPageSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { useAuth } from "../../context/AuthContext";
 import {
   getBookmarkedJobs,
@@ -113,9 +113,10 @@ export default function ScrapStatusPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-8 mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-bold">스크랩 공고</h1>
-        <div className="flex gap-6">
-          <MyPageSidebar
+        {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+        <div className="flex items-start gap-6">
+          <LeftSidebar
+            title="스크랩 공고"
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />

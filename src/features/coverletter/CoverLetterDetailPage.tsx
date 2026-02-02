@@ -1,8 +1,8 @@
-// src/features/coverletter/CoverLetterDetailPage.tsx
-// 자소서 상세보기 페이지
-
-import ResumeSidebar from "../resume/components/ResumeSidebar";
-import { downloadCoverLetterFile, triggerFileDownload } from "../../api/coverletter";
+import LeftSidebar from "../../components/LeftSidebar"; // [수정] LeftSidebar 사용
+import {
+  downloadCoverLetterFile,
+  triggerFileDownload,
+} from "../../api/coverletter";
 import { useAuth } from "../../context/AuthContext";
 
 // 자소서 데이터 타입
@@ -75,7 +75,11 @@ export default function CoverLetterDetailPage({
        * downloadCoverLetterFile 쪽 구현에 따라 인자 형태가 다를 수 있는데,
        * 보통은 (coverLetterId, userId, fileName?) 형태로 만들어두는 게 안전함.
        */
-      const res = await downloadCoverLetterFile(coverLetter.id, user.userId, fileName);
+      const res = await downloadCoverLetterFile(
+        coverLetter.id,
+        user.userId,
+        fileName,
+      );
 
       // res가 AxiosResponse(blob) 이거나 Blob 자체일 수 있어서 둘 다 처리
       const blob = (res as any)?.data ?? res;
@@ -86,7 +90,7 @@ export default function CoverLetterDetailPage({
       console.error("자소서 파일 다운로드 오류:", error);
       alert(
         error.response?.data?.message ||
-          "파일 다운로드 중 오류가 발생했습니다."
+          "파일 다운로드 중 오류가 발생했습니다.",
       );
     }
   };
@@ -116,11 +120,15 @@ export default function CoverLetterDetailPage({
   };
 
   return (
-    <div className="px-4 py-8 mx-auto max-w-7xl bg-white">
-      <h2 className="inline-block mb-6 text-2xl font-bold">자소서 상세</h2>
-      <div className="flex gap-6">
-        {/* 사이드바 */}
-        <ResumeSidebar activeMenu={activeMenu} onMenuClick={handleSidebarClick} />
+    <div className="px-4 py-8 mx-auto bg-white max-w-7xl">
+      {/* ✅ [수정] 레이아웃 변경: items-start */}
+      <div className="flex items-start gap-6">
+        {/* ✅ [수정] LeftSidebar + Title 적용 */}
+        <LeftSidebar
+          title="자소서 상세"
+          activeMenu={activeMenu}
+          onMenuClick={handleSidebarClick}
+        />
 
         {/* 메인 컨텐츠 */}
         <div className="flex-1 space-y-8">
@@ -188,7 +196,7 @@ export default function CoverLetterDetailPage({
                     <button
                       key={index}
                       onClick={() => handleFileDownload(file)}
-                      className="flex items-center w-full gap-3 p-4 transition border border-gray-200 bg-gray-50 rounded-lg hover:bg-blue-50 hover:border-blue-300 group"
+                      className="flex items-center w-full gap-3 p-4 transition border border-gray-200 rounded-lg bg-gray-50 hover:bg-blue-50 hover:border-blue-300 group"
                     >
                       <span className="text-2xl">{getFileIcon(file)}</span>
                       <span className="flex-1 text-left text-gray-700 group-hover:text-blue-600">
