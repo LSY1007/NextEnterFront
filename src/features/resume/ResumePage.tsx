@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 import { getResumeList, deleteResume } from "../../api/resume";
+import { JOB_CATEGORIES } from "../../constants/jobConstants";
 import ResumeSidebar from "./components/ResumeSidebar";
 import ResumeFormPage from "./ResumeFormPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
@@ -42,6 +43,8 @@ export default function ResumePage() {
   const [resumes, setResumes] = useState<ResumeListItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  /** 파일 업로드 시 선택한 직무 (기본: 백엔드) */
+  const [uploadJobCategory, setUploadJobCategory] = useState<string>(JOB_CATEGORIES[1]);
 
   const loadResumes = useCallback(async () => {
     if (!user?.userId) return;
@@ -168,9 +171,70 @@ export default function ResumePage() {
   };
 
   const handleFileUpload = () => fileInputRef.current?.click();
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) console.log("파일 업로드됨:", file.name);
+    if (!file || !user?.userId) return;
+
+    // 파일 확장자 및 MIME 타입 검증
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    const validExtensions = ["pdf", "docx"];
+    const validMimeTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
+
+    if (!validExtensions.includes(ext || "") || !validMimeTypes.includes(file.type)) {
+      alert("PDF, DOCX 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    console.log("파일 업로드됨:", file.name);
+    setIsLoading(true);
+
+    try {
+      // 파일 이름에서 확장자 제거하여 이력서 제목으로 사용
+      const resumeTitle = file.name.replace(/\.(pdf|docx)$/i, "");
+      
+      const resumeData = {
+        title: resumeTitle,
+        jobCategory: uploadJobCategory,
+        status: "COMPLETED",
+      };
+
+      // createResumeWithFiles API 호출
+      const { createResumeWithFiles } = await import("../../api/resume");
+      const response = await createResumeWithFiles(
+        resumeData,
+        user.userId,
+        [file], // resumeFiles
+        [],     // portfolioFiles
+        []      // coverLetterFiles
+      );
+
+      console.log("✅ 이력서 생성 완료:", response.resumeId);
+      
+      // 이력서 목록 새로고침
+      await loadResumes();
+      
+      // 면접 페이지로 이동 옵션 제공
+      const shouldGoToInterview = window.confirm(
+        `"${resumeTitle}" 이력서가 성공적으로 업로드되었습니다!\n\n면접 페이지로 이동하시겠습니까?`
+      );
+
+      if (shouldGoToInterview) {
+        navigate('/user/interview');
+      }
+    } catch (error) {
+      console.error("파일 업로드 실패:", error);
+      alert("파일 업로드 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsLoading(false);
+      // 파일 input 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   if (isCreating) {
@@ -210,6 +274,23 @@ export default function ResumePage() {
               <p className="mb-2 text-xs text-gray-600">
                 지원 형식: PDF, WORD, HWP, EXCEL (최대 10MB)
               </p>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <label htmlFor="upload-job-category" className="text-sm font-medium text-gray-700">
+                  직무
+                </label>
+                <select
+                  id="upload-job-category"
+                  value={uploadJobCategory}
+                  onChange={(e) => setUploadJobCategory(e.target.value)}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {JOB_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <input
                 type="file"
                 ref={fileInputRef}

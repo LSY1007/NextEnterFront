@@ -5,9 +5,8 @@ import { useApp } from "../../../context/AppContext";
 import { useAuth } from "../../../context/AuthContext";
 import {
   interviewService,
-  InterviewReport,
 } from "../../../api/interviewService";
-import { getResumeList, getResumeDetail } from "../../../api/resume";
+import { getResumeList } from "../../../api/resume";
 
 interface Message {
   id: number;
@@ -57,31 +56,26 @@ export default function InterviewChatPage({
   // 백엔드 인터뷰 ID
   const [realInterviewId, setRealInterviewId] = useState<number | null>(null);
 
-  // 세션 유지를 위한 컨텍스트 (답변 전송 시 재전송용)
-  const [sessionContext, setSessionContext] = useState<any>(null);
-
-  // 리포트 누적 (매 턴마다 AI가 분석한 결과)
-  const [reports, setReports] = useState<InterviewReport[]>([]);
-
   // 스크롤 관련
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
 
-  // 1. 초기 로드: 이력서 목록이 없으면 로드
+  // 1. 초기 로드: 항상 최신 이력서 목록 로드
   useEffect(() => {
     const loadResumes = async () => {
-      // 이미 resumes가 있고(length > 0) currentResume이 설정되어 있다면 초기값 세팅
-      if (resumes.length > 0) {
-        if (currentResume && !selectedResumeId) {
-          setSelectedResumeId(currentResume.resumeId);
-        }
-        return;
-      }
-
+      console.log("📚 ========== 이력서 목록 로딩 시작 ==========");
+      console.log("👤 사용자 ID:", user?.userId);
+      
       if (user?.userId) {
         try {
+          console.log("🔄 getResumeList API 호출 중...");
           const data = await getResumeList(user.userId);
+          
+          console.log("✅ API 응답 받음:", data);
+          console.log("  - 타입:", Array.isArray(data) ? "배열" : typeof data);
+          console.log("  - 길이:", Array.isArray(data) ? data.length : "N/A");
+          
           if (Array.isArray(data)) {
             const contextResumes = data.map((resume) => ({
               id: resume.resumeId,
@@ -89,117 +83,104 @@ export default function InterviewChatPage({
               industry: resume.jobCategory || "미지정",
               applications: 0,
             }));
+            
+            console.log("📋 변환된 이력서 목록:", contextResumes);
             setResumes(contextResumes);
+            console.log("✅ 이력서 목록 로드 완료:", contextResumes.length, "개");
 
-            // 만약 현재 컨텍스트 이력서가 있다면 자동 선택
-            if (currentResume) {
-              setSelectedResumeId(currentResume.resumeId);
+            // 첫 번째 이력서를 자동 선택 (선택된 이력서가 없을 때만)
+            if (!selectedResumeId && contextResumes.length > 0) {
+              console.log("🎯 첫 번째 이력서 자동 선택:", contextResumes[0]);
+              setSelectedResumeId(contextResumes[0].id);
+            } else if (selectedResumeId) {
+              console.log("🎯 이미 선택된 이력서 ID:", selectedResumeId);
+            } else {
+              console.log("⚠️ 이력서 목록이 비어있음");
             }
+          } else {
+            console.error("❌ 응답이 배열이 아님:", data);
           }
         } catch (error) {
-          console.error("이력서 목록 로드 실패:", error);
+          console.error("❌ 이력서 목록 로드 실패:", error);
+          if (error instanceof Error) {
+            console.error("  - 오류 메시지:", error.message);
+            console.error("  - 오류 스택:", error.stack);
+          }
         }
+      } else {
+        console.log("⚠️ 사용자 ID 없음 - 로그인 필요");
       }
+      
+      console.log("📚 ========== 이력서 목록 로딩 종료 ==========");
     };
     loadResumes();
-  }, [user?.userId, resumes.length, setResumes, currentResume]);
+  }, [user?.userId]); // resumes.length, currentResume 의존성 제거
 
   // 2. 면접 시작 핸들러
-  const handleStartInterview = async (portfolioText: string) => {
+  const handleStartInterview = async (portfolioText: string, portfolioFiles: File[]) => {
+    console.log("🎬 ========== 면접 시작 프로세스 시작 ==========");
+    
+    // 1. 이력서 선택 상태 확인
+    console.log("📋 선택된 이력서 ID:", selectedResumeId);
+    console.log("📚 전체 이력서 목록:", resumes);
+    
     if (!selectedResumeId) {
+      console.error("❌ 이력서가 선택되지 않음");
       alert("이력서를 선택해주세요.");
       return;
     }
+    
+    const selectedResume = resumes.find(r => r.id === selectedResumeId);
+    console.log("✅ 선택된 이력서 정보:", selectedResume);
+    
     if (!user?.userId) {
+      console.error("❌ 사용자 정보 없음");
       alert("로그인 정보가 없습니다.");
       return;
     }
+    
+    console.log("👤 사용자 ID:", user.userId);
 
     setLoading(true);
 
     try {
-      // (1) 이력서 상세 정보 가져오기 (Context Refresh)
       const userIdNum =
         typeof user.userId === "string" ? parseInt(user.userId) : user.userId;
-      const resumeDetail = await getResumeDetail(selectedResumeId, userIdNum);
 
-      // (2) Payload 구성
-      const skills = resumeDetail.skills
-        ? Array.isArray(resumeDetail.skills)
-          ? resumeDetail.skills
-          : String(resumeDetail.skills).split(",")
-        : [];
-
-      // 포트폴리오 메타데이터
-      // 기존 포트폴리오 파일 목록
-      const existingPortfolios =
-        resumeDetail.portfolios?.map((p: any) => p.filename) || [];
-
-      const portfolioData = {
-        projects:
-          resumeDetail.portfolios?.map((p: any) => ({
-            title: p.filename,
-            description: p.description,
-          })) || [],
-        userInputCombined: portfolioText,
-      };
-
-      // 이력서 섹션 파싱 (JSON String -> Object)
-      let careers = [];
-      let educations = [];
-      try {
-        if (resumeDetail.careers && typeof resumeDetail.careers === "string") {
-          careers = JSON.parse(resumeDetail.careers);
-        } else if (Array.isArray(resumeDetail.careers)) {
-          careers = resumeDetail.careers;
-        }
-        if (
-          resumeDetail.educations &&
-          typeof resumeDetail.educations === "string"
-        ) {
-          educations = JSON.parse(resumeDetail.educations);
-        } else if (Array.isArray(resumeDetail.educations)) {
-          educations = resumeDetail.educations;
-        }
-      } catch (e) {
-        console.error("JSON Parsing failed", e);
-      }
-
-      const payloadContext = {
-        resumeId: resumeDetail.resumeId,
-        jobCategory: resumeDetail.jobCategory || "backend",
-        difficulty: (level === "junior" ? "JUNIOR" : "SENIOR") as
-          | "JUNIOR"
-          | "SENIOR",
-        // 이력서 내용 구조화
-        resumeContent: {
-          skills: {
-            essential: skills,
-            additional: [],
-          },
-          professional_experience: careers.map((c: any) => ({
-            role: c.role || c.title || "Unknown",
-            period: c.period || "",
-            key_tasks: c.content ? [c.content] : [],
-          })),
-          education: educations.map((e: any) => ({
-            major: e.major || e.school || "Unknown",
-          })),
-          self_introduction: "", // Removed introduction access
-        },
-        portfolio: portfolioData,
-        portfolioFiles: existingPortfolios,
-      };
-
-      setSessionContext(payloadContext);
-
-      // (3) API 호출
-      const response = await interviewService.startInterview(userIdNum, {
-        ...payloadContext,
+      // (1) Payload 구성 - 선택된 이력서의 직무(jobCategory) 사용, fallback "미지정"
+      const payload = {
+        resumeId: selectedResumeId,
+        jobCategory: selectedResume?.industry ?? "미지정",
+        difficulty: (level === "junior" ? "JUNIOR" : "SENIOR") as "JUNIOR" | "SENIOR",
+        portfolioText: portfolioText,
         totalTurns: totalQuestions,
+      };
+
+      console.log("📦 API 요청 Payload:", JSON.stringify(payload, null, 2));
+      console.log("  - resumeId:", payload.resumeId);
+      console.log("  - jobCategory:", payload.jobCategory);
+      console.log("  - difficulty:", payload.difficulty);
+      console.log("  - portfolioText:", portfolioText ? `"${portfolioText.substring(0, 50)}..."` : "(없음)");
+      console.log("  - totalTurns:", payload.totalTurns);
+
+      // TODO: 백엔드 API가 준비되면 portfolioFiles를 함께 전송
+      console.log("📎 포트폴리오 파일:", portfolioFiles.length, "개");
+      portfolioFiles.forEach(file => {
+        console.log("  -", file.name, `(${(file.size / 1024).toFixed(1)} KB)`);
       });
 
-      // (4) 상태 업데이트 및 화면 전환
+      // (2) API 호출
+      console.log("🚀 면접 시작 API 호출 중...");
+      const response = await interviewService.startInterview(userIdNum, payload);
+      
+      console.log("✅ API 응답 받음:", response);
+      console.log("  - interviewId:", response.interviewId);
+      console.log("  - currentTurn:", response.currentTurn);
+      console.log("  - isFinished:", response.isFinished);
+      console.log("  - 첫 질문:", response.question);
+      console.log("  - realtime.next_question:", response.realtime?.next_question);
+
+      // (3) 상태 업데이트 및 화면 전환
       setRealInterviewId(response.interviewId);
 
       const welcomeMessage: Message = {
@@ -211,11 +192,20 @@ export default function InterviewChatPage({
           minute: "2-digit",
         }),
       };
+      
+      console.log("💬 첫 메시지 설정:", welcomeMessage.text);
       setMessages([welcomeMessage]);
       setTurnCount(1);
       setStep("chat");
+      
+      console.log("🎬 ========== 면접 시작 완료 ==========");
     } catch (error) {
-      console.error("면접 시작 오류:", error);
+      console.error("❌ ========== 면접 시작 오류 ==========");
+      console.error("오류 상세:", error);
+      if (error instanceof Error) {
+        console.error("오류 메시지:", error.message);
+        console.error("오류 스택:", error.stack);
+      }
       alert(
         "면접을 시작할 수 없습니다. 이력서 정보를 불러오는데 실패했습니다.",
       );
@@ -245,43 +235,17 @@ export default function InterviewChatPage({
     }
   }, [messages, isUserScrolling]);
 
-  // 완료 처리
-  const handleCompleteInterview = () => {
+  const handleCompleteInterview = (backendResult?: any) => {
     const duration = Math.round((Date.now() - startTime) / 60000);
     const durationText = `${duration}분`;
 
-    let totalScore = 0;
-    let validReports = 0;
-    const competencySums: Record<string, number> = {};
-    const allStrengths = new Set<string>();
-    const allGaps = new Set<string>();
-
-    reports.forEach((report) => {
-      if (report.competency_scores) {
-        Object.entries(report.competency_scores).forEach(([key, val]) => {
-          competencySums[key] = (competencySums[key] || 0) + val;
-        });
-        validReports++;
-      }
-    });
-
-    const avgCompetencyScore =
-      validReports > 0
-        ? Object.values(competencySums).reduce((a, b) => a + b, 0) /
-          (Object.keys(competencySums).length * validReports)
-        : 3.5;
-
-    const finalScore = Math.min(100, Math.round(avgCompetencyScore * 20));
-    const resultStatus = finalScore >= 70 ? "합격" : "불합격";
-
-    const finalCompetencyScores: Record<string, number> = {};
-    Object.keys(competencySums).forEach((key) => {
-      finalCompetencyScores[key] = parseFloat(
-        (competencySums[key] / validReports).toFixed(1),
-      );
-    });
+    // 백엔드에서 받은 최종 결과 사용 (V2.0 철학)
+    const finalScore = backendResult?.finalScore ?? 0;
+    const resultStatus = backendResult?.result ?? (finalScore >= 70 ? "합격" : "불합격");
+    const finalFeedback = backendResult?.finalFeedback ?? (finalScore >= 70 ? "전반적으로 훌륭한 역량을 보여주셨습니다." : "일부 역량에서 보완이 필요합니다.");
 
     const now = new Date();
+    // ... (날짜 시간 처리 동일)
     const date = now
       .toLocaleDateString("ko-KR", {
         year: "numeric",
@@ -308,14 +272,11 @@ export default function InterviewChatPage({
       duration: durationText,
       result: resultStatus,
       detailedReport: {
-        competency_scores: finalCompetencyScores,
+        competency_scores: backendResult?.competencyScores ?? {},
         starr_coverage: {},
-        strengths: Array.from(allStrengths),
-        gaps: Array.from(allGaps),
-        feedback:
-          finalScore >= 70
-            ? "전반적으로 훌륭한 역량을 보여주셨습니다."
-            : "일부 역량에서 보완이 필요합니다.",
+        strengths: backendResult?.strengths ?? [],
+        gaps: backendResult?.gaps ?? [],
+        feedback: finalFeedback,
       },
     });
 
@@ -348,6 +309,11 @@ export default function InterviewChatPage({
       alert("면접 세션이 초기화되지 않았습니다.");
       return;
     }
+
+    const userIdNum =
+      typeof user?.userId === "string"
+        ? parseInt(user.userId)
+        : user?.userId || 0;
 
     const userText = inputText;
     setInputText("");
@@ -386,29 +352,9 @@ export default function InterviewChatPage({
     setLoading(true);
 
     try {
-      if (!sessionContext) {
-        console.warn("⚠️ [Frontend Warning] Session Context is missing!");
-        // Optional: Alert user or try to restore?
-        // For now, we proceed but log warning. The backend might handle it with default context.
-      }
-      const payloadContext = sessionContext;
-
-      console.log("🔍 [Frontend Debug] Payload Context:", payloadContext); // Debug log
-
-      const userIdNum =
-        typeof user?.userId === "string"
-          ? parseInt(user.userId)
-          : user?.userId || 0;
-
       const submitPayload = {
         interviewId: realInterviewId,
         answer: userText,
-        resumeId: payloadContext?.resumeId || 0,
-        jobCategory: payloadContext?.jobCategory || "",
-        difficulty: payloadContext?.difficulty || "JUNIOR",
-        resumeContent: payloadContext?.resumeContent,
-        portfolio: payloadContext?.portfolio,
-        portfolioFiles: payloadContext?.portfolioFiles,
       };
 
       console.log("🚀 [Frontend Debug] Sending Submit Payload:", submitPayload); // Debug log
@@ -418,8 +364,9 @@ export default function InterviewChatPage({
         submitPayload,
       );
 
-      if (response.realtime?.report) {
-        setReports((prev) => [...prev, response.realtime!.report!]);
+      if (response.isFinished) {
+        handleCompleteInterview(response.finalResult);
+        return;
       }
 
       if (response.realtime?.reaction && response.realtime.reaction.text) {
