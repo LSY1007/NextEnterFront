@@ -6,9 +6,8 @@ import {
   getMyApplications,
   ApplicationSummaryResponse,
 } from "../../api/application";
-import ApplicationStautsSidebar from "./components/ApplicationStatusPageSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { cancelApply } from "../../api/apply";
-import { rejectOffer } from "../../api/interviewOffer";
 
 interface ApplicationStatusPageProps {
   initialMenu?: string;
@@ -34,17 +33,16 @@ export default function ApplicationStatusPage({
   >([]);
   const [loading, setLoading] = useState(true);
 
+  // 데이터 로드
   useEffect(() => {
     const loadApplications = async () => {
       if (!user?.userId) return;
 
       try {
         setLoading(true);
+        // 백엔드에서 이제 '일반 지원'만 내려줍니다.
         const data = await getMyApplications(user.userId);
-        const filtered = data.filter(
-          (app) => app.interviewStatus !== "REJECTED",
-        );
-        setApplications(filtered);
+        setApplications(data);
       } catch (error) {
         console.error("지원 내역 로드 실패:", error);
       } finally {
@@ -55,35 +53,30 @@ export default function ApplicationStatusPage({
     loadApplications();
   }, [user?.userId]);
 
-  // ✅ [수정] 상태 표시 로직 변경
+  // 날짜 포맷 함수
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
+    const datePart = dateString.includes("T")
+      ? dateString.split("T")[0]
+      : dateString;
+    return datePart.replace(/-/g, ". ");
+  };
+
+  // ✅ [수정] 면접 제안(INTERVIEW_OFFER) 관련 상태 로직 삭제 -> 오직 지원(APPLICATION) 상태만 처리
   const getApplicationStatus = (app: ApplicationSummaryResponse): string => {
-    const { type, status, interviewStatus, documentStatus, finalStatus } = app;
+    const { status, documentStatus, finalStatus } = app;
 
     if (finalStatus === "PASSED") return "합격";
     if (finalStatus === "REJECTED") return "불합격";
     if (finalStatus === "CANCELED") return "지원취소";
 
-    // 기업의 요청인 경우
-    if (type === "INTERVIEW_OFFER") {
-      if (interviewStatus === "CANCELED" || interviewStatus === "REJECTED")
-        return "제안취소";
+    // 일반 지원 상태 처리
+    if (documentStatus === "PASSED") return "서류합격";
+    if (documentStatus === "REJECTED") return "서류불합격";
+    if (documentStatus === "REVIEWING") return "서류검토중";
+    if (documentStatus === "PENDING") return "서류심사 대기";
 
-      // 👉 [변경 포인트] 제안받은 상태(OFFERED)를 '서류합격'으로 표시
-      if (interviewStatus === "OFFERED") return "서류합격";
-
-      if (interviewStatus === "ACCEPTED") return "면접 수락";
-      if (interviewStatus === "SCHEDULED") return "면접 예정";
-      if (interviewStatus === "COMPLETED") return "면접 완료";
-    }
-
-    // 일반 지원인 경우
-    if (type === "APPLICATION") {
-      if (documentStatus === "PASSED") return "서류합격";
-      if (documentStatus === "REJECTED") return "서류불합격";
-      if (documentStatus === "REVIEWING") return "서류검토중";
-      if (documentStatus === "PENDING") return "서류심사 대기";
-    }
-
+    // 레거시 상태 처리
     if (status === "ACCEPTED") return "합격";
     if (status === "REJECTED") return "불합격";
     if (status === "CANCELED") return "지원취소";
@@ -91,6 +84,7 @@ export default function ApplicationStatusPage({
     return "서류심사 중";
   };
 
+  // 필터 상태들
   const [period, setPeriod] = useState("3개월");
   const [status, setStatus] = useState("전체");
   const [businessType, setBusinessType] = useState("전체");
@@ -101,12 +95,8 @@ export default function ApplicationStatusPage({
 
   const stats = useMemo(() => {
     const total = applications.length;
-    // 통계에서도 '서류합격'으로 집계되도록 조건 확인 (OFFERED 포함됨)
     const documentPass = applications.filter(
-      (app) =>
-        app.documentStatus === "PASSED" ||
-        app.interviewStatus === "OFFERED" ||
-        app.interviewStatus === "ACCEPTED",
+      (app) => app.documentStatus === "PASSED",
     ).length;
     const pass = applications.filter(
       (app) => app.finalStatus === "PASSED" || app.status === "ACCEPTED",
@@ -141,40 +131,27 @@ export default function ApplicationStatusPage({
 
   const handleSearch = () => console.log("검색 실행");
 
-  const handleCancel = async (id: number, type: string) => {
+  // ✅ [수정] '일반 지원 취소' 로직만 남김
+  const handleCancel = async (id: number) => {
     if (!user?.userId) return;
-
     if (!window.confirm("정말 취소하시겠습니까?")) return;
 
     try {
-      if (type === "APPLICATION") {
-        console.log(`🚀 [Front] 일반 지원 취소 요청: applyId=${id}`);
-        await cancelApply(id, user.userId);
+      console.log(`🚀 [Front] 지원 취소 요청: applyId=${id}`);
+      await cancelApply(id, user.userId);
 
-        setApplications((prev) =>
-          prev.map((app) =>
-            app.id === id && app.type === "APPLICATION"
-              ? {
-                  ...app,
-                  status: "CANCELED",
-                  finalStatus: "CANCELED",
-                  documentStatus: "CANCELED",
-                }
-              : app,
-          ),
-        );
-      } else if (type === "INTERVIEW_OFFER") {
-        console.log(`🚀 [Front] 기업의 요청 취소 요청: offerId=${id}`);
-        await rejectOffer(id, user.userId);
-
-        setApplications((prev) =>
-          prev.map((app) =>
-            app.id === id && app.type === "INTERVIEW_OFFER"
-              ? { ...app, interviewStatus: "CANCELED" }
-              : app,
-          ),
-        );
-      }
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === id
+            ? {
+                ...app,
+                status: "CANCELED",
+                finalStatus: "CANCELED",
+                documentStatus: "CANCELED",
+              }
+            : app,
+        ),
+      );
       alert("취소되었습니다.");
     } catch (error) {
       console.error("취소 실패:", error);
@@ -182,40 +159,18 @@ export default function ApplicationStatusPage({
     }
   };
 
-  // 버튼 렌더링 함수 (변경 없음)
+  // ✅ [수정] '일반 지원' 취소 버튼만 렌더링
   const renderCancelButton = (app: ApplicationSummaryResponse) => {
-    if (app.type === "APPLICATION") {
-      if (app.status === "PENDING" || app.documentStatus === "PENDING") {
-        return (
-          <button
-            onClick={() => handleCancel(app.id, app.type)}
-            className="text-sm text-red-600 underline hover:text-red-700"
-          >
-            지원취소
-          </button>
-        );
-      }
-    } else if (app.type === "INTERVIEW_OFFER") {
-      if (app.interviewStatus === "OFFERED") {
-        return (
-          <button
-            onClick={() => handleCancel(app.id, app.type)}
-            className="text-sm text-gray-500 underline hover:text-gray-700"
-          >
-            제안거절
-          </button>
-        );
-      }
-      if (app.interviewStatus === "ACCEPTED") {
-        return (
-          <button
-            onClick={() => handleCancel(app.id, app.type)}
-            className="text-sm text-red-600 underline hover:text-red-700"
-          >
-            면접취소
-          </button>
-        );
-      }
+    // 대기 상태일 때만 취소 가능
+    if (app.status === "PENDING" || app.documentStatus === "PENDING") {
+      return (
+        <button
+          onClick={() => handleCancel(app.id)}
+          className="text-sm text-red-600 underline hover:text-red-700 whitespace-nowrap"
+        >
+          지원취소
+        </button>
+      );
     }
     return null;
   };
@@ -223,9 +178,9 @@ export default function ApplicationStatusPage({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-8 mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-bold">지원 현황</h1>
         <div className="flex gap-6">
-          <ApplicationStautsSidebar
+          <LeftSidebar
+            title="지원 현황"
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />
@@ -268,13 +223,15 @@ export default function ApplicationStatusPage({
             {/* 검색 필터 */}
             <div className="p-6 mb-6 bg-white border-2 border-gray-200 rounded-2xl">
               <div className="flex items-center gap-4 pb-4 mb-4 border-b border-gray-200">
-                <div className="w-20 font-medium text-gray-700">조회기간</div>
+                <div className="w-20 font-medium text-gray-700 whitespace-nowrap">
+                  조회기간
+                </div>
                 <div className="flex gap-2">
                   {["1주일", "1개월", "2개월", "3개월", "날짜지정"].map((p) => (
                     <button
                       key={p}
                       onClick={() => setPeriod(p)}
-                      className={`px-4 py-2 text-sm rounded-lg transition ${period === p ? "bg-blue-600 text-white font-semibold" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                      className={`px-4 py-2 text-sm rounded-lg transition whitespace-nowrap ${period === p ? "bg-blue-600 text-white font-semibold" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                     >
                       {p}
                     </button>
@@ -296,7 +253,7 @@ export default function ApplicationStatusPage({
               </div>
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                  <label className="w-20 text-sm font-medium text-gray-700">
+                  <label className="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
                     진행상태
                   </label>
                   <select
@@ -307,14 +264,12 @@ export default function ApplicationStatusPage({
                     <option value="전체">전체</option>
                     <option value="서류심사 대기">서류심사 대기</option>
                     <option value="서류합격">서류합격</option>
-                    <option value="기업의 요청받음">기업의 요청받음</option>
-                    <option value="면접 수락">면접 수락</option>
                     <option value="합격">합격</option>
                     <option value="불합격">불합격</option>
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="w-20 text-sm font-medium text-gray-700">
+                  <label className="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
                     영업여부
                   </label>
                   <select
@@ -328,7 +283,7 @@ export default function ApplicationStatusPage({
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="w-20 text-sm font-medium text-gray-700">
+                  <label className="w-20 text-sm font-medium text-gray-700 whitespace-nowrap">
                     지원산업
                   </label>
                   <select
@@ -353,7 +308,7 @@ export default function ApplicationStatusPage({
                 />
                 <button
                   onClick={handleSearch}
-                  className="px-8 py-2 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
+                  className="px-8 py-2 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700 whitespace-nowrap"
                 >
                   검색
                 </button>
@@ -380,25 +335,23 @@ export default function ApplicationStatusPage({
               </div>
             ) : (
               <div className="overflow-hidden bg-white border-2 border-gray-200 rounded-2xl">
-                <table className="w-full">
+                <table className="w-full table-fixed">
                   <thead className="bg-gray-50">
                     <tr className="border-b-2 border-gray-200">
-                      <th className="px-4 py-3 text-sm font-semibold text-center text-gray-700">
-                        유형
-                      </th>
-                      <th className="px-4 py-3 text-sm font-semibold text-center text-gray-700">
+                      {/* ✅ [수정] 유형 컬럼 삭제 */}
+                      <th className="w-32 px-4 py-3 text-sm font-semibold text-center text-gray-700 whitespace-nowrap">
                         지원일
                       </th>
-                      <th className="px-4 py-3 text-sm font-semibold text-center text-gray-700">
+                      <th className="w-40 px-4 py-3 text-sm font-semibold text-center text-gray-700 whitespace-nowrap">
                         회사명
                       </th>
                       <th className="px-4 py-3 text-sm font-semibold text-center text-gray-700">
                         지원내역
                       </th>
-                      <th className="px-4 py-3 text-sm font-semibold text-center text-gray-700">
+                      <th className="w-32 px-4 py-3 text-sm font-semibold text-center text-gray-700 whitespace-nowrap">
                         진행상태
                       </th>
-                      <th className="px-4 py-3 text-sm font-semibold text-center text-gray-700">
+                      <th className="w-32 px-4 py-3 text-sm font-semibold text-center text-gray-700 whitespace-nowrap">
                         관리
                       </th>
                     </tr>
@@ -410,53 +363,47 @@ export default function ApplicationStatusPage({
                         appStatus === "합격"
                           ? "bg-purple-100 text-purple-700"
                           : appStatus === "서류합격"
-                            ? "bg-green-100 text-green-700" // 서류합격으로 바뀌면서 초록색 뱃지가 적용됩니다.
-                            : appStatus.includes("면접")
-                              ? "bg-blue-100 text-blue-700"
-                              : appStatus.includes("불합격") ||
-                                  appStatus.includes("취소")
-                                ? "bg-red-100 text-red-700"
-                                : "bg-gray-100 text-gray-700";
-
-                      const typeLabel =
-                        app.type === "APPLICATION" ? "일반" : "제안";
-                      const typeBadgeColor =
-                        app.type === "APPLICATION"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-green-100 text-green-700";
+                            ? "bg-green-100 text-green-700"
+                            : appStatus.includes("불합격") ||
+                                appStatus.includes("취소")
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700";
 
                       return (
                         <tr key={app.id} className="border-b border-gray-200">
-                          <td className="px-4 py-4 text-center">
-                            <span
-                              className={`inline-block px-2 py-1 text-xs font-semibold rounded ${typeBadgeColor}`}
-                            >
-                              {typeLabel}
-                            </span>
+                          {/* ✅ [수정] 유형 데이터 셀 삭제 */}
+                          <td className="px-4 py-4 text-sm text-center text-gray-700 whitespace-nowrap">
+                            {formatDate(app.appliedAt)}
                           </td>
-                          <td className="px-4 py-4 text-sm text-center text-gray-700">
-                            {new Date(app.appliedAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-center text-gray-700">
+                          <td className="px-4 py-4 overflow-hidden text-sm font-medium text-center text-gray-700 whitespace-nowrap text-ellipsis">
                             {app.companyName || "알 수 없음"}
                           </td>
                           <td className="px-4 py-4 text-sm text-gray-700">
-                            <div className="mb-1">{app.jobTitle}</div>
-                            <div className="text-xs text-gray-500">
+                            {/* ✅ [수정] 줄바꿈 방지 및 말줄임 처리 */}
+                            <div
+                              className="mb-1 font-semibold text-gray-900 truncate"
+                              title={app.jobTitle}
+                            >
+                              {app.jobTitle}
+                            </div>
+                            <div
+                              className="text-xs text-gray-500 truncate"
+                              title={`${app.jobCategory} | ${app.location || "미지정"}`}
+                            >
                               {app.jobCategory} | {app.location || "미지정"}
                             </div>
                             <div className="text-xs text-gray-400">
-                              마감: {app.deadline || "미지정"}
+                              마감: {formatDate(app.deadline) || "미지정"}
                             </div>
                           </td>
-                          <td className="px-4 py-4 text-center">
+                          <td className="px-4 py-4 text-center whitespace-nowrap">
                             <span
                               className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${statusColor}`}
                             >
                               {appStatus}
                             </span>
                           </td>
-                          <td className="px-4 py-4 text-center">
+                          <td className="px-4 py-4 text-center whitespace-nowrap">
                             {renderCancelButton(app)}
                           </td>
                         </tr>

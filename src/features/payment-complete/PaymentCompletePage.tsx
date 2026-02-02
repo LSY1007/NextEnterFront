@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import PaymentCompleteSidebar from "./components/PaymentCompleteSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import { getCreditBalance } from "../../api/credit";
 
 interface LocationState {
@@ -20,7 +20,7 @@ export default function PaymentCompletePage() {
   const { creditBalance, setCreditBalance } = useApp();
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "credit",
-    "credit-sub-1"
+    "credit-sub-1",
   );
 
   // ✅ location.state에서 결제 정보 가져오기
@@ -40,7 +40,10 @@ export default function PaymentCompletePage() {
         try {
           const balance = await getCreditBalance(user.userId);
           setCreditBalance(balance.balance);
-          localStorage.setItem('nextenter_credit_balance', balance.balance.toString());
+          localStorage.setItem(
+            "nextenter_credit_balance",
+            balance.balance.toString(),
+          );
           console.log("최신 크레딧 잔액:", balance.balance);
         } catch (error) {
           console.error("크레딧 잔액 조회 실패:", error);
@@ -71,7 +74,7 @@ export default function PaymentCompletePage() {
       <div className="px-4 py-8 mx-auto max-w-7xl">
         <div className="flex gap-6">
           {/* 왼쪽 사이드바 */}
-          <PaymentCompleteSidebar
+          <LeftSidebar
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />

@@ -149,7 +149,7 @@ export default function CompanyNotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen py-8 bg-gray-50">
+    <div className="min-h-screen py-8 bg-white">
       <div className="max-w-4xl px-4 mx-auto">
         {/* 헤더 */}
         <div className="p-6 mb-6 bg-white rounded-lg shadow-sm">
@@ -183,7 +183,7 @@ export default function CompanyNotificationsPage() {
                 </p>
               </div>
             </div>
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
                 className="px-4 py-2 text-sm font-medium text-purple-600 transition rounded-lg hover:bg-purple-50"

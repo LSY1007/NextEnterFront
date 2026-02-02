@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import InterviewSidebar from "./components/InterviewSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import InterviewChatPage from "./components/InterviewChatPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import MockInterviewResultPage from "./components/MockInterviewResultPage";
@@ -155,9 +155,9 @@ export default function InterviewPage({
       )}
 
       <div className="px-4 py-8 mx-auto max-w-7xl bg-white">
-        <h2 className="inline-block mb-6 text-2xl font-bold">모의면접</h2>
         <div className="flex gap-6">
-          <InterviewSidebar
+          <LeftSidebar
+            title="모의면접"
             activeMenu={activeMenu}
             onMenuClick={handleMenuClick}
           />

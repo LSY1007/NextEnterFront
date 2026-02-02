@@ -1,4 +1,6 @@
-import InterviewSidebar from "./InterviewSidebar";
+import { useState } from "react";
+// ✅ [수정] LeftSidebar 사용
+import LeftSidebar from "../../../components/LeftSidebar";
 import { useApp } from "../../../context/AppContext";
 
 interface MockInterviewHistoryPageProps {
@@ -26,12 +28,13 @@ export default function MockInterviewHistoryPage({
       <>
         <div className="min-h-screen bg-white">
           <div className="px-4 py-8 mx-auto max-w-7xl">
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-bold">AI 모의 면접 히스토리</h2>
-            </div>
+            {/* ✅ [수정] 제목(h2) 제거 (사이드바 타이틀로 이동) */}
 
-            <div className="flex gap-6">
-              <InterviewSidebar
+            {/* ✅ [수정] 레이아웃 변경: items-start + gap-6 */}
+            <div className="flex items-start gap-6">
+              {/* ✅ [수정] LeftSidebar 교체 & Title 적용 */}
+              <LeftSidebar
+                title="AI 모의 면접 히스토리"
                 activeMenu={activeMenu}
                 onMenuClick={onMenuClick}
               />
@@ -91,14 +94,13 @@ export default function MockInterviewHistoryPage({
     <>
       <div className="min-h-screen bg-gray-50">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          {/* AI 모의 면접 타이틀 */}
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold">AI 모의 면접 히스토리</h2>
-          </div>
+          {/* ✅ [수정] AI 모의 면접 타이틀(h2) 제거 */}
 
-          <div className="flex gap-6">
-            {/* 왼쪽 사이드바 */}
-            <InterviewSidebar
+          {/* ✅ [수정] 레이아웃 변경: items-start + gap-6 */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] 왼쪽 사이드바 교체 & Title 적용 */}
+            <LeftSidebar
+              title="AI 모의 면접 히스토리"
               activeMenu={activeMenu}
               onMenuClick={onMenuClick}
             />
@@ -143,7 +145,7 @@ export default function MockInterviewHistoryPage({
                   </span>
                   <span
                     className={`text-2xl font-bold ${getScoreColor(
-                      interview.score
+                      interview.score,
                     )}`}
                   >
                     총점: {interview.score}점
@@ -187,10 +189,10 @@ export default function MockInterviewHistoryPage({
                           qa.score >= 90
                             ? "bg-green-50 text-green-600"
                             : qa.score >= 80
-                            ? "bg-blue-50 text-blue-600"
-                            : qa.score >= 70
-                            ? "bg-yellow-50 text-yellow-600"
-                            : "bg-red-50 text-red-600"
+                              ? "bg-blue-50 text-blue-600"
+                              : qa.score >= 70
+                                ? "bg-yellow-50 text-yellow-600"
+                                : "bg-red-50 text-red-600"
                         }`}
                       >
                         {qa.score}점

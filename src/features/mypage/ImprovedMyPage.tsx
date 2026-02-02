@@ -7,7 +7,7 @@ import { getMyApplies, ApplyListResponse } from "../../api/apply";
 import { getBookmarkedJobs, BookmarkedJobDto } from "../../api/bookmark";
 import { getJobPostings, JobPostingListResponse } from "../../api/job";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import MyPageSidebar from "./components/MyPageSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 
 interface MyPageProps {
   onNavigate?: (page: string, subMenu?: string) => void;
@@ -122,7 +122,7 @@ export default function ImprovedMyPage({
   const handleClick = (item: string) => {
     switch (item) {
       case "입사 지원 현황":
-        handleMenuClick("application-status");
+        handleMenuClick("mypage-sub-3"); // ✅ 수정: application-status → mypage-sub-3
         break;
       case "모의 면접":
         handleMenuClick("interview-sub-1");
@@ -134,7 +134,7 @@ export default function ImprovedMyPage({
         handleMenuClick("job-sub-2");
         break;
       case "스크랩 현황":
-        handleMenuClick("scrap-status");
+        handleMenuClick("mypage-sub-5"); // ✅ 수정: scrap-status → mypage-sub-5
         break;
       case "관심 기업":
         alert("관심 기업 기능은 준비 중입니다.");
@@ -179,15 +179,13 @@ export default function ImprovedMyPage({
   return (
     <div className="min-h-screen bg-white">
       <div className="px-4 py-8 mx-auto max-w-7xl">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">{user?.name || "이상연"}님</h1>
         <div className="flex gap-6">
-          {/* 왼쪽 사이드바 - sticky */}
-          <div className="sticky top-6 h-fit">
-            <MyPageSidebar
-              activeMenu={activeMenu}
-              onMenuClick={handleMenuClick}
-            />
-          </div>
+          {/* 왼쪽 사이드바 */}
+          <LeftSidebar
+            title={`${user?.name || "이상연"}님`}
+            activeMenu={activeMenu}
+            onMenuClick={handleMenuClick}
+          />
 
           {/* 메인 컨텐츠 영역 - 전체 너비 */}
           <main className="flex-1 space-y-6">
@@ -201,7 +199,7 @@ export default function ImprovedMyPage({
                   </h2>
                 </div>
                 <button
-                  onClick={() => handleMenuClick("application-status")}
+                  onClick={() => handleMenuClick("mypage-sub-3")} // ✅ 수정
                   className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
                 >
                   더보기 &gt;
@@ -209,7 +207,11 @@ export default function ImprovedMyPage({
               </div>
               
               <div className="grid grid-cols-4 gap-4">
-                <div className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400">
+                {/* ✅ 내 정보 박스 - 클릭 가능하도록 button으로 변경 */}
+                <button
+                  onClick={() => handleMenuClick("mypage-sub-2")}
+                  className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400 cursor-pointer"
+                >
                   <div className="flex items-center justify-center mb-3">
                     <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full">
                       <span className="text-2xl">💚</span>
@@ -217,9 +219,13 @@ export default function ImprovedMyPage({
                   </div>
                   <div className="mb-1 text-sm font-medium text-gray-600">내 정보</div>
                   <div className="text-3xl font-bold text-gray-900">{stats.receivedOffers}</div>
-                </div>
+                </button>
 
-                <div className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400">
+                {/* ✅ 지원 현황 박스 - 클릭 가능하도록 button으로 변경 */}
+                <button
+                  onClick={() => handleMenuClick("mypage-sub-3")}
+                  className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400 cursor-pointer"
+                >
                   <div className="flex items-center justify-center mb-3">
                     <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full">
                       <span className="text-2xl">📝</span>
@@ -227,9 +233,13 @@ export default function ImprovedMyPage({
                   </div>
                   <div className="mb-1 text-sm font-medium text-gray-600">지원 현황</div>
                   <div className="text-3xl font-bold text-gray-900">{stats.appliedJobs}</div>
-                </div>
+                </button>
 
-                <div className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400">
+                {/* 기업의 요청 박스 */}
+                <button
+                  onClick={() => handleMenuClick("mypage-sub-4")}
+                  className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400 cursor-pointer"
+                >
                   <div className="flex items-center justify-center mb-3">
                     <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full">
                       <span className="text-2xl">👀</span>
@@ -237,9 +247,13 @@ export default function ImprovedMyPage({
                   </div>
                   <div className="mb-1 text-sm font-medium text-gray-600">기업의 요청</div>
                   <div className="text-3xl font-bold text-gray-900">{stats.viewedJobs}</div>
-                </div>
+                </button>
 
-                <div className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400">
+                {/* 스크랩 박스 */}
+                <button
+                  onClick={() => handleMenuClick("mypage-sub-5")}
+                  className="p-5 text-center transition-all duration-200 bg-white border border-gray-300 rounded-lg hover:shadow-md hover:border-blue-400 cursor-pointer"
+                >
                   <div className="flex items-center justify-center mb-3">
                     <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-full">
                       <span className="text-2xl">⭐</span>
@@ -247,7 +261,7 @@ export default function ImprovedMyPage({
                   </div>
                   <div className="mb-1 text-sm font-medium text-gray-600">스크랩</div>
                   <div className="text-3xl font-bold text-gray-900">{stats.bookmarkedJobs}</div>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -305,50 +319,6 @@ export default function ImprovedMyPage({
                   <span className="mb-3 text-4xl">🤖</span>
                   <span className="text-sm font-semibold text-center text-gray-700">AI 매칭/면접 기록</span>
                 </button>
-              </div>
-            </div>
-
-            {/* 추천 공고 섹션 - 4~8 */}
-            <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🎓</span>
-                  <h2 className="text-lg font-bold text-gray-900">추천 교육/강의</h2>
-                </div>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                  더보기 &gt;
-                </button>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
-                {recommendedJobs.slice(4, 8).map((job) => (
-                  <div
-                    key={job.jobId}
-                    onClick={() => handleJobClick(job.jobId)}
-                    className="p-4 transition-all duration-200 bg-white border border-gray-300 rounded-lg cursor-pointer hover:shadow-md hover:border-blue-500 hover:-translate-y-1"
-                  >
-                    <div className="mb-3 overflow-hidden rounded-lg">
-                      {job.thumbnailUrl ? (
-                        <img
-                          src={job.thumbnailUrl}
-                          alt={job.title}
-                          className="object-cover w-full h-40 transition-transform duration-200 hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-40 bg-gray-100 rounded-lg">
-                          <span className="text-4xl">📚</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="mb-2 font-bold text-gray-900 line-clamp-2">{job.title}</h3>
-                    <p className="mb-2 text-sm text-gray-600">{job.companyName}</p>
-                    <div className="text-sm font-bold text-blue-600">
-                      {job.salaryMin && job.salaryMax
-                        ? `${job.salaryMin.toLocaleString()}원 ~ ${job.salaryMax.toLocaleString()}원`
-                        : "협의 가능"}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
 

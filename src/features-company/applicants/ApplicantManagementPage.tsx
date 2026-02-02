@@ -9,6 +9,7 @@ import {
   type ApplyListResponse,
 } from "../../api/apply";
 import { getJobPostings, type JobPostingListResponse } from "../../api/job";
+import { JOB_CATEGORIES } from "../../constants/jobConstants";
 
 export default function ApplicantManagementPage() {
   const navigate = useNavigate();
@@ -227,19 +228,15 @@ export default function ApplicantManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex gap-10 px-6 py-8 mx-auto max-w-screen-2xl">
-        {/* 왼쪽 사이드바 */}
-        <aside className="flex-shrink-0 hidden w-64 lg:block">
-          <CompanyLeftSidebar
-            activeMenu={activeMenu}
-            onMenuClick={handleMenuClick}
-          />
-        </aside>
+    <div className="min-h-screen bg-white">
+      <div className="flex px-4 py-8 mx-auto max-w-7xl">
+        <CompanyLeftSidebar
+          activeMenu={activeMenu}
+          onMenuClick={handleMenuClick}
+        />
 
-        {/* 메인 컨텐츠 */}
-        <main className="flex-1 min-w-0">
-          <div className="p-8 bg-white shadow-lg rounded-2xl">
+        <div className="flex-1 pl-6">
+          <div className="p-8 bg-white shadow-lg rounded-2xl min-h-[800px]">
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-2xl font-bold">지원자 관리</h1>
               {urlJobTitle && (
@@ -279,12 +276,11 @@ export default function ApplicantManagementPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                 >
                   <option value="전체">전체</option>
-                  <option value="프론트엔드 개발자">프론트엔드 개발자</option>
-                  <option value="백엔드 개발자">백엔드 개발자</option>
-                  <option value="풀스택 개발자">풀스택 개발자</option>
-                  <option value="PM">PM</option>
-                  <option value="데이터 분석가">데이터 분석가</option>
-                  <option value="디자이너">디자이너</option>
+                  {JOB_CATEGORIES.map((job) => (
+                    <option key={job} value={job}>
+                      {job}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -428,7 +424,7 @@ export default function ApplicantManagementPage() {
               </div>
             )}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

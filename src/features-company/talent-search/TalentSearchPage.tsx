@@ -14,6 +14,7 @@ import {
 import { getCompanyJobPostings, JobPostingListResponse } from "../../api/job";
 import JobSelectionModal from "./components/JobSelectionModal";
 import { useAuth } from "../../context/AuthContext";
+import { JOB_CATEGORIES } from "../../constants/jobConstants";
 
 export default function TalentSearchPage() {
   const { user } = useAuth();
@@ -231,14 +232,14 @@ export default function TalentSearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex gap-6 px-4 py-8 mx-auto max-w-7xl">
+    <div className="min-h-screen bg-white">
+      <div className="flex px-4 py-8 mx-auto max-w-7xl">
         <CompanyLeftSidebar
           activeMenu={activeMenu}
           onMenuClick={handleMenuClick}
         />
 
-        <div className="flex-1">
+        <div className="flex-1 pl-6 min-h-[800px]">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">인재 검색</h1>
             <p className="mt-2 text-gray-600">최적의 인재를 찾아보세요</p>
@@ -259,12 +260,11 @@ export default function TalentSearchPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
               >
                 <option value="전체">전체</option>
-                <option value="프론트엔드">프론트엔드</option>
-                <option value="백엔드">백엔드</option>
-                <option value="풀스택">풀스택</option>
-                <option value="PM">PM</option>
-                <option value="데이터 분석가">데이터 분석가</option>
-                <option value="디자이너">디자이너</option>
+                {JOB_CATEGORIES.map((job) => (
+                  <option key={job} value={job}>
+                    {job}
+                  </option>
+                ))}
               </select>
             </div>
 

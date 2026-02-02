@@ -14,6 +14,7 @@ interface CommonSidebarProps {
   onMenuClick: (menuId: string) => void;
   // props로 메뉴를 따로 안 넣어주면, 아래에서 만든 '통합 데이터'를 기본값으로 씁니다.
   menuItems?: MenuItem[];
+  title?: string; // ✅ [추가] 페이지 제목
 }
 
 // ✅ [2] 불러온 navigationMenuData를 사이드바가 좋아하는 모양(MenuItem[])으로 변환
@@ -26,13 +27,14 @@ const transformedMenuItems: MenuItem[] = Object.values(navigationMenuData).map(
       id: sub.id,
       label: sub.label,
     })),
-  })
+  }),
 );
 
 export default function LeftSidebar({
   activeMenu,
   onMenuClick,
   menuItems = transformedMenuItems, // ✅ [3] 변환된 데이터를 기본값으로 사용
+  title, // ✅ [추가] title 받아오기
 }: CommonSidebarProps) {
   const [expandedMenuIds, setExpandedMenuIds] = useState<string[]>([]);
 
@@ -41,7 +43,7 @@ export default function LeftSidebar({
     const parentMenu = menuItems.find(
       (item) =>
         item.id === activeMenu ||
-        item.submenu?.some((sub) => sub.id === activeMenu)
+        item.submenu?.some((sub) => sub.id === activeMenu),
     );
 
     if (parentMenu) {
@@ -56,7 +58,7 @@ export default function LeftSidebar({
     setExpandedMenuIds((prev) =>
       prev.includes(menuId)
         ? prev.filter((id) => id !== menuId)
-        : [...prev, menuId]
+        : [...prev, menuId],
     );
   };
 
@@ -65,7 +67,7 @@ export default function LeftSidebar({
     if (item.hasSubmenu) {
       // 하위 메뉴가 있으면 펼치기
       toggleMenu(item.id);
-      
+
       // 첫 번째 하위 메뉴로 이동
       if (item.submenu && item.submenu.length > 0) {
         onMenuClick(item.submenu[0].id);
@@ -77,7 +79,13 @@ export default function LeftSidebar({
   };
 
   return (
-    <aside className="w-64 min-h-screen p-4 space-y-2 bg-white border-r border-gray-200">
+    // ✅ [수정] wrapper div에 sticky 적용 (제목 + 사이드바 함께 고정)
+    <div className="sticky top-24 w-64 h-fit shrink-0">
+      {/* ✅ [추가] 제목이 있으면 렌더링 */}
+      {title && <h2 className="mb-6 text-2xl font-bold">{title}</h2>}
+      
+      {/* ✅ [수정] aside는 순수하게 메뉴만 담당 */}
+      <aside className="p-4 space-y-2 bg-white border-r border-gray-200">
       {menuItems.map((item) => {
         const isExpanded = expandedMenuIds.includes(item.id);
 
@@ -145,6 +153,7 @@ export default function LeftSidebar({
           </div>
         );
       })}
-    </aside>
+      </aside>
+    </div>
   );
 }

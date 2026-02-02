@@ -25,65 +25,66 @@ export interface InterviewResponse {
   interviewId: number;
   currentTurn: number;
   question: string;
-  isCompleted: boolean;
-  finalScore?: number;
-  finalFeedback?: string;
+  isFinished: boolean; // Renamed from isCompleted
+  finalResult?: {
+    finalScore: number;
+    result: string;
+    finalFeedback: string;
+    competencyScores: Record<string, number>;
+    strengths: string[];
+    gaps: string[];
+  };
 
-  // Rich AI Metadata (Mapped from Backend DTO)
+  // Rich AI Metadata
   reactionType?: string;
   reactionText?: string;
-  aiSystemReport?: any; // Map<String, Object>
-  aiEvaluation?: any;
-  requestedEvidence?: string[];
+  aiSystemReport?: any; 
   probeGoal?: string;
 
-  // Adapter helper (to keep UI compatible if needed, or we adapt UI)
   realtime?: InterviewRealtime;
 }
 
-export interface InterviewRequestPayload {
-  resumeId: number; // Changed to number
+export interface InterviewStartPayload {
+  resumeId: number;
   jobCategory: string;
   difficulty: "JUNIOR" | "SENIOR";
+  portfolioText?: string;
   totalTurns?: number;
+}
 
-  // Proxy Fields
-  resumeContent?: any;
-  portfolio?: any;
-  portfolioFiles?: string[];
-
-  // For Answer
-  interviewId?: number;
-  answer?: string;
+export interface InterviewAnswerPayload {
+  interviewId: number;
+  answer: string;
 }
 
 export const interviewService = {
-
-  startInterview: async (payload: InterviewRequestPayload): Promise<InterviewResponse> => {
-    const response = await api.post<InterviewResponse>("/api/interview/start", {
-      resumeId: payload.resumeId,
-      jobCategory: payload.jobCategory,
-      difficulty: payload.difficulty,
-      totalTurns: payload.totalTurns,
-      // Proxy
-      resumeContent: payload.resumeContent,
-      portfolio: payload.portfolio,
-      portfolioFiles: payload.portfolioFiles
-    });
+  startInterview: async (
+    userId: number,
+    payload: InterviewStartPayload,
+  ): Promise<InterviewResponse> => {
+    const response = await api.post<InterviewResponse>(
+      "/api/interview/start",
+      payload,
+      {
+        params: { userId },
+      },
+    );
     return adaptResponse(response.data);
   },
 
-  submitAnswer: async (payload: InterviewRequestPayload): Promise<InterviewResponse> => {
-    const response = await api.post<InterviewResponse>("/api/interview/answer", {
-      interviewId: payload.interviewId,
-      answer: payload.answer,
-      // Proxy - Send context again for persistence
-      resumeContent: payload.resumeContent,
-      portfolio: payload.portfolio,
-      portfolioFiles: payload.portfolioFiles
-    });
+  submitAnswer: async (
+    userId: number,
+    payload: InterviewAnswerPayload,
+  ): Promise<InterviewResponse> => {
+    const response = await api.post<InterviewResponse>(
+      "/api/interview/answer",
+      payload,
+      {
+        params: { userId },
+      },
+    );
     return adaptResponse(response.data);
-  }
+  },
 };
 
 // Adapter to match existing UI expectation if possible, or we update UI.
@@ -93,11 +94,11 @@ function adaptResponse(serverData: InterviewResponse): InterviewResponse {
     next_question: serverData.question,
     reaction: {
       type: serverData.reactionType || null,
-      text: serverData.reactionText || null
+      text: serverData.reactionText || null,
     },
     probe_goal: serverData.probeGoal || "",
-    requested_evidence: serverData.requestedEvidence || [],
-    report: serverData.aiSystemReport as InterviewReport
+    requested_evidence: [], // Removed in V2.0
+    report: serverData.aiSystemReport as InterviewReport,
   };
   return serverData;
 }

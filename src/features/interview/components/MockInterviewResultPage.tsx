@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Footer from "../../../components/Footer";
-import InterviewSidebar from "./InterviewSidebar";
+// ✅ [수정] LeftSidebar 사용
+import LeftSidebar from "../../../components/LeftSidebar";
 import MockInterviewHistoryPage from "./MockInterviewHistoryPage";
 import { useApp } from "../../../context/AppContext";
 
@@ -132,14 +133,13 @@ export default function MockInterviewResultPage({
     <>
       <div className="min-h-screen bg-white">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          {/* AI 모의 면접 타이틀 */}
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold">AI 모의 면접 결과</h2>
-          </div>
+          {/* ✅ [수정] AI 모의 면접 타이틀(h2) 제거 */}
 
-          <div className="flex gap-6">
-            {/* 왼쪽 사이드바 */}
-            <InterviewSidebar
+          {/* ✅ [수정] 레이아웃 변경: items-start + gap-6 */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] 왼쪽 사이드바 교체 & Title 적용 */}
+            <LeftSidebar
+              title="AI 모의 면접 결과"
               activeMenu={activeMenu}
               onMenuClick={onMenuClick}
             />
@@ -204,15 +204,15 @@ export default function MockInterviewResultPage({
 
                   {/* 히스토리 바로 아래에 상세 리포트 카드 추가 */}
                   {interviewResults[0]?.detailedReport && (
-                    <div className="p-6 bg-white border-2 border-purple-400 rounded-2xl mb-6">
-                      <h3 className="text-xl font-bold mb-6">
+                    <div className="p-6 mb-6 bg-white border-2 border-purple-400 rounded-2xl">
+                      <h3 className="mb-6 text-xl font-bold">
                         📝 AI 상세 분석 리포트
                       </h3>
 
                       {/* 역량 점수 & STARR */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                      <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2">
                         <div>
-                          <h4 className="font-bold text-gray-700 mb-4">
+                          <h4 className="mb-4 font-bold text-gray-700">
                             핵심 역량 평가
                           </h4>
                           <div className="space-y-3">
@@ -230,9 +230,9 @@ export default function MockInterviewResultPage({
                                 >
                                   {key}
                                 </span>
-                                <div className="flex-1 bg-gray-200 rounded-full h-3">
+                                <div className="flex-1 h-3 bg-gray-200 rounded-full">
                                   <div
-                                    className="bg-purple-600 h-3 rounded-full"
+                                    className="h-3 bg-purple-600 rounded-full"
                                     style={{ width: `${(score / 5) * 100}%` }}
                                   ></div>
                                 </div>
@@ -245,7 +245,7 @@ export default function MockInterviewResultPage({
                         </div>
 
                         <div>
-                          <h4 className="font-bold text-gray-700 mb-4">
+                          <h4 className="mb-4 font-bold text-gray-700">
                             STARR 답변 구조 분석
                           </h4>
                           <div className="grid grid-cols-3 gap-3">
@@ -286,19 +286,19 @@ export default function MockInterviewResultPage({
                               );
                             })}
                           </div>
-                          <p className="text-xs text-gray-500 mt-2 text-center">
+                          <p className="mt-2 text-xs text-center text-gray-500">
                             * 답변에 포함된 STARR 요소가 활성화됩니다.
                           </p>
                         </div>
                       </div>
 
                       {/* 강점 & 보완점 */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
-                          <h4 className="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div className="p-5 border border-blue-200 bg-blue-50 rounded-xl">
+                          <h4 className="flex items-center gap-2 mb-3 font-bold text-blue-800">
                             <span>👍</span> 강점 (Strengths)
                           </h4>
-                          <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          <ul className="space-y-1 text-gray-700 list-disc list-inside">
                             {interviewResults[0].detailedReport.strengths
                               .length > 0 ? (
                               interviewResults[0].detailedReport.strengths.map(
@@ -311,11 +311,11 @@ export default function MockInterviewResultPage({
                             )}
                           </ul>
                         </div>
-                        <div className="bg-orange-50 p-5 rounded-xl border border-orange-200">
-                          <h4 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                        <div className="p-5 border border-orange-200 bg-orange-50 rounded-xl">
+                          <h4 className="flex items-center gap-2 mb-3 font-bold text-orange-800">
                             <span>💡</span> 보완점 (Gaps)
                           </h4>
-                          <ul className="list-disc list-inside space-y-1 text-gray-700">
+                          <ul className="space-y-1 text-gray-700 list-disc list-inside">
                             {interviewResults[0].detailedReport.gaps.length >
                             0 ? (
                               interviewResults[0].detailedReport.gaps.map(
@@ -332,11 +332,11 @@ export default function MockInterviewResultPage({
 
                       {/* 종합 피드백 */}
                       {interviewResults[0].detailedReport.feedback && (
-                        <div className="mt-6 p-4 bg-gray-100 rounded-xl">
-                          <h4 className="font-bold text-gray-800 mb-2">
+                        <div className="p-4 mt-6 bg-gray-100 rounded-xl">
+                          <h4 className="mb-2 font-bold text-gray-800">
                             종합 피드백
                           </h4>
-                          <p className="text-gray-700 leading-relaxed">
+                          <p className="leading-relaxed text-gray-700">
                             {interviewResults[0].detailedReport.feedback}
                           </p>
                         </div>

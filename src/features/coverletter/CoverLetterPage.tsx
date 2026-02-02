@@ -1,8 +1,6 @@
-// src/features/cover-letter/CoverLetterPage.tsx
-
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import ResumeSidebar from "../resume/components/ResumeSidebar";
+import LeftSidebar from "../../components/LeftSidebar";
 import CoverLetterFormPage from "./CoverLetterFormPage";
 import CoverLetterDetailPage from "./CoverLetterDetailPage";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
@@ -39,7 +37,7 @@ export default function CoverLetterPage({
   onNavigate,
 }: CoverLetterPageProps) {
   const { user } = useAuth();
-  
+
   // 현재 화면 모드 (목록 / 작성 / 상세보기 / 수정)
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -48,7 +46,7 @@ export default function CoverLetterPage({
 
   // 자소서 목록
   const [coverLetterList, setCoverLetterList] = useState<CoverLetterItem[]>([]);
-  
+
   // ✅ 로딩 상태
   const [loading, setLoading] = useState(false);
 
@@ -57,7 +55,7 @@ export default function CoverLetterPage({
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "resume",
     initialMenu,
-    onNavigate
+    onNavigate,
   );
 
   // ✅ 페이지 로드 시 자소서 목록 불러오기
@@ -68,28 +66,34 @@ export default function CoverLetterPage({
       try {
         setLoading(true);
         const response = await getCoverLetterList(user.userId, 0, 100);
-        
-        const items: CoverLetterItem[] = response.content.map((cl: CoverLetter) => {
-          const hasFile = !!cl.filePath;
-          const hasContent = !!(cl.content && cl.content.trim().length > 0);
-        
-          return {
-            id: cl.coverLetterId,
-            title: cl.title,
-            content: cl.content || "",
-            date: new Date(cl.updatedAt).toLocaleDateString(),
-            fileCount: hasFile ? 1 : 0,
-        
-            // ✅ 상태 표시 규칙
-            // 파일 있으면: 불러온 파일
-            // 파일 없고 내용 있으면: 작성완료
-            // 둘 다 없으면: 작성중
-            status: hasFile ? "불러온 파일" : hasContent ? "작성완료" : "작성중",
-        
-            files: hasFile ? [cl.title] : [],
-          };
-        });
-        
+
+        const items: CoverLetterItem[] = response.content.map(
+          (cl: CoverLetter) => {
+            const hasFile = !!cl.filePath;
+            const hasContent = !!(cl.content && cl.content.trim().length > 0);
+
+            return {
+              id: cl.coverLetterId,
+              title: cl.title,
+              content: cl.content || "",
+              date: new Date(cl.updatedAt).toLocaleDateString(),
+              fileCount: hasFile ? 1 : 0,
+
+              // ✅ 상태 표시 규칙
+              // 파일 있으면: 불러온 파일
+              // 파일 없고 내용 있으면: 작성완료
+              // 둘 다 없으면: 작성중
+              status: hasFile
+                ? "불러온 파일"
+                : hasContent
+                  ? "작성완료"
+                  : "작성중",
+
+              files: hasFile ? [cl.title] : [],
+            };
+          },
+        );
+
         setCoverLetterList(items);
       } catch (error) {
         console.error("자소서 목록 로드 실패:", error);
@@ -115,7 +119,7 @@ export default function CoverLetterPage({
     try {
       setLoading(true);
       const response = await uploadCoverLetterFile(user.userId, file);
-      
+
       const newItem: CoverLetterItem = {
         id: response.coverLetterId,
         title: response.title,
@@ -125,7 +129,7 @@ export default function CoverLetterPage({
         status: "불러온 파일",
         files: [response.title],
       };
-      
+
       setCoverLetterList((prev) => [newItem, ...prev]);
       alert("파일이 성공적으로 업로드되었습니다.");
     } catch (error: any) {
@@ -195,9 +199,9 @@ export default function CoverLetterPage({
     try {
       setLoading(true);
       await deleteCoverLetter(user.userId, selectedId);
-      
+
       setCoverLetterList((prev) =>
-        prev.filter((item) => item.id !== selectedId)
+        prev.filter((item) => item.id !== selectedId),
       );
       setSelectedId(null);
       setViewMode("list");
@@ -237,8 +241,8 @@ export default function CoverLetterPage({
                 fileCount: data.fileCount,
                 files: data.files,
               }
-            : item
-        )
+            : item,
+        ),
       );
       setViewMode("detail");
       alert("자소서가 수정되었습니다.");
@@ -252,7 +256,7 @@ export default function CoverLetterPage({
 
   // 선택된 자소서 데이터 가져오기
   const selectedCoverLetter = coverLetterList.find(
-    (item) => item.id === selectedId
+    (item) => item.id === selectedId,
   );
 
   // 작성 모드
@@ -300,15 +304,20 @@ export default function CoverLetterPage({
 
   // 목록 모드 (기본)
   return (
-    <div className="px-4 py-8 mx-auto max-w-7xl bg-white">
-      <h2 className="inline-block mb-6 text-2xl font-bold">자소서</h2>
-      <div className="flex gap-6">
-        <ResumeSidebar activeMenu={activeMenu} onMenuClick={handleMenuClick} />
+    <div className="px-4 py-8 mx-auto bg-white max-w-7xl">
+      {/* ✅ [수정] items-start 추가 (Sticky 필수) */}
+      <div className="flex items-start gap-6">
+        {/* ✅ [수정] title 추가 */}
+        <LeftSidebar
+          title="자소서"
+          activeMenu={activeMenu}
+          onMenuClick={handleMenuClick}
+        />
 
         <div className="flex-1 space-y-8">
           <section className="p-8 bg-white border-2 border-gray-200 rounded-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">자소서 관리</h2>
+            {/* ✅ [수정] 제목(h2) 제거 및 justify-end로 변경 */}
+            <div className="flex items-center justify-end mb-6">
               <div className="flex gap-4">
                 <button
                   onClick={handleFileUpload}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import InterviewSidebar from "./InterviewSidebar";
+import LeftSidebar from "../../../components/LeftSidebar";
 import MockInterviewHistoryPage from "./MockInterviewHistoryPage";
 import { useApp } from "../../../context/AppContext";
 
@@ -15,21 +15,30 @@ export default function MockInterviewHistoryListPage({
   onBackToInterview,
 }: MockInterviewHistoryListPageProps) {
   const [selectedHistoryId, setSelectedHistoryId] = useState<number | null>(
-    null
+    null,
   );
 
   // Context에서 면접 히스토리 데이터 가져오기
-  const { interviewHistories, clearInterviewHistories, clearInterviewResults } = useApp();
+  const { interviewHistories, clearInterviewHistories, clearInterviewResults } =
+    useApp();
 
   // 전체 삭제 핸들러 (이중 확인)
   const handleClearAll = () => {
     // 첫 번째 확인
-    if (window.confirm('모든 면접 히스토리와 결과를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+    if (
+      window.confirm(
+        "모든 면접 히스토리와 결과를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+      )
+    ) {
       // 두 번째 확인
-      if (window.confirm('⚠️ 정말 삭제하시겠습니까?\n모든 면접 데이터가 영구적으로 삭제됩니다.')) {
+      if (
+        window.confirm(
+          "⚠️ 정말 삭제하시겠습니까?\n모든 면접 데이터가 영구적으로 삭제됩니다.",
+        )
+      ) {
         clearInterviewHistories();
         clearInterviewResults();
-        alert('모든 면접 데이터가 삭제되었습니다.');
+        alert("모든 면접 데이터가 삭제되었습니다.");
       }
     }
   };
@@ -65,14 +74,13 @@ export default function MockInterviewHistoryListPage({
     <>
       <div className="min-h-screen bg-white">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          {/* AI 모의 면접 타이틀 */}
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold">AI 모의 면접 히스토리</h2>
-          </div>
+          {/* ✅ [수정] 제목(h2) 영역 삭제 (사이드바 title로 이동) */}
 
-          <div className="flex gap-6">
-            {/* 왼쪽 사이드바 */}
-            <InterviewSidebar
+          {/* ✅ [수정] 레이아웃 변경: items-start + gap-6 */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] LeftSidebar 교체 & Title 적용 */}
+            <LeftSidebar
+              title="면접 히스토리"
               activeMenu={activeMenu}
               onMenuClick={onMenuClick}
             />
@@ -102,7 +110,9 @@ export default function MockInterviewHistoryListPage({
                   <div className="p-6 bg-white border-2 border-blue-400 rounded-2xl">
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center gap-4">
-                        <h3 className="text-xl font-bold">면접 히스토리 목록</h3>
+                        <h3 className="text-xl font-bold">
+                          면접 히스토리 목록
+                        </h3>
                         <span className="text-sm text-gray-600">
                           총 {interviewHistories.length}개의 면접 히스토리
                         </span>
@@ -121,7 +131,7 @@ export default function MockInterviewHistoryListPage({
                       {interviewHistories.map((history) => (
                         <div
                           key={history.id}
-                          className="p-5 transition border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 cursor-pointer"
+                          className="p-5 transition border-2 border-gray-200 cursor-pointer rounded-xl hover:border-blue-400 hover:bg-blue-50"
                           onClick={() => handleViewHistory(history.id)}
                         >
                           <div className="flex items-start justify-between">
@@ -138,7 +148,7 @@ export default function MockInterviewHistoryListPage({
                                 </span>
                                 <span
                                   className={`px-3 py-1 text-sm font-semibold border-2 rounded-full ${getScoreColor(
-                                    history.score
+                                    history.score,
                                   )}`}
                                 >
                                   {history.score}점

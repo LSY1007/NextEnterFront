@@ -4,8 +4,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 import { getUserProfile, UserProfile } from "../../api/user";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
-import MyPageSidebar from "./components/MyPageSidebar";
-
+// ✅ [수정] LeftSidebar 사용
+import LeftSidebar from "../../components/LeftSidebar";
 
 interface MyPageProps {
   onNavigate?: (page: string, subMenu?: string) => void;
@@ -26,7 +26,7 @@ export default function MyPage({
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "mypage",
     initialMenu || "mypage-sub-1",
-    onNavigate
+    onNavigate,
   );
 
   const [loading, setLoading] = useState(false);
@@ -120,10 +120,13 @@ export default function MyPage({
     <>
       <div className="min-h-screen bg-white">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          <h1 className="mb-6 text-2xl font-bold">마이페이지</h1>
-          <div className="flex gap-6">
-            {/* 왼쪽 사이드바 */}
-            <MyPageSidebar
+          {/* ✅ [수정] h1 태그 삭제 (사이드바 title로 이동) */}
+
+          {/* ✅ [수정] items-start 추가 (Sticky 적용) */}
+          <div className="flex items-start gap-6">
+            {/* ✅ [수정] LeftSidebar 교체 및 Title 적용 */}
+            <LeftSidebar
+              title="마이페이지"
               activeMenu={activeMenu}
               onMenuClick={handleMenuClick}
             />
@@ -199,7 +202,9 @@ export default function MyPage({
               <main className="flex-1">
                 {/* 기본 화면 (mypage-sub-1) */}
                 <div className="p-8 mb-6 bg-white border-2 border-blue-500 rounded-lg">
-                  <h2 className="mb-6 text-2xl font-bold text-center">이력서</h2>
+                  <h2 className="mb-6 text-2xl font-bold text-center">
+                    이력서
+                  </h2>
 
                   <div className="grid grid-cols-4 gap-4">
                     {mainCards.map((card) => (
@@ -223,7 +228,7 @@ export default function MyPage({
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">📁</span>
-                    <h3 
+                    <h3
                       className="text-lg font-bold cursor-pointer hover:text-blue-600"
                       onClick={() => handleMenuClick("resume-sub-1")}
                     >
@@ -235,7 +240,9 @@ export default function MyPage({
                     {resumes.length === 0 ? (
                       <div className="p-12 text-center bg-white border-2 border-blue-400 rounded-lg">
                         <div className="mb-4 text-4xl">📄</div>
-                        <p className="mb-4 text-gray-600">등록된 이력서가 없습니다.</p>
+                        <p className="mb-4 text-gray-600">
+                          등록된 이력서가 없습니다.
+                        </p>
                         <button
                           onClick={() => handleMenuClick("resume-sub-1")}
                           className="px-6 py-2 text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -251,7 +258,9 @@ export default function MyPage({
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <h4 className="mb-1 text-lg font-bold">{resume.title}</h4>
+                              <h4 className="mb-1 text-lg font-bold">
+                                {resume.title}
+                              </h4>
                               <div className="flex gap-4 text-sm text-gray-600">
                                 <span>산업: {resume.industry}</span>
                                 <span>지원: {resume.applications}건</span>
