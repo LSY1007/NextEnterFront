@@ -433,7 +433,7 @@ export default function CoverLetterPage({
           </div>
 
           {/* 3. 리스트 컨테이너 */}
-          <section className="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden min-h-[400px] shadow-sm mt-8">
+          <section className="bg-white border border-gray-300 rounded-xl flex flex-col overflow-hidden min-h-[400px] shadow-sm mt-8">
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-4">

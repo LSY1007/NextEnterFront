@@ -290,7 +290,7 @@ export default function ResumePage() {
           </div>
 
           {/* 2. 안내문 영역 */}
-          <div className="p-5 mt-2 border border-gray-200 bg-gray-50 rounded-xl">
+          <div className="p-5 mt-2 border border-gray-300 bg-gray-50 rounded-xl">
             <h4 className="mb-4 text-sm font-bold text-gray-800">
               업로드 후 자동으로 전환됩니다
             </h4>
@@ -338,7 +338,7 @@ export default function ResumePage() {
           </div>
 
           {/* 3. 리스트 컨테이너 */}
-          <section className="bg-white border border-gray-200 rounded-xl flex flex-col overflow-hidden min-h-[400px] shadow-sm mt-8">
+          <section className="bg-white border border-gray-300 rounded-xl flex flex-col overflow-hidden min-h-[400px] shadow-sm mt-8">
             <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-4">
