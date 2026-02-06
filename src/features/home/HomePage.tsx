@@ -412,6 +412,7 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
 
                       {/* 상단: 회사 로고 (동그라미 제거, 크기 축소) */}
                       <div className="flex justify-center px-5 pt-4 pb-3">
+
                         <div className="flex items-center justify-center h-12 max-w-[120px]">
                           {job.logoUrl ? (
                             <img 
@@ -429,7 +430,7 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
 
                       {/* ✅ 중간: 상세 설명 (제목과 회사명 대신) */}
                       <div className="px-6 py-4 pl-7 flex items-start justify-start" style={{ minHeight: "100px" }}>
-                      <p className="text-lg font-medium text-gray-800 line-clamp-3 whitespace-pre-line leading-relaxed text-left">
+                      <p className="text-md font-medium text-gray-800 line-clamp-3 whitespace-pre-line leading-relaxed text-left">
                         {job.description || "상세 설명이 없습니다."}
                       </p>
                     </div>

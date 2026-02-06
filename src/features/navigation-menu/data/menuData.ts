@@ -21,7 +21,7 @@ export const navigationMenuData = {
     id: "matching",
     title: "매칭분석",
     items: [
-      { id: "matching-sub-1", label: "매칭결과 리포트" },
+      { id: "matching-sub-1", label: "AI 매칭 분석" },
       { id: "matching-sub-2", label: "매칭 히스토리" },
     ],
   },

@@ -164,7 +164,7 @@ export default function ImprovedMyPage({
 
   const handleClick = (item: string) => {
     switch (item) {
-      case "매칭결과 리포트":
+      case "매칭 리포트":
         handleMenuClick("matching-sub-1");
         break;
       case "매칭 히스토리":
