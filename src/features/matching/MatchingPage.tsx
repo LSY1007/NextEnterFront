@@ -284,7 +284,7 @@ export default function MatchingPage({
 
       <div className="min-h-screen bg-white">
         <div className="px-4 py-8 mx-auto max-w-7xl">
-          <h2 className="inline-block mb-6 text-2xl font-bold">매칭현황</h2>
+          <h2 className="inline-block mb-6 text-2xl font-bold">AI 매칭 분석</h2>
           <div className="flex gap-6">
             <LeftSidebar
               activeMenu={activeMenu}

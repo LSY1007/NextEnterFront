@@ -137,9 +137,12 @@ export default function LoginPage({
       {/* 중앙 컨테이너 */}
       <div className="w-full max-w-md px-8 py-12">
         {/* 로고 */}
-        <div className="mb-20 text-center">
-          <h1 className="text-6xl font-bold text-blue-600">NextEnter</h1>
-        </div>
+<div className="mb-20 text-center">
+  <h1 className="text-6xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 bg-clip-text text-transparent">
+    NextEnter
+  </h1>
+</div>
+
 
         {/* 로그인 박스 */}
         <div className="p-8 bg-white border border-gray-200 rounded-2xl shadow-lg">

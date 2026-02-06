@@ -255,8 +255,8 @@ export default function Header() {
   const navItems = [
     { id: "job", label: "채용정보" },
     { id: "resume", label: "이력서" },
-    { id: "matching", label: "매칭분석" },
-    { id: "interview", label: "모의면접" },
+    { id: "matching", label: "AI 이력서 매칭" },
+    { id: "interview", label: "AI 모의면접" },
     { id: "mypage", label: "마이페이지" },
     { id: "credit", label: "크레딧" },
   ];
