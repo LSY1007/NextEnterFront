@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../stores/authStore";
 import { getResumeList } from "../../api/resume";
 import { getJobPostings } from "../../api/job";
 import { getAiRecommendation, CompanyInfo, AiRecommendRequest } from "../../api/ai";
@@ -12,7 +12,8 @@ import MatchingHeader from "./components/MatchingHeader";
 import TargetSelection from "./components/TargetSelection";
 import EmptyAnalysis from "./components/EmptyAnalysis";
 import AnalysisResult from "./components/AnalysisResult";
-import { useApp } from "../../context/AppContext";
+import { useResumeStore } from "../../stores/resumeStore";
+import { useJobStore } from "../../stores/jobStore";
 import { usePageNavigation } from "../../hooks/usePageNavigation";
 import { CREDIT_COST } from "./data/sampleData";
 
@@ -29,7 +30,7 @@ export default function MatchingPage({
   onNavigate,
 }: MatchingPageProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   const { activeMenu, handleMenuClick, setActiveMenu } = usePageNavigation(
     "matching",
@@ -48,12 +49,8 @@ export default function MatchingPage({
   const [aiExperienceLevel, setAiExperienceLevel] = useState("JUNIOR");
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    resumes,
-    businessJobs,
-    setResumes,
-    setBusinessJobs
-  } = useApp();
+  const { resumes, setResumes } = useResumeStore();
+  const { businessJobs, setBusinessJobs } = useJobStore();
 
   // 히스토리는 DB 기반으로 전환됨 (localStorage 자동삭제 로직 제거)
 

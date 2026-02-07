@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useApp } from "../../context/AppContext";
+import { useAuthStore } from "../../stores/authStore";
+import { useResumeStore } from "../../stores/resumeStore";
 import { getResumeList, deleteResume } from "../../api/resume";
 import { JOB_CATEGORIES } from "../../constants/jobConstants";
 import LeftSidebar from "../../components/LeftSidebar";
@@ -22,8 +22,8 @@ export interface ResumeListItem {
 
 export default function ResumePage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { setResumes: setContextResumes } = useApp();
+  const { user } = useAuthStore();
+  const { setResumes: setContextResumes } = useResumeStore();
 
   const { activeMenu, handleMenuClick } = usePageNavigation(
     "resume",

@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import LeftSidebar from "../../../components/LeftSidebar"; // [수정] LeftSidebar 사용
 import InterviewSetup from "./InterviewSetup";
-import { useApp } from "../../../context/AppContext";
-import { useAuth } from "../../../context/AuthContext";
+import { useInterviewStore } from "../../../stores/interviewStore";
+import { useResumeStore } from "../../../stores/resumeStore";
+import { useAuthStore } from "../../../stores/authStore";
 import { interviewService } from "../../../api/interviewService";
 import { getResumeList } from "../../../api/resume";
 
@@ -28,9 +29,9 @@ export default function InterviewChatPage({
   onMenuClick,
   onComplete,
 }: InterviewChatPageProps) {
-  const { addInterviewResult, addInterviewHistory, resumes, setResumes } =
-    useApp();
-  const { user } = useAuth();
+  const { addInterviewResult, addInterviewHistory } = useInterviewStore();
+  const { resumes, setResumes } = useResumeStore();
+  const { user } = useAuthStore();
 
   // 단계 관리: 'setup' | 'chat'
   const [step, setStep] = useState<"setup" | "chat">("setup");
