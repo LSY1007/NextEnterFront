@@ -19,10 +19,10 @@ const LOGIN_REQUIRED_MENUS = [
 ];
 
 export default function Header() {
-  const { user, isAuthenticated, isLoading, logout } = useAuthStore(); // ✅ isLoading 추가
+  const { user, isAuthenticated, isLoading, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams(); // ✅ URL 파라미터 가져오기
+  const [searchParams] = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -30,43 +30,27 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 스크롤 감지
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 알림 개수 가져오기 및 웹소켓 연결
   useEffect(() => {
-    // ✅ 인증 상태 로딩 중이면 대기
-    if (isLoading) {
-      console.log("⏳ AuthContext 로딩 중...");
-      return;
-    }
-
-    console.log(
-      "Header useEffect 실행 - isAuthenticated:",
-      isAuthenticated,
-      "user:",
-      user,
-    );
-    console.log("user.userId:", user?.userId); // ✅ 디버깅용
+    if (isLoading) return;
 
     const fetchUnreadCount = async () => {
       if (isAuthenticated && user?.userId) {
         try {
           const count = await getUnreadCount("individual", user.userId);
-          console.log("알림 개수 로드 성공:", count);
           setUnreadCount(count);
         } catch (error) {
-          console.error("알림 개수 로드 실패:", error);
           setUnreadCount(0);
         }
       } else {
@@ -75,50 +59,24 @@ export default function Header() {
     };
 
     fetchUnreadCount();
-
-    // 30초마다 알림 개수 업데이트 (백업용)
     const interval = setInterval(fetchUnreadCount, 30000);
 
-    // ✅ 알림 읽음 이벤트 리스너 추가
-    const handleNotificationRead = () => {
-      console.log("🔔 알림 읽음 이벤트 감지 - 알림 개수 다시 로드");
-      fetchUnreadCount();
-    };
+    const handleNotificationRead = () => fetchUnreadCount();
     window.addEventListener("notification-read", handleNotificationRead);
 
-    // 웹소켓 연결
     if (isAuthenticated && user?.userId) {
-      console.log("✅ 웹소켓 연결 조건 충족 - userId:", user.userId);
-      websocketService.connect(
-        user.userId,
-        "individual",
-        handleNewNotification,
-      );
-    } else {
-      console.log(
-        "❌ 웹소켓 연결 조건 미충족 - isAuthenticated:",
-        isAuthenticated,
-        "userId:",
-        user?.userId,
-      );
+      websocketService.connect(user.userId, "individual", handleNewNotification);
     }
 
     return () => {
       clearInterval(interval);
       window.removeEventListener("notification-read", handleNotificationRead);
-      // 컴포넌트 언마운트 시 웹소켓 연결 해제
-      console.log("Header 언마운트 - 웹소켓 연결 해제");
       websocketService.disconnect();
     };
-  }, [isAuthenticated, user, isLoading]); // ✅ isLoading 의존성 추가
+  }, [isAuthenticated, user, isLoading]);
 
-  // 새 알림 수신 시 처리
   const handleNewNotification = (notification: NotificationMessage) => {
-    console.log("새 알림 도착!", notification);
-    // 알림 개수 증가
     setUnreadCount((prev) => prev + 1);
-
-    // 브라우저 알림 표시 (권한이 있는 경우)
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification(notification.title, {
         body: notification.content,
@@ -130,15 +88,12 @@ export default function Header() {
 
   const getActiveTab = () => {
     const path = location.pathname;
-    // 홈페이지일 때는 아무것도 선택되지 않음
     if (path === "/user" || path === "/user/") return "";
     if (path.startsWith("/user/jobs")) return "job";
-    if (path.startsWith("/user/mypage") || path.startsWith("/user/profile"))
-      return "mypage";
+    if (path.startsWith("/user/mypage") || path.startsWith("/user/profile")) return "mypage";
     if (path.startsWith("/user/credit")) return "credit";
     if (path.startsWith("/user/interview")) return "interview";
-    if (path.startsWith("/user/resume") || path.startsWith("/user/coverletter"))
-      return "resume";
+    if (path.startsWith("/user/resume") || path.startsWith("/user/coverletter")) return "resume";
     if (path.startsWith("/user/matching")) return "matching";
     if (path.startsWith("/user/offers")) return "offer";
     return "";
@@ -148,13 +103,10 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("검색:", searchQuery);
   };
 
   const handleMouseEnter = (tabId: string) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setHoveredTab(tabId);
   };
 
@@ -164,14 +116,10 @@ export default function Header() {
     }, MENU_CLOSE_DELAY);
   };
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleLogout = async () => {
-    // ✅ [추가 2] 로그아웃 시에도 방어 로직 체크
     if (checkNavigationBlocked()) return;
-
     try {
       await logoutApi();
     } catch (error) {
@@ -179,12 +127,12 @@ export default function Header() {
     } finally {
       logout();
       setIsUserMenuOpen(false);
+      setIsMobileMenuOpen(false);
       window.location.href = "/user";
     }
   };
 
   const handleMenuClick = (tabId: string, menuId?: string) => {
-    // ✅ [추가 3] 메뉴 이동 전 방어 로직 체크! (여기서 막히면 아래 코드 실행 안 됨)
     if (checkNavigationBlocked()) return;
 
     const checkTabId = menuId ? menuId.split("-sub-")[0] : tabId;
@@ -224,18 +172,15 @@ export default function Header() {
       "credit-sub-2": "/user/credit/charge",
       "mypage-sub-2": "/user/profile",
       "mypage-sub-3": "/user/application-status",
-
-      // ✅ [수정] 여기도 똑같이 변경
-      "mypage-sub-4": "/user/offers/interview", // 기업의 요청
-      "mypage-sub-5": "/user/scrap-status", // 스크랩 현황
+      "mypage-sub-4": "/user/offers/interview",
+      "mypage-sub-5": "/user/scrap-status",
     };
+
     const targetMenuId = menuId || defaultSubMenus[tabId];
     const targetPath = separateRoutes[targetMenuId] || baseRoutes[tabId];
 
-    // ✅ 같은 메뉴 클릭 감지
     const currentMenu = searchParams.get("menu");
     if (currentMenu === targetMenuId) {
-      // 같은 메뉴 클릭 시 reload 파라미터 추가
       const timestamp = Date.now();
       navigate(`${targetPath}?menu=${targetMenuId}&reload=${timestamp}`);
       return;
@@ -244,9 +189,10 @@ export default function Header() {
     if (targetPath) {
       navigate(`${targetPath}?menu=${targetMenuId}`);
     }
+
+    setIsMobileMenuOpen(false);
   };
 
-  // ✅ [추가 4] 로고 클릭 핸들러 (로고 눌러서 도망가는 것 방지)
   const handleLogoClick = () => {
     if (checkNavigationBlocked()) return;
     navigate("/user");
@@ -263,272 +209,208 @@ export default function Header() {
 
   return (
     <>
-      {/* Fixed Header Container */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white">
-        {/* Top Header (Logo Area) */}
-        <header className={`bg-white border-b border-gray-200 transition-all duration-300 overflow-hidden ${
+        {/* Top Header - 데스크탑만 표시 */}
+        <header className={`bg-white border-b border-gray-200 transition-all duration-300 overflow-hidden hidden md:block ${
           isScrolled ? 'max-h-0 opacity-0' : 'max-h-24 opacity-100'
         }`}>
-        <div className="px-4 py-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button className="lg:hidden">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
+          <div className="px-4 py-4 mx-auto max-w-7xl">
+            <div className="flex items-center justify-between">
               <div
-                onClick={handleLogoClick} // ✅ 수정됨
+                onClick={handleLogoClick}
                 className="transition cursor-pointer hover:opacity-80"
               >
-                <span className="text-2xl font-bold text-blue-600">
-                  NextEnter
-                </span>
+                <span className="text-2xl font-bold text-blue-600">NextEnter</span>
               </div>
-            </div>
 
-            <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">
-              <div className="relative">
-                <svg
-                  className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">
+                <div className="relative">
+                  <svg className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="나에게 딱 맞는 커리어와 매칭!"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
                   />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="나에게 딱 맞는 커리어와 매칭!"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </form>
-
-
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
         </header>
 
         {/* Navigation Bar */}
-        <nav className={`relative bg-white border-b border-blue-600 shadow-sm transition-all duration-300 ${
-          isScrolled ? 'shadow-md' : ''
-        }`}>
-        <div className="px-4 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-            <button
-              onClick={toggleDropdown}
-              className="p-4 transition hover:bg-gray-50"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {isDropdownOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
+        <nav className={`relative bg-white border-b border-blue-600 shadow-sm transition-all duration-300 ${isScrolled ? 'shadow-md' : ''}`}>
+          <div className="px-4 mx-auto max-w-7xl">
+            <div className="flex items-center justify-between h-14">
 
-            {navItems.map((item) => (
-              <div
-                key={item.id}
-                className="relative"
-                onMouseEnter={() => handleMouseEnter(item.id)}
-                onMouseLeave={handleMouseLeave}
-              >
-                <button
-                  onClick={() => handleMenuClick(item.id)}
-                  className={`relative py-4 px-2 font-medium transition whitespace-nowrap ${
-                    activeTab === item.id
-                      ? "text-blue-600"
-                      : "text-gray-700 hover:text-blue-600"
-                  }`}
-                >
-                  {item.label}
-                  {activeTab === item.id && (
-                    <span className="absolute -bottom-[1px] left-0 w-full h-0.5 bg-blue-600" />
-                  )}
-                </button>
-                {hoveredTab === item.id && (
-                  <HoverMenu
-                    tabId={item.id}
-                    onSubMenuClick={(tabId, subId) =>
-                      handleMenuClick(tabId, subId)
+              {/* 모바일: 로고 + 햄버거 */}
+              <div className="flex items-center gap-3 md:hidden">
+                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {isMobileMenuOpen
+                      ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     }
-                    onClose={() => setHoveredTab(null)} // ✅ 호버 닫기
-                  />
-                )}
+                  </svg>
+                </button>
+                <div onClick={handleLogoClick} className="cursor-pointer">
+                  <span className="text-xl font-bold text-blue-600">NextEnter</span>
+                </div>
               </div>
-            ))}
-            </div>
 
-            {/* Right Buttons */}
-            <div className="flex items-center space-x-4">
-              {isAuthenticated ? (
-                <>
-                  {/* 알림 아이콘 */}
-                  <button
-                    onClick={() => {
-                      if (checkNavigationBlocked()) return;
-                      navigate("/user/notifications");
-                    }}
-                    className="relative p-2 text-gray-700 transition rounded-full hover:text-blue-600 hover:bg-gray-100"
+              {/* 데스크탑: 기존 네비 */}
+              <div className="hidden md:flex items-center space-x-8">
+                <button onClick={toggleDropdown} className="p-4 transition hover:bg-gray-50">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {isDropdownOpen
+                      ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    }
+                  </svg>
+                </button>
+
+                {navItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="relative"
+                    onMouseEnter={() => handleMouseEnter(item.id)}
+                    onMouseLeave={handleMouseLeave}
                   >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                      />
-                    </svg>
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white"></span>
-                    )}
-                  </button>
-                  <div className="relative">
                     <button
-                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="flex items-center px-4 py-2 space-x-2 text-gray-700 transition hover:text-blue-600"
+                      onClick={() => handleMenuClick(item.id)}
+                      className={`relative py-4 px-2 font-medium transition whitespace-nowrap ${
+                        activeTab === item.id ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+                      }`}
                     >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                      <span className="font-medium">{user?.name}님</span>
-                      <svg
-                        className={`w-4 h-4 transition-transform ${
-                          isUserMenuOpen ? "rotate-180" : ""
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                      {item.label}
+                      {activeTab === item.id && (
+                        <span className="absolute -bottom-[1px] left-0 w-full h-0.5 bg-blue-600" />
+                      )}
                     </button>
-
-                    {isUserMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
-                        <button
-                          onClick={() => {
-                            setIsUserMenuOpen(false);
-                            if (!checkNavigationBlocked())
-                              navigate("/user/profile");
-                          }}
-                          className="w-full px-4 py-2 text-left text-gray-700 transition hover:bg-gray-50"
-                        >
-                          내 정보
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsUserMenuOpen(false);
-                            if (!checkNavigationBlocked())
-                              navigate("/user/mypage?menu=mypage-home");
-                          }}
-                          className="w-full px-4 py-2 text-left text-gray-700 transition hover:bg-gray-50"
-                        >
-                          마이페이지
-                        </button>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full px-4 py-2 text-left text-red-600 transition hover:bg-gray-50"
-                        >
-                          로그아웃
-                        </button>
-                      </div>
+                    {hoveredTab === item.id && (
+                      <HoverMenu
+                        tabId={item.id}
+                        onSubMenuClick={(tabId, subId) => handleMenuClick(tabId, subId)}
+                        onClose={() => setHoveredTab(null)}
+                      />
                     )}
                   </div>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate("/user/login")}
-                    className="px-4 py-2 text-gray-700 transition hover:text-blue-600"
-                  >
-                    로그인
-                  </button>
-                  <button
-                    onClick={() => navigate("/user/signup")}
-                    className="px-4 py-2 text-gray-700 transition hover:text-blue-600"
-                  >
-                    회원가입
-                  </button>
-                </>
-              )}
+                ))}
+              </div>
+
+              {/* 오른쪽 버튼들 */}
+              <div className="flex items-center space-x-2 md:space-x-4">
+                {isAuthenticated ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        if (checkNavigationBlocked()) return;
+                        navigate("/user/notifications");
+                      }}
+                      className="relative p-2 text-gray-700 transition rounded-full hover:text-blue-600 hover:bg-gray-100"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      {unreadCount > 0 && (
+                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white"></span>
+                      )}
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                        className="flex items-center px-2 md:px-4 py-2 space-x-1 md:space-x-2 text-gray-700 transition hover:text-blue-600"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="font-medium text-sm md:text-base">{user?.name}님</span>
+                        <svg className={`w-4 h-4 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {isUserMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-[9999]">
+                          <button onClick={() => { setIsUserMenuOpen(false); if (!checkNavigationBlocked()) navigate("/user/profile"); }} className="w-full px-4 py-2 text-left text-gray-700 transition hover:bg-gray-50">내 정보</button>
+                          <button onClick={() => { setIsUserMenuOpen(false); if (!checkNavigationBlocked()) navigate("/user/mypage?menu=mypage-home"); }} className="w-full px-4 py-2 text-left text-gray-700 transition hover:bg-gray-50">마이페이지</button>
+                          <button onClick={handleLogout} className="w-full px-4 py-2 text-left text-red-600 transition hover:bg-gray-50">로그아웃</button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => navigate("/user/login")} className="px-3 md:px-4 py-2 text-sm md:text-base text-gray-700 transition hover:text-blue-600">로그인</button>
+                    <button onClick={() => navigate("/user/signup")} className="hidden md:block px-4 py-2 text-gray-700 transition hover:text-blue-600">회원가입</button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         </nav>
 
+        {/* 모바일 메뉴 드롭다운 */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-gray-200 shadow-lg">
+            {/* 모바일 검색창 */}
+            <div className="px-4 py-3 border-b border-gray-100">
+              <form onSubmit={handleSearch}>
+                <div className="relative">
+                  <svg className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="나에게 딱 맞는 커리어와 매칭!"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500 text-sm"
+                  />
+                </div>
+              </form>
+            </div>
+
+            {/* 모바일 메뉴 목록 */}
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleMenuClick(item.id)}
+                className={`w-full px-6 py-4 text-left font-medium border-b border-gray-50 ${
+                  activeTab === item.id ? "text-blue-600 bg-blue-50" : "text-gray-700"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+
+            {/* 모바일 로그인/회원가입 */}
+            {!isAuthenticated && (
+              <div className="flex gap-2 px-4 py-3">
+                <button onClick={() => { navigate("/user/login"); setIsMobileMenuOpen(false); }} className="flex-1 py-2 text-center text-blue-600 border border-blue-600 rounded-lg font-medium">로그인</button>
+                <button onClick={() => { navigate("/user/signup"); setIsMobileMenuOpen(false); }} className="flex-1 py-2 text-center text-white bg-blue-600 rounded-lg font-medium">회원가입</button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="relative z-[45]">
-        <DropdownMenu
-          isOpen={isDropdownOpen}
-          onMenuClick={(menuId) => {
-            setIsDropdownOpen(false);
-            const tabId = menuId.split("-sub-")[0];
-            handleMenuClick(tabId, menuId);
-          }}
-        />
+          <DropdownMenu
+            isOpen={isDropdownOpen}
+            onMenuClick={(menuId) => {
+              setIsDropdownOpen(false);
+              const tabId = menuId.split("-sub-")[0];
+              handleMenuClick(tabId, menuId);
+            }}
+          />
         </div>
       </div>
 
-      {/* Spacer to prevent content from going under fixed header */}
-      <div className={`transition-all duration-300 ${
-        isScrolled ? 'h-[57px]' : 'h-[137px]'
-      }`}></div>
+      {/* Spacer */}
+      <div className={`transition-all duration-300 ${isScrolled ? 'h-[57px]' : 'h-[57px] md:h-[137px]'}`}></div>
     </>
   );
 }

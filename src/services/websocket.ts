@@ -14,7 +14,7 @@ export interface NotificationMessage {
   createdAt: string;
 }
 
-const WS_BASE_URL = 'http://localhost:5173/ws/notifications';
+const WS_BASE_URL = 'https://api.nextenter.store/ws/notifications';
 
 class WebSocketService {
   private client: Client | null = null;

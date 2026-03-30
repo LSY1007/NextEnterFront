@@ -64,7 +64,7 @@ export default function CoverLetterDetailPage({
 
     // 2) 파일명이 /uploads/ 로 시작하면 백엔드 URL로 열기 (기존 로직 유지)
     if (fileName.startsWith("/uploads/")) {
-      const fileUrl = `http://localhost:8080${fileName}`;
+      const fileUrl = `https://api.nextenter.store${fileName}`;
       window.open(fileUrl, "_blank");
       return;
     }

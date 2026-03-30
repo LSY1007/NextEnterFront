@@ -62,7 +62,7 @@ export const useNotificationWebSocket = ({
     let isCleanedUp = false;
 
     // WebSocket 클라이언트 초기화
-    const backendUrl = 'http://localhost:5173/ws/notifications';
+    const backendUrl = 'https://api.nextenter.store/ws/notifications';
     console.log(`STOMP: Connecting to ${backendUrl}`);
     
     const socket = new SockJS(backendUrl);

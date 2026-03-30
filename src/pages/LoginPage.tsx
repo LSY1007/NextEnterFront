@@ -117,7 +117,7 @@ export default function LoginPage({
       console.error("❌ [로그인 오류 상세]:", err);
       
       if (err.code === "ERR_NETWORK") {
-        setError("서버에 연결할 수 없습니다. (localhost:8080 서버가 켜져 있는지 확인해 주세요)");
+        setError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
       } else {
         setError(err.response?.data?.message || "로그인 중 오류가 발생했습니다.");
       }
@@ -128,14 +128,14 @@ export default function LoginPage({
 
   // 소셜 로그인 핸들러 (개인회원 전용)
   const handleSocialLogin = (provider: "naver" | "kakao" | "google") => {
-    const backendUrl = "http://localhost:8080";
+    const backendUrl = "https://api.nextenter.store";
     window.location.href = `${backendUrl}/oauth2/authorization/${provider}`;
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-white">
       {/* 중앙 컨테이너 */}
-      <div className="w-full max-w-md px-8 py-12">
+      <div className="w-full max-w-md px-4 md:px-8 py-8 md:py-12">
         {/* 로고 */}
 <div className="mb-20 text-center">
   <h1 className="text-6xl font-bold bg-gradient-to-br from-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -145,7 +145,7 @@ export default function LoginPage({
 
 
         {/* 로그인 박스 */}
-        <div className="p-8 bg-white border border-gray-200 rounded-2xl shadow-lg">
+        <div className="p-5 md:p-8 bg-white border border-gray-200 rounded-2xl shadow-lg">
           {/* 탭 메뉴 */}
           <div className="flex mb-6 border-b border-gray-300">
             <button

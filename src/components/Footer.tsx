@@ -10,14 +10,14 @@ export default function Footer() {
 
   return (
     <footer className="bg-white border-t border-gray-200">
-      <div className="px-4 py-8 mx-auto max-w-7xl">
+      <div className="px-4 py-6 mx-auto max-w-7xl">
         {/* 네비게이션 링크 */}
-        <div className="flex items-center justify-center mb-6 space-x-8">
+        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-8 mb-6">
           {navLinks.map((link, index) => (
             <a
               key={index}
               href={link.href}
-              className={`text-sm text-gray-600 hover:text-gray-900 transition ${
+              className={`text-xs md:text-sm text-gray-600 hover:text-gray-900 transition ${
                 link.bold ? "font-bold" : ""
               }`}
             >
@@ -30,20 +30,20 @@ export default function Footer() {
         <div className="w-full h-px mb-6 bg-gray-200"></div>
 
         {/* 회사 정보 */}
-        <div className="space-y-2 text-sm text-center text-gray-500">
-          <div>
-            <span>고객센터 : </span>
-            <span className="font-semibold">1588-1234</span>
-            <span className="mx-2">(평일 09:00~18:00)</span>
-            <span className="mx-2">|</span>
-            <span>이메일 : </span>
-            <span className="font-semibold">ABC123@NAVER.COM</span>
+        <div className="space-y-2 text-xs md:text-sm text-center text-gray-500">
+          <div className="flex flex-wrap justify-center gap-x-2 gap-y-1">
+            <span>고객센터 : <span className="font-semibold">1588-1234</span></span>
+            <span className="hidden md:inline">|</span>
+            <span>(평일 09:00~18:00)</span>
+            <span className="hidden md:inline">|</span>
+            <span>이메일 : <span className="font-semibold">ABC123@NAVER.COM</span></span>
           </div>
-          <div>
+          <div className="flex flex-wrap justify-center gap-x-2 gap-y-1">
             <span>대표: 송진우</span>
-            <span className="mx-2">|</span>
+            <span>|</span>
             <span>사업자 등록 번호 : 000-12-12345</span>
-            <span className="mx-2">주소: 경기도 용인시 어쩌고</span>
+            <span>|</span>
+            <span>주소: 경기도 용인시 어쩌고</span>
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ export const useWebSocket = ({ userId, userType, enabled = true }: UseWebSocketP
 
     try {
       const client = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws/notifications'),
+        webSocketFactory: () => new SockJS('https://api.nextenter.store/ws/notifications'),
         debug: (str) => {
           console.log('STOMP Debug:', str);
         },

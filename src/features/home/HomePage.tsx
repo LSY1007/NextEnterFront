@@ -68,7 +68,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         const recommendedResponse = await getJobPostings({
           page: 0,
           size: 12,
-          status: "OPEN"
         });
         setRecommendedJobs(recommendedResponse.content);
 
@@ -76,7 +75,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         const moreResponse = await getJobPostings({
           page: 0,
           size: 3,
-          status: "OPEN"
         });
         setMoreJobs(moreResponse.content);
 
@@ -84,7 +82,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         const allResponse = await getJobPostings({
           page: 0,
           size: 100,
-          status: "OPEN"
         });
         setAllJobs(allResponse.content);
       } catch (error) {
@@ -103,7 +100,7 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
 
   // ✅ 소셜 로그인 핸들러
   const handleSocialLogin = (provider: "naver" | "kakao" | "google") => {
-    const backendUrl = "http://localhost:8080";
+    const backendUrl = "https://api.nextenter.store";
     window.location.href = `${backendUrl}/oauth2/authorization/${provider}`;
   };
 
@@ -143,34 +140,26 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
   };
 
   return (
-    <main className="px-6 py-8 mx-auto max-w-[1600px] bg-white">
+    <main className="px-3 md:px-6 py-4 md:py-8 mx-auto max-w-[1600px] bg-white">
       {/* 상단 영역 */}
-      <div className="flex gap-5 mb-6">
-        {/* 왼쪽: 오늘의 합격 꿀팁 */}
-        <aside className="w-72 space-y-3">
-          {/* 꿀팁 박스 - 큰 카드 */}
+      <div className="flex flex-col md:flex-row gap-4 md:gap-5 mb-6">
+        {/* 왼쪽: 오늘의 합격 꿀팁 - 모바일 숨김 */}
+        <aside className="hidden md:flex md:flex-col md:w-72 gap-3">
+          {/* 꿀팁 박스 */}
           <div className="p-2 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl shadow-md">
             <div className="flex items-start mb-4">
-              {/* 그라데이션 아이콘 */}
               <div className="flex items-center justify-center w-14 h-14 mr-3 bg-gradient-to-br from-purple-400 via-blue-400 to-teal-400 rounded-2xl flex-shrink-0">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-gray-900 leading-tight pt-1">
-                오늘의 합격 꿀팁
-              </h2>
+              <h2 className="text-lg font-bold text-gray-900 leading-tight pt-1">오늘의 합격 꿀팁</h2>
             </div>
             <p className="text-sm leading-relaxed text-gray-700 mb-4">
-              경쟁자는 합격하고
-              <br />
-              나는 탈락하는 이유, 알려드려요.
+              경쟁자는 합격하고<br />나는 탈락하는 이유, 알려드려요.
             </p>
-            <button className="text-sm font-semibold text-blue-600 hover:underline">
-              확인하기
-            </button>
+            <button className="text-sm font-semibold text-blue-600 hover:underline">확인하기</button>
           </div>
-
           {/* 인적성검사 */}
           <div className="p-5 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <div className="flex items-center mb-2">
@@ -181,11 +170,8 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
               </div>
               <h3 className="text-base font-bold text-gray-900">인적성검사</h3>
             </div>
-            <p className="text-sm text-gray-600 ml-13">
-              서류합격률 UP
-            </p>
+            <p className="text-sm text-gray-600">서류합격률 UP</p>
           </div>
-
         </aside>
 
         {/* 중앙: 추천 공고 캐러셀 */}
@@ -215,13 +201,12 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                   )}
 
                   {/* 캐러셀 컨테이너 */}
-                  <div className="overflow-hidden bg-white rounded-3xl p-11 border-2 border-gray-200">
-                    {/* 제목 */}
+                  <div className="overflow-hidden bg-white rounded-2xl md:rounded-3xl p-4 md:p-11 border-2 border-gray-200">
                     <div className="flex items-center mb-4">
                       <span className="mr-2 text-xl">👤</span>
                       <h3 className="text-sm font-bold">회원님을 위한 추천공고</h3>
                     </div>
-                    
+                    {/* 모바일: 1개, 데스크탑: 3개 */}
                     <div 
                       className="flex transition-transform duration-500 ease-in-out"
                       style={{ 
@@ -231,37 +216,22 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                       {recommendedJobs.map((job) => (
                         <div
                           key={job.jobId}
-                          className="flex-shrink-0 px-3"
+                          className="flex-shrink-0 px-2"
                           style={{ width: 'calc(100% / 3)' }}
                         >
-                            <div
-                              onClick={() => handleJobClick(job.jobId)}
-                              className="bg-white rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg h-full flex flex-col border-2 border-gray-200 px-5 py-4"
-                            >
-                            {/* 로고 영역 */}
+                          <div
+                            onClick={() => handleJobClick(job.jobId)}
+                            className="bg-white rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg h-full flex flex-col border-2 border-gray-200 px-4 py-4"
+                          >
                             <div className="flex items-center justify-start mb-3">
                               {job.logoUrl ? (
-                                <img 
-                                  src={job.logoUrl} 
-                                  alt={job.companyName} 
-                                  className="h-8 w-auto object-contain"
-                                />
+                                <img src={job.logoUrl} alt={job.companyName} className="h-8 w-auto object-contain" />
                               ) : (
-                                <div className="px-3 py-1 text-sm font-bold text-gray-400">
-                                  {job.companyName}
-                                </div>
+                                <div className="px-3 py-1 text-sm font-bold text-gray-400">{job.companyName}</div>
                               )}
                             </div>
-
-                            {/* 공고 제목 */}
-                            <h4 className="mb-3 text-lg font-bold text-gray-900 line-clamp-2 flex-grow">
-                              {job.title}
-                            </h4>
-                            
-                            {/* 회사명 */}
+                            <h4 className="mb-3 text-base md:text-lg font-bold text-gray-900 line-clamp-2 flex-grow">{job.title}</h4>
                             <p className="mb-3 text-sm text-gray-600">{job.companyName}</p>
-                            
-                            {/* 마감일 */}
                             <div className="mt-auto">
                               <p className="text-sm text-gray-400 text-right">
                                 ~{new Date(job.deadline).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}({['일','월','화','수','목','금','토'][new Date(job.deadline).getDay()]})
@@ -295,8 +265,8 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
           )}
         </div>
 
-        {/* 오른쪽: 광고 배너 */}
-        <aside className="w-72 space-y-4">
+        {/* 오른쪽: 광고 배너 - 모바일에서 숨김 */}
+        <aside className="hidden md:block w-72 space-y-4">
           {/* 광고 배너들 */}
           <div className="relative h-44 p-4 overflow-hidden text-white shadow-lg bg-gradient-to-br from-teal-700 to-teal-900 rounded-xl">
             <h3 className="mb-2 text-lg font-bold">구직자 대상</h3>
@@ -370,12 +340,12 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
           </div>
 
           {/* ✅ 그리드 컨테이너 */}
-          <div className="grid grid-cols-4 gap-x-4 gap-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {allJobs.map((job, index) => (
               <div
                 key={job.jobId}
                 className="relative"
-                style={{ height: '350px' }}
+                style={{ height: '360px' }}
               >
                 <div
                   onClick={() => handleJobClick(job.jobId)}
@@ -383,11 +353,11 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                   onMouseLeave={() => setHoveredCardId(null)}
                   className={`
                     absolute top-0 left-0 right-0
-                    rounded-3xl cursor-pointer overflow-hidden
+                    rounded-2xl md:rounded-3xl cursor-pointer overflow-hidden
                     transition-all duration-500 ease-in-out
                     ${hoveredCardId === job.jobId 
-                      ? 'shadow-2xl h-[700px] z-50' 
-                      : 'shadow-sm h-[350px] z-10'
+                      ? 'shadow-2xl h-[560px] md:h-[700px] z-50' 
+                      : 'shadow-sm h-[360px] z-10'
                     }
                   `}
                 >
@@ -428,12 +398,12 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                         </div>
                       </div>
 
-                      {/* ✅ 중간: 상세 설명 (제목과 회사명 대신) */}
-                      <div className="px-6 py-4 pl-7 flex items-start justify-start" style={{ minHeight: "100px" }}>
-                      <p className="text-md font-medium text-gray-800 line-clamp-3 whitespace-pre-line leading-relaxed text-left">
-                        {job.description || "상세 설명이 없습니다."}
-                      </p>
-                    </div>
+                      {/* ✅ 중간: 상세 설명 */}
+                      <div className="px-5 py-2 flex items-start justify-start">
+                        <p className="text-sm font-medium text-gray-800 whitespace-pre-line leading-relaxed text-left">
+                          {job.description || "상세 설명이 없습니다."}
+                        </p>
+                      </div>
 
                       {/* 하단: 썸네일 이미지 */}
                       <div className="absolute bottom-0 left-0 right-0 h-[150px] rounded-b-3xl overflow-hidden">
