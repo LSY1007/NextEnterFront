@@ -39,11 +39,11 @@ export default function Footer() {
             <span>이메일 : <span className="font-semibold">ABC123@NAVER.COM</span></span>
           </div>
           <div className="flex flex-wrap justify-center gap-x-2 gap-y-1">
-            <span>대표: 송진우</span>
+            <span>대표: 이상연</span>
             <span>|</span>
             <span>사업자 등록 번호 : 000-12-12345</span>
             <span>|</span>
-            <span>주소: 경기도 용인시 어쩌고</span>
+            <span>주소: 경기도 용인시</span>
           </div>
         </div>
       </div>
