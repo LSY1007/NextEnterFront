@@ -14,12 +14,128 @@ interface HomePageProps {
   onLoginClick?: () => void;
 }
 
-// ✅ 광고 이미지 배열 (public/images 폴더)
-const advertisementImages = [
-  "/images/ad1.png",
-  "/images/ad2.png",
-  "/images/ad3.png",
-];
+// ✅ 광고 배너 컴포넌트 배열 (이미지 대신 코드로 렌더링 → 크기 문제 없음)
+const AdBanner1 = () => (
+  <div className="absolute inset-0 flex items-center overflow-hidden"
+    style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%)" }}>
+    {/* 배경 장식 원들 */}
+    <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-10"
+      style={{ background: "radial-gradient(circle, #a78bfa, transparent)" }} />
+    <div className="absolute right-32 -bottom-6 w-28 h-28 rounded-full opacity-10"
+      style={{ background: "radial-gradient(circle, #60a5fa, transparent)" }} />
+    {/* 왼쪽 아이콘 영역 */}
+    <div className="flex items-center justify-center w-16 h-16 ml-6 rounded-2xl flex-shrink-0"
+      style={{ background: "rgba(167,139,250,0.2)", border: "1.5px solid rgba(167,139,250,0.4)" }}>
+      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
+        <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" stroke="#a78bfa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M12 12h4M12 16h4M8 12h.01M8 16h.01" stroke="#c4b5fd" strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    </div>
+    {/* 텍스트 영역 */}
+    <div className="ml-5 flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+          style={{ background: "rgba(167,139,250,0.25)", color: "#c4b5fd", border: "1px solid rgba(167,139,250,0.4)" }}>
+          AI POWERED
+        </span>
+        <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>NextEnter 프리미엄</span>
+      </div>
+      <p className="text-white font-bold text-base leading-tight">
+        AI가 내 경력을 분석해 이력서를 <span style={{ color: "#a78bfa" }}>자동 완성</span>해 드립니다
+      </p>
+      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>합격률 3배 높은 맞춤형 이력서 · 30초 완성</p>
+    </div>
+    {/* 오른쪽 CTA */}
+    <div className="flex-shrink-0 mr-6 ml-4">
+      <button className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-all hover:scale-105"
+        style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", color: "white", boxShadow: "0 4px 15px rgba(124,58,237,0.5)" }}>
+        무료 시작 →
+      </button>
+    </div>
+  </div>
+);
+
+const AdBanner2 = () => (
+  <div className="absolute inset-0 flex items-center overflow-hidden"
+    style={{ background: "linear-gradient(135deg, #0d1b2a 0%, #1b2a3b 35%, #1a3a5c 65%, #0d2137 100%)" }}>
+    {/* 배경 패턴 */}
+    <div className="absolute inset-0 opacity-5"
+      style={{ backgroundImage: "repeating-linear-gradient(45deg, #60a5fa 0, #60a5fa 1px, transparent 0, transparent 50%)", backgroundSize: "20px 20px" }} />
+    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full opacity-15"
+      style={{ background: "radial-gradient(circle, #f59e0b, transparent)" }} />
+    {/* 왼쪽 뱃지 */}
+    <div className="flex-shrink-0 ml-6">
+      <div className="flex flex-col items-center justify-center w-16 h-16 rounded-2xl"
+        style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)", boxShadow: "0 4px 20px rgba(245,158,11,0.4)" }}>
+        <span className="text-white font-black text-xl leading-none">취업</span>
+        <span className="text-white font-black text-[10px] leading-none mt-0.5">SUCCESS</span>
+      </div>
+    </div>
+    {/* 텍스트 */}
+    <div className="ml-5 flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+          style={{ background: "rgba(245,158,11,0.2)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.4)" }}>
+          🔥 한정 특가
+        </span>
+      </div>
+      <p className="text-white font-bold text-base leading-tight">
+        취업 성공 패키지 <span style={{ color: "#fbbf24" }}>첫 달 무료</span> · 면접부터 연봉협상까지
+      </p>
+      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>전담 커리어 코치 1:1 매칭 · 합격 시 환급 보장</p>
+    </div>
+    {/* 오른쪽 CTA */}
+    <div className="flex-shrink-0 mr-6 ml-4 text-center">
+      <button className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-all hover:scale-105"
+        style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)", color: "white", boxShadow: "0 4px 15px rgba(245,158,11,0.5)" }}>
+        무료 상담 신청
+      </button>
+      <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>오늘만 선착순 50명</p>
+    </div>
+  </div>
+);
+
+const AdBanner3 = () => (
+  <div className="absolute inset-0 flex items-center overflow-hidden"
+    style={{ background: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)" }}>
+    {/* 우측 장식 */}
+    <div className="absolute right-0 top-0 bottom-0 w-48 opacity-10"
+      style={{ background: "linear-gradient(90deg, transparent, #34d399)" }} />
+    <div className="absolute right-16 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full opacity-15"
+      style={{ background: "radial-gradient(circle, #10b981, transparent)" }} />
+    {/* 왼쪽 아이콘 */}
+    <div className="flex items-center justify-center w-16 h-16 ml-6 rounded-2xl flex-shrink-0"
+      style={{ background: "rgba(16,185,129,0.15)", border: "1.5px solid rgba(16,185,129,0.35)" }}>
+      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
+        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0v-3.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V21m-4 0h4" stroke="#34d399" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 7h1m5 0h1M9 11h1m5 0h1M9 15h1m5 0h1" stroke="#6ee7b7" strokeWidth="1.8" strokeLinecap="round"/>
+      </svg>
+    </div>
+    {/* 텍스트 */}
+    <div className="ml-5 flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+          style={{ background: "rgba(16,185,129,0.2)", color: "#34d399", border: "1px solid rgba(16,185,129,0.4)" }}>
+          기업 채용담당자 전용
+        </span>
+      </div>
+      <p className="text-white font-bold text-base leading-tight">
+        <span style={{ color: "#34d399" }}>검증된 개발자 인재풀</span> 3만 명+ · 지금 바로 채용 공고 등록
+      </p>
+      <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.55)" }}>평균 14일 이내 채용 완료 · 첫 공고 게시 무료</p>
+    </div>
+    {/* 오른쪽 CTA */}
+    <div className="flex-shrink-0 mr-6 ml-4">
+      <button className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-all hover:scale-105"
+        style={{ background: "linear-gradient(135deg, #059669, #10b981)", color: "white", boxShadow: "0 4px 15px rgba(16,185,129,0.5)" }}>
+        채용 공고 등록 →
+      </button>
+    </div>
+  </div>
+);
+
+// ✅ 광고 배너 컴포넌트 배열
+const adBannerComponents = [AdBanner1, AdBanner2, AdBanner3];
 
 // ✅ 카드 상단 그라데이션 색상 배열
 const cardBorderColors = [
@@ -44,7 +160,7 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentAdIndex((prevIndex) => (prevIndex + 1) % advertisementImages.length);
+      setCurrentAdIndex((prevIndex) => (prevIndex + 1) % adBannerComponents.length);
     }, 3000);
     return () => clearInterval(timer);
   }, []);
@@ -236,28 +352,21 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         </aside>
       </div>
 
-      {/* ✅ 하단 광고 배너
-          - cover: 이미지 비율 유지하며 컨테이너를 완전히 채움 (흰 여백 잘림)
-          - left center: 광고 내용이 왼쪽에 있으므로 왼쪽 기준으로 표시
-      */}
+      {/* ✅ 하단 광고 배너 - 코드 기반 렌더링으로 이미지 크기 문제 완전 해결 */}
       {!isLoading && (
         <div className="relative h-24 rounded-xl shadow-lg overflow-hidden mb-8">
-          {advertisementImages.map((image, index) => (
+          {adBannerComponents.map((BannerComponent, index) => (
             <div
               key={index}
               className={`absolute inset-0 transition-opacity duration-1000 ${
                 index === currentAdIndex ? 'opacity-100' : 'opacity-0'
               }`}
-              style={{
-                backgroundImage: `url(${image})`,
-                backgroundSize: 'cover',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center',
-              }}
-            />
+            >
+              <BannerComponent />
+            </div>
           ))}
           <div className="absolute flex gap-2 transform -translate-x-1/2 bottom-3 left-1/2 z-10">
-            {advertisementImages.map((_, index) => (
+            {adBannerComponents.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentAdIndex(index)}
