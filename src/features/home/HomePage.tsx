@@ -297,23 +297,26 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         </aside>
       </div>
 
-      {/* ✅ 하단 광고 배너 */}
+      {/* ✅ 하단 광고 배너 - background-image 방식으로 수정 (이미지가 꽉 차게) */}
       {!isLoading && (
-        <div className="relative h-24 rounded-xl shadow-lg overflow-hidden bg-gray-100 mb-8">
+        <div className="relative h-24 rounded-xl shadow-lg overflow-hidden mb-8">
+          {/* 각 광고 이미지를 div background로 표시 (100% 꽉 채움) */}
           {advertisementImages.map((image, index) => (
-            <img
+            <div
               key={index}
-              src={image}
-              alt={`광고 ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-fill transition-opacity duration-1000 ${
+              className={`absolute inset-0 transition-opacity duration-1000 ${
                 index === currentAdIndex ? 'opacity-100' : 'opacity-0'
               }`}
-              onError={(e) => {
-                e.currentTarget.src = "/images/placeholder-ad.png";
+              style={{
+                backgroundImage: `url(${image})`,
+                backgroundSize: '100% 100%',   /* 컨테이너를 완전히 채움 (object-fill 동일) */
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
               }}
             />
           ))}
 
+          {/* 슬라이드 인디케이터 */}
           <div className="absolute flex gap-2 transform -translate-x-1/2 bottom-3 left-1/2 z-10">
             {advertisementImages.map((_, index) => (
               <button
