@@ -23,66 +23,41 @@ const advertisementImages = [
 
 // ✅ 카드 상단 그라데이션 색상 배열
 const cardBorderColors = [
-  "from-purple-400 to-purple-600", // 보라색
-  "from-blue-400 to-blue-600",     // 파란색
-  "from-green-400 to-green-600",   // 초록색
-  "from-lime-400 to-lime-600",     // 연두색
+  "from-purple-400 to-purple-600",
+  "from-blue-400 to-blue-600",
+  "from-green-400 to-green-600",
+  "from-lime-400 to-lime-600",
 ];
 
 export default function HomePage({ onLoginClick }: HomePageProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
 
-  // ✅ 실제 공고 데이터 상태
   const [recommendedJobs, setRecommendedJobs] = useState<JobPostingListResponse[]>([]);
   const [moreJobs, setMoreJobs] = useState<JobPostingListResponse[]>([]);
-  const [allJobs, setAllJobs] = useState<JobPostingListResponse[]>([]); // ✅ 모든 공고
+  const [allJobs, setAllJobs] = useState<JobPostingListResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // ✅ 광고 배너 슬라이드 상태
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
-
-  // ✅ 호버된 카드 ID 추적
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
-
-  // ✅ 코로셀 상태
   const [currentTab, setCurrentTab] = useState<'recommended' | 'hot' | 'public'>('recommended');
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  // ✅ 광고 배너 자동 페이드 (3초마다)
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentAdIndex((prevIndex) => (prevIndex + 1) % advertisementImages.length);
     }, 3000);
-
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ 공고 데이터 가져오기
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         setIsLoading(true);
-        
-        // 추천 공고 12개 (캐러셀용)
-        const recommendedResponse = await getJobPostings({
-          page: 0,
-          size: 12,
-        });
+        const recommendedResponse = await getJobPostings({ page: 0, size: 12 });
         setRecommendedJobs(recommendedResponse.content);
-
-        // 더 많은 공고 3개
-        const moreResponse = await getJobPostings({
-          page: 0,
-          size: 3,
-        });
+        const moreResponse = await getJobPostings({ page: 0, size: 3 });
         setMoreJobs(moreResponse.content);
-
-        // ✅ 모든 공고 가져오기 (최대 100개)
-        const allResponse = await getJobPostings({
-          page: 0,
-          size: 100,
-        });
+        const allResponse = await getJobPostings({ page: 0, size: 100 });
         setAllJobs(allResponse.content);
       } catch (error) {
         console.error("공고 데이터 로딩 실패:", error);
@@ -90,7 +65,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         setIsLoading(false);
       }
     };
-
     fetchJobs();
   }, []);
 
@@ -98,7 +72,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
     navigate(`/user/jobs/${jobId}`);
   };
 
-  // ✅ 소셜 로그인 핸들러
   const handleSocialLogin = (provider: "naver" | "kakao" | "google") => {
     const backendUrl = "https://api.nextenter.store";
     window.location.href = `${backendUrl}/oauth2/authorization/${provider}`;
@@ -113,28 +86,20 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
     { id: 5, icon: "/images/Figma.png", label: "디자이너", color: "bg-orange-100" },
   ];
 
-  // ✅ D-day 계산 함수
   const calculateDday = (deadline: string): string => {
     const today = new Date();
     const deadlineDate = new Date(deadline);
     const diffTime = deadlineDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-      return "마감";
-    } else if (diffDays === 0) {
-      return "D-day";
-    } else {
-      return `D-${diffDays}`;
-    }
+    if (diffDays < 0) return "마감";
+    if (diffDays === 0) return "D-day";
+    return `D-${diffDays}`;
   };
 
-  // ✅ 회사 로고 첫 글자 추출
   const getCompanyInitial = (companyName: string): string => {
     return companyName?.charAt(0) || "C";
   };
 
-  // ✅ 카드 색상 가져오기 (인덱스 기반)
   const getCardBorderColor = (index: number): string => {
     return cardBorderColors[index % cardBorderColors.length];
   };
@@ -143,9 +108,8 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
     <main className="px-3 md:px-6 py-4 md:py-8 mx-auto max-w-[1600px] bg-white">
       {/* 상단 영역 */}
       <div className="flex flex-col md:flex-row gap-4 md:gap-5 mb-6">
-        {/* 왼쪽: 오늘의 합격 꿀팁 - 모바일 숨김 */}
+        {/* 왼쪽: 오늘의 합격 꿀팁 */}
         <aside className="hidden md:flex md:flex-col md:w-72 gap-3">
-          {/* 꿀팁 박스 */}
           <div className="p-2 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl shadow-md">
             <div className="flex items-start mb-4">
               <div className="flex items-center justify-center w-14 h-14 mr-3 bg-gradient-to-br from-purple-400 via-blue-400 to-teal-400 rounded-2xl flex-shrink-0">
@@ -160,7 +124,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
             </p>
             <button className="text-sm font-semibold text-blue-600 hover:underline">확인하기</button>
           </div>
-          {/* 인적성검사 */}
           <div className="p-5 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <div className="flex items-center mb-2">
               <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-full">
@@ -176,7 +139,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
 
         {/* 중앙: 추천 공고 캐러셀 */}
         <div className="flex-1 max-w-4xl">
-          {/* ✅ 캐러셀 공고 카드 */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
@@ -188,7 +150,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
             <div className="relative">
               {recommendedJobs.length > 0 ? (
                 <>
-                  {/* 왼쪽 화살표 */}
                   {carouselIndex > 0 && (
                     <button
                       onClick={() => setCarouselIndex(prev => Math.max(0, prev - 1))}
@@ -199,26 +160,17 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                       </svg>
                     </button>
                   )}
-
-                  {/* 캐러셀 컨테이너 */}
                   <div className="overflow-hidden bg-white rounded-2xl md:rounded-3xl p-4 md:p-11 border-2 border-gray-200">
                     <div className="flex items-center mb-4">
                       <span className="mr-2 text-xl">👤</span>
                       <h3 className="text-sm font-bold">회원님을 위한 추천공고</h3>
                     </div>
-                    {/* 모바일: 1개, 데스크탑: 3개 */}
-                    <div 
+                    <div
                       className="flex transition-transform duration-500 ease-in-out"
-                      style={{ 
-                        transform: `translateX(-${carouselIndex * (100 / 3)}%)`,
-                      }}
+                      style={{ transform: `translateX(-${carouselIndex * (100 / 3)}%)` }}
                     >
                       {recommendedJobs.map((job) => (
-                        <div
-                          key={job.jobId}
-                          className="flex-shrink-0 px-2"
-                          style={{ width: 'calc(100% / 3)' }}
-                        >
+                        <div key={job.jobId} className="flex-shrink-0 px-2" style={{ width: 'calc(100% / 3)' }}>
                           <div
                             onClick={() => handleJobClick(job.jobId)}
                             className="bg-white rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg h-full flex flex-col border-2 border-gray-200 px-4 py-4"
@@ -242,8 +194,6 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                       ))}
                     </div>
                   </div>
-
-                  {/* 오른쪽 화살표 */}
                   {carouselIndex < recommendedJobs.length - 3 && (
                     <button
                       onClick={() => setCarouselIndex(prev => prev + 1)}
@@ -265,42 +215,33 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
           )}
         </div>
 
-        {/* 오른쪽: 광고 배너 - 모바일에서 숨김 */}
+        {/* 오른쪽: 광고 배너 */}
         <aside className="hidden md:block w-72 space-y-4">
-          {/* 광고 배너들 */}
           <div className="relative h-44 p-4 overflow-hidden text-white shadow-lg bg-gradient-to-br from-teal-700 to-teal-900 rounded-xl">
             <h3 className="mb-2 text-lg font-bold">구직자 대상</h3>
-            <h3 className="mb-4 text-lg font-bold">
-              해외 취업 사기에 주의하세요!
-            </h3>
+            <h3 className="mb-4 text-lg font-bold">해외 취업 사기에 주의하세요!</h3>
             <button className="px-4 py-2 text-sm text-white transition bg-white rounded-lg bg-opacity-20 hover:bg-opacity-30">
               바로가기 →
             </button>
             <div className="absolute text-xs bottom-2 right-3">5/5</div>
           </div>
-
-
           <div className="relative h-28 p-4 bg-white border border-gray-200 shadow-lg rounded-xl">
             <h3 className="mb-2 text-base font-bold">SK 하이닉스 채용 공고</h3>
-            <p className="mb-3 text-xs text-gray-600">
-              연봉 5500만원~7500만원
-            </p>
+            <p className="mb-3 text-xs text-gray-600">연봉 5500만원~7500만원</p>
             <div className="absolute bottom-4 right-4">
-              <div className="flex items-center justify-center w-14 h-14 font-bold text-white bg-purple-600 rounded-full">
-                SK
-              </div>
+              <div className="flex items-center justify-center w-14 h-14 font-bold text-white bg-purple-600 rounded-full">SK</div>
             </div>
-            <div className="absolute text-xs text-gray-500 bottom-2 right-3">
-              1/6
-            </div>
+            <div className="absolute text-xs text-gray-500 bottom-2 right-3">1/6</div>
           </div>
         </aside>
       </div>
 
-      {/* ✅ 하단 광고 배너 - background-image 방식으로 수정 (이미지가 꽉 차게) */}
+      {/* ✅ 하단 광고 배너
+          - cover: 이미지 비율 유지하며 컨테이너를 완전히 채움 (흰 여백 잘림)
+          - left center: 광고 내용이 왼쪽에 있으므로 왼쪽 기준으로 표시
+      */}
       {!isLoading && (
         <div className="relative h-24 rounded-xl shadow-lg overflow-hidden mb-8">
-          {/* 각 광고 이미지를 div background로 표시 (100% 꽉 채움) */}
           {advertisementImages.map((image, index) => (
             <div
               key={index}
@@ -309,23 +250,19 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
               }`}
               style={{
                 backgroundImage: `url(${image})`,
-                backgroundSize: '100% 100%',   /* 컨테이너를 완전히 채움 (object-fill 동일) */
+                backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
+                backgroundPosition: 'left center',
               }}
             />
           ))}
-
-          {/* 슬라이드 인디케이터 */}
           <div className="absolute flex gap-2 transform -translate-x-1/2 bottom-3 left-1/2 z-10">
             {advertisementImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentAdIndex(index)}
-                className={`h-2 rounded-full transition-all ${ 
-                  index === currentAdIndex
-                    ? "bg-white w-6"
-                    : "bg-white/50 w-2 hover:bg-white/75"
+                className={`h-2 rounded-full transition-all ${
+                  index === currentAdIndex ? "bg-white w-6" : "bg-white/50 w-2 hover:bg-white/75"
                 }`}
                 aria-label={`광고 ${index + 1}로 이동`}
               />
@@ -334,22 +271,16 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
         </div>
       )}
 
-      {/* ✅ 모든 공고 카드 섹션 - 제목과 회사명을 상세 설명으로 변경 */}
+      {/* ✅ 모든 공고 카드 섹션 */}
       {!isLoading && allJobs.length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">회원님이 꼭 봐야 할 공고 (플래티넘)</h2>
             <p className="text-sm text-gray-600">총 {allJobs.length}개의 공고</p>
           </div>
-
-          {/* ✅ 그리드 컨테이너 */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {allJobs.map((job, index) => (
-              <div
-                key={job.jobId}
-                className="relative"
-                style={{ height: '360px' }}
-              >
+              <div key={job.jobId} className="relative" style={{ height: '360px' }}>
                 <div
                   onClick={() => handleJobClick(job.jobId)}
                   onMouseEnter={() => setHoveredCardId(job.jobId)}
@@ -358,41 +289,27 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                     absolute top-0 left-0 right-0
                     rounded-2xl md:rounded-3xl cursor-pointer overflow-hidden
                     transition-all duration-500 ease-in-out
-                    ${hoveredCardId === job.jobId 
-                      ? 'shadow-2xl h-[560px] md:h-[700px] z-50' 
+                    ${hoveredCardId === job.jobId
+                      ? 'shadow-2xl h-[560px] md:h-[700px] z-50'
                       : 'shadow-sm h-[360px] z-10'
                     }
                   `}
                 >
-                  {/* ✅ 기본 상태: 로고 + 상세 설명 + 썸네일 */}
                   {hoveredCardId !== job.jobId && (
                     <div className="relative w-full h-full bg-white border-2 border-gray-200 rounded-3xl overflow-hidden">
-                      {/* ✅ 상단 그라데이션 테두리 */}
                       <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${getCardBorderColor(index)}`}></div>
-                      
-                      {/* 북마크 아이콘 */}
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // 북마크 기능 추가 예정
-                        }}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); }}
                         className="absolute top-4 right-4 z-10 p-1 bg-white rounded-full shadow-md hover:bg-gray-50"
                       >
                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                       </button>
-
-                      {/* 상단: 회사 로고 (동그라미 제거, 크기 축소) */}
                       <div className="flex justify-center px-5 pt-4 pb-3">
-
                         <div className="flex items-center justify-center h-12 max-w-[120px]">
                           {job.logoUrl ? (
-                            <img 
-                              src={job.logoUrl} 
-                              alt={job.companyName} 
-                              className="max-h-12 w-auto object-contain"
-                            />
+                            <img src={job.logoUrl} alt={job.companyName} className="max-h-12 w-auto object-contain" />
                           ) : (
                             <div className="px-3 py-1.5 text-sm font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 rounded">
                               {job.companyName}
@@ -400,22 +317,14 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                           )}
                         </div>
                       </div>
-
-                      {/* ✅ 중간: 상세 설명 */}
                       <div className="px-5 py-2 flex items-start justify-start">
                         <p className="text-sm font-medium text-gray-800 whitespace-pre-line leading-relaxed text-left">
                           {job.description || "상세 설명이 없습니다."}
                         </p>
                       </div>
-
-                      {/* 하단: 썸네일 이미지 */}
                       <div className="absolute bottom-0 left-0 right-0 h-[150px] rounded-b-3xl overflow-hidden">
                         {job.thumbnailUrl ? (
-                          <img 
-                            src={job.thumbnailUrl} 
-                            alt={job.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={job.thumbnailUrl} alt={job.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
                             <div className="text-center text-gray-400">
@@ -424,94 +333,54 @@ export default function HomePage({ onLoginClick }: HomePageProps) {
                             </div>
                           </div>
                         )}
-                        
-                        {/* 하단 정보 오버레이 */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                           <div className="flex items-center justify-between text-white text-xs">
-                            <span className="flex items-center gap-1">
-                              📍 {job.location}
-                            </span>
-                            <span className="px-2 py-1 bg-blue-600 rounded font-semibold">
-                              {calculateDday(job.deadline)}
-                            </span>
+                            <span className="flex items-center gap-1">📍 {job.location}</span>
+                            <span className="px-2 py-1 bg-blue-600 rounded font-semibold">{calculateDday(job.deadline)}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* ✅ 호버 상태: 카드 전체가 상세 이미지로 변경 */}
                   {hoveredCardId === job.jobId && (
                     <div className="relative w-full h-full rounded-3xl overflow-hidden">
-                      {/* ✅ 상단 그라데이션 테두리 (호버 시에도 표시) */}
                       <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${getCardBorderColor(index)} z-20`}></div>
-                      
-                      {/* 상세 이미지 - 카드 전체 채움 */}
                       {job.detailImageUrl ? (
-                        <img 
-                          src={job.detailImageUrl} 
-                          alt={`${job.title} 상세`}
-                          className="w-full h-auto"
-                        />
+                        <img src={job.detailImageUrl} alt={`${job.title} 상세`} className="w-full h-auto" />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-purple-100 via-blue-100 to-pink-100 flex items-center justify-center">
-                        <div className="text-center text-gray-500">
-                          <p className="text-xl font-bold mb-2">상세 이미지</p>
-                          <p className="text-base">(등록 필요)</p>
+                          <div className="text-center text-gray-500">
+                            <p className="text-xl font-bold mb-2">상세 이미지</p>
+                            <p className="text-base">(등록 필요)</p>
+                          </div>
                         </div>
-                      </div>
                       )}
-
-                      {/* 북마크 아이콘 */}
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // 북마크 기능 추가 예정
-                        }}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); }}
                         className="absolute top-4 right-4 z-20 p-2 bg-white/90 rounded-full shadow-lg hover:bg-white"
                       >
                         <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                       </button>
-
-                      {/* 하단 정보 오버레이 - 더 큰 영역 */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-6 pt-20 rounded-b-3xl">
                         <div className="text-white space-y-3">
-                          {/* 회사명 + 제목 */}
                           <div>
                             <p className="text-sm font-semibold mb-1 opacity-90">{job.companyName}</p>
                             <h4 className="text-lg font-bold line-clamp-2">{job.title}</h4>
                           </div>
-
-                          {/* 직무 + D-day */}
                           <div className="flex items-center justify-between pt-2 border-t border-white/30">
-                            <span className="text-sm font-semibold flex items-center gap-2">
-                              💼 {job.jobCategory}
-                            </span>
-                            <span className="px-4 py-2 bg-blue-600 rounded-full font-bold text-sm">
-                              {calculateDday(job.deadline)}
-                            </span>
+                            <span className="text-sm font-semibold flex items-center gap-2">💼 {job.jobCategory}</span>
+                            <span className="px-4 py-2 bg-blue-600 rounded-full font-bold text-sm">{calculateDday(job.deadline)}</span>
                           </div>
-                          
-                          {/* 통계 정보 */}
                           <div className="flex items-center gap-6 text-sm">
-                            <span className="flex items-center gap-1">
-                              👁️ {job.viewCount?.toLocaleString() || 0}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              📝 {job.applicantCount?.toLocaleString() || 0}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              ⭐ {job.bookmarkCount?.toLocaleString() || 0}
-                            </span>
+                            <span className="flex items-center gap-1">👁️ {job.viewCount?.toLocaleString() || 0}</span>
+                            <span className="flex items-center gap-1">📝 {job.applicantCount?.toLocaleString() || 0}</span>
+                            <span className="flex items-center gap-1">⭐ {job.bookmarkCount?.toLocaleString() || 0}</span>
                           </div>
-
-                          {/* 위치 + 경력 */}
                           <div className="space-y-1 text-sm opacity-90">
-                            <p className="flex items-center gap-1">
-                              📍 {job.location}
-                            </p>
+                            <p className="flex items-center gap-1">📍 {job.location}</p>
                             {(job.experienceMin !== undefined || job.experienceMax !== undefined) && (
                               <p className="flex items-center gap-1">
                                 💼 경력: {job.experienceMin ?? 0}년 ~ {job.experienceMax ?? '제한없음'}
